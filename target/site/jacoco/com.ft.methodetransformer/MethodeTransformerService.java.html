@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MethodeTransformerService.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="right"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">methodetransformer</a> &gt; <a href="index.html" class="el_package">com.ft.methodetransformer</a> &gt; <span class="el_source">MethodeTransformerService.java</span></div><h1>MethodeTransformerService.java</h1><pre class="source lang-java linenums">package com.ft.methodetransformer;
+
+import com.ft.api.util.buildinfo.BuildInfoResource;
+import com.ft.mustachemods.SwitchableMustacheViewBundle;
+import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
+import com.ft.methodetransformer.configuration.MethodeTransformerConfiguration;
+import com.ft.methodetransformer.health.MethodeTransformerHealthCheck;
+import com.ft.methodetransformer.resources.MethodeTransformerResource;
+import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.servlets.SlowRequestFilter;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
+
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
+
+<span class="nc" id="L19">public class MethodeTransformerService extends Application&lt;MethodeTransformerConfiguration&gt; {</span>
+
+    public static void main(final String[] args) throws Exception {
+<span class="nc" id="L22">        new MethodeTransformerService().run(args);</span>
+<span class="nc" id="L23">    }</span>
+
+    @Override
+    public void initialize(final Bootstrap bootstrap) {
+<span class="nc" id="L27">        bootstrap.addBundle(new SwitchableMustacheViewBundle());</span>
+<span class="nc" id="L28">        bootstrap.addBundle(new AssetsBundle(&quot;/views&quot;));</span>
+<span class="nc" id="L29">        bootstrap.addBundle(new AdvancedHealthCheckBundle());</span>
+<span class="nc" id="L30">    }</span>
+
+    @Override
+    public void run(final MethodeTransformerConfiguration configuration, final Environment environment) throws Exception {
+<span class="nc" id="L34">        environment.jersey().register(new BuildInfoResource());</span>
+<span class="nc" id="L35">        environment.jersey().register(new MethodeTransformerResource());</span>
+
+<span class="nc" id="L37">        environment.servlets().addFilter(</span>
+                &quot;Slow Servlet Filter&quot;,
+                new SlowRequestFilter(Duration.milliseconds(configuration.getSlowRequestTimeout()))).addMappingForUrlPatterns(
+                EnumSet.of(DispatcherType.REQUEST),
+                false,
+                configuration.getSlowRequestPattern());
+
+<span class="nc" id="L44">        environment.healthChecks().register(&quot;My Health&quot;, new MethodeTransformerHealthCheck(&quot;replace me&quot;));</span>
+
+<span class="nc" id="L46">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.3.201306030806</span></div></body></html>
