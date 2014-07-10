@@ -64,3 +64,22 @@ logging:
 
       # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
       timeZone: UTC
+      
+semanticContentStoreReader:
+    shortName: "semanticReader"
+    path: content/
+    jerseyClient:
+        timeout: 2000ms
+    primaryNodes: ["localhost:9090:9091"]
+    secondaryNodes: null
+
+methodeApi:
+    endpointConfiguration:
+        shortName: "methode"
+        jerseyClient:
+            timeout: 5000ms
+        primaryNodes: ["localhost:9080:9081", "localhost:9080:9081"]
+        secondaryNodes: null
+    assetTypeRequestConfiguration:
+        numberOfAssetIdsPerAssetTypeRequest: 3
+        numberOfParallelAssetTypeRequests: 4
