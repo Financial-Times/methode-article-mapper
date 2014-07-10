@@ -1,5 +1,0 @@
-GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-methodetransformer,com.ft.methodetransformer.health,MethodeTransformerHealthCheck,15,0,0,0,7,0,6,0,6,0
-methodetransformer,com.ft.methodetransformer.configuration,MethodeTransformerConfiguration,9,0,0,0,3,0,3,0,3,0
-methodetransformer,com.ft.methodetransformer,MethodeTransformerService,68,0,0,0,12,0,4,0,4,0
-methodetransformer,com.ft.methodetransformer.resources,MethodeTransformerResource,19,0,0,0,2,0,2,0,2,0
