@@ -5,11 +5,11 @@ server:
 
   applicationConnectors:
     - type: http
-      port: 14080
+      port: 11070
 
   adminConnectors:
       - type: http
-        port: 14081
+        port: 11071
 
   requestLog:
 
