@@ -1,7 +1,5 @@
 package com.ft.methodetransformer.http;
 
-import io.dropwizard.setup.Environment;
-
 import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
@@ -9,7 +7,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedResult;
