@@ -1,10 +1,11 @@
-package com.ft.methodetransformer.http;
+package com.ft.methodetransformer.health;
 
 import java.net.URI;
 import java.util.Map;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.ft.methodetransformer.http.VersionNumber;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

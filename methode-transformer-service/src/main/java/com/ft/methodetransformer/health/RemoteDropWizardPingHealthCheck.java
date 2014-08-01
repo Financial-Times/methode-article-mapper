@@ -1,4 +1,4 @@
-package com.ft.methodetransformer.http;
+package com.ft.methodetransformer.health;
 
 import java.net.URI;
 

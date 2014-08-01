@@ -1,7 +1,8 @@
-package com.ft.methodetransformer.http;
+package com.ft.methodetransformer.health;
 
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
+import com.ft.methodetransformer.health.RemoteDependencyHealthCheck;
 import com.ft.platform.dropwizard.AdvancedResult;
 import com.google.common.base.Optional;
 import com.sun.jersey.api.client.Client;
