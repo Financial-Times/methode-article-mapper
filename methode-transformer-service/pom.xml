@@ -108,12 +108,16 @@
             <version>${jersey-version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ft.content-store-api</groupId>
-            <artifactId>content-store-api-model</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>com.ft</groupId>
+            <artifactId>content-model</artifactId>
+            <version>0.1.8</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>jackson-databind</artifactId>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-validator</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-annotations</artifactId>
                     <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
             </exclusions>
@@ -127,6 +131,12 @@
             <groupId>com.ft.methode-api</groupId>
             <artifactId>methode-api-client</artifactId>
             <version>${methode.api.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-validator</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.ft.resilient-jersey-wrapper</groupId>
@@ -150,6 +160,10 @@
             <exclusions>
                 <exclusion>
                     <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
                     <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
                 <exclusion>
