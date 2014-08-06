@@ -12,10 +12,10 @@ parameters: server methode-transformer.yaml
 
 Please make sure you are running it in the correct working directory (methode-bridge-transformer).
 
-Healthcheck: http://localhost:11081/healthcheck
+Healthcheck: http://localhost:11071/healthcheck
 
 ## Content retrieval
-Make a GET request to http://localhost:11080/content/{uuid} with Content-Type set to application/json. 
+Make a GET request to http://localhost:11070/content/{uuid} with Content-Type set to application/json.
 
 You will receive a json response for the Content. As an example:
 

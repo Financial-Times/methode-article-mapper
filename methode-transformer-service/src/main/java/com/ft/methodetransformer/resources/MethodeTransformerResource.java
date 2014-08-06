@@ -2,7 +2,6 @@ package com.ft.methodetransformer.resources;
 
 
 import java.util.UUID;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -13,7 +12,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.contentstoreapi.model.Content;
+import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodetransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodetransformer.methode.MethodeFileNotFoundException;

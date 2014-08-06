@@ -34,7 +34,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.ft.contentstoreapi.model.Content;
+import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodetransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodetransformer.methode.SupportedTypeResolver;

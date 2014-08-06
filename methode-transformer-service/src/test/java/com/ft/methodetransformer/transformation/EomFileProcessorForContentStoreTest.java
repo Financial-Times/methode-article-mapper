@@ -17,14 +17,13 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import com.ft.content.model.Content;
+import com.ft.methodeapi.model.EomFile;
+import com.ft.methodetransformer.methode.MethodeContentNotEligibleForPublishException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import com.ft.contentstoreapi.model.Content;
-import com.ft.methodeapi.model.EomFile;
-import com.ft.methodetransformer.methode.MethodeContentNotEligibleForPublishException;
 
 public class EomFileProcessorForContentStoreTest {
 
