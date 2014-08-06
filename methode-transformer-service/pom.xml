@@ -48,6 +48,7 @@
         <cucumber.version>1.1.5</cucumber.version>
         <xmlunit.version>1.5</xmlunit.version>
         <wiremock.version>1.40</wiremock.version>
+        <ft.content-model.version>0.1.10</ft.content-model.version>
     </properties>
 
     <dependencies>
@@ -110,7 +111,7 @@
         <dependency>
             <groupId>com.ft</groupId>
             <artifactId>content-model</artifactId>
-            <version>0.1.8</version>
+            <version>${ft.content-model.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>

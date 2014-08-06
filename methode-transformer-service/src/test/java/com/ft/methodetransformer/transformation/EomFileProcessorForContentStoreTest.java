@@ -162,11 +162,11 @@ public class EomFileProcessorForContentStoreTest {
     
     private Content createStandardExpectedContent() {
 		return Content.builder()
-                .withHeadline("And sacked chimney-sweep pumps boss full of mayonnaise.")
+                .withTitle("And sacked chimney-sweep pumps boss full of mayonnaise.")
                 .withSource("methode")
                 .withXmlBody("<p>some other random text</p>")
                 .withByline("")
-                .withLastPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+                .withPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withUuid(uuid).build();
 	}
 

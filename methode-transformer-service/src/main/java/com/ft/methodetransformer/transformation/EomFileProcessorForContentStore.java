@@ -98,11 +98,11 @@ public class EomFileProcessorForContentStore {
 
         return Content.builder()
                 .withUuid(uuid)
-                .withHeadline(headline)
+                .withTitle(headline)
                 .withSource("methode")
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
-				.withLastPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+				.withPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .build();
 
 	}
