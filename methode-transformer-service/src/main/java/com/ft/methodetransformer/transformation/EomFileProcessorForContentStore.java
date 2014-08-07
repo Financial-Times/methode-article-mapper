@@ -102,7 +102,7 @@ public class EomFileProcessorForContentStore {
                 .withSource("methode")
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
-				.withPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .build();
 
 	}

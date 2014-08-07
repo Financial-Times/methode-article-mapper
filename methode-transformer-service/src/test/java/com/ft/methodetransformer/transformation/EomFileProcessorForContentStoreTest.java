@@ -166,7 +166,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withSource("methode")
                 .withXmlBody("<p>some other random text</p>")
                 .withByline("")
-                .withPublicationDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+                .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withUuid(uuid).build();
 	}
 
