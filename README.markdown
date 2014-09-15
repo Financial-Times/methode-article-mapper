@@ -1,6 +1,7 @@
-# Methode Transformer
-Methode Transformer is a Dropwizard application which responds to a request for a piece of content by 
+# Methode Article Transformer
+Methode Article Transformer is a Dropwizard application which responds to a request for an article, 
 obtaining it from Methode and converting it into the canonical universal publishing json format.
+Currently only methode compound articles are supported.
 
 ## Introduction
 This application uses the following APIs:
