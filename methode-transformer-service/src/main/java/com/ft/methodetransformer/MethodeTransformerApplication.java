@@ -33,10 +33,10 @@ import com.ft.mustachemods.SwitchableMustacheViewBundle;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
 
-public class MethodeTransformerService extends Application<MethodeTransformerConfiguration> {
+public class MethodeTransformerApplication extends Application<MethodeTransformerConfiguration> {
 
     public static void main(final String[] args) throws Exception {
-        new MethodeTransformerService().run(args);
+        new MethodeTransformerApplication().run(args);
     }
 
     @Override
