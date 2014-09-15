@@ -8,9 +8,9 @@ This application uses the following APIs:
 
 ## Running
 In order to run the project, please run com.ft.methodetransformer.MethodeTransformerApplication with the following program
-parameters: server methode-transformer.yaml
+parameters: server methode-article-transformer.yaml
 
-Please make sure you are running it in the correct working directory (methode-transformer-service).
+Please make sure you are running it in the correct working directory (methode-article-transformer-service).
 
 Healthcheck: http://localhost:11071/healthcheck
 
