@@ -40,7 +40,7 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
     }
 
     @Override
-    public void initialize(final Bootstrap bootstrap) {
+    public void initialize(final Bootstrap<MethodeTransformerConfiguration> bootstrap) {
         bootstrap.addBundle(new SwitchableMustacheViewBundle());
         bootstrap.addBundle(new AssetsBundle("/views"));
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
