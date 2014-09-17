@@ -163,7 +163,6 @@ public class EomFileProcessorForContentStoreTest {
     private Content createStandardExpectedContent() {
 		return Content.builder()
                 .withTitle("And sacked chimney-sweep pumps boss full of mayonnaise.")
-                .withSource("methode")
                 .withXmlBody("<p>some other random text</p>")
                 .withByline("")
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))

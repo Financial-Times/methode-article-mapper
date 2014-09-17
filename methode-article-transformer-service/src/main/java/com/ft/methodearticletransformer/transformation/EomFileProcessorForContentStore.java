@@ -99,7 +99,6 @@ public class EomFileProcessorForContentStore {
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
-                .withSource("methode")
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
