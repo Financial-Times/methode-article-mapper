@@ -45,6 +45,7 @@ public class EomFileProcessorForContentStore {
 	private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
 	private static final Logger log = LoggerFactory.getLogger(EomFileProcessorForContentStore.class);
+	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
 
 	private final FieldTransformer bodyTransformer;
 	private final FieldTransformer bylineTransformer;
@@ -67,7 +68,7 @@ public class EomFileProcessorForContentStore {
 			final XPath xpath = XPathFactory.newInstance().newXPath();
 			
             Content content = transformEomFileToContent(uuid, eomFile, documentBuilder, xpath, transactionId);
-            return content;       	     
+            return content;
 			
 		} catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
@@ -102,6 +103,7 @@ public class EomFileProcessorForContentStore {
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+				.withContentOrigin(METHODE, uuid.toString())
                 .build();
 
 	}

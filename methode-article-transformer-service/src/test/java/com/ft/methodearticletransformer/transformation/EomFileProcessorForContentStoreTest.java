@@ -27,6 +27,7 @@ import org.junit.rules.ExpectedException;
 
 public class EomFileProcessorForContentStoreTest {
 
+	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -108,6 +109,7 @@ public class EomFileProcessorForContentStoreTest {
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
+				.withContentOrigin(METHODE, uuid.toString())
                 .withByline(TRANSFORMED_BYLINE).build();
 
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
@@ -166,6 +168,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withXmlBody("<p>some other random text</p>")
                 .withByline("")
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
+				.withContentOrigin(METHODE, uuid.toString())
                 .withUuid(uuid).build();
 	}
 
