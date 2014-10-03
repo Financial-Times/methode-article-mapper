@@ -57,7 +57,7 @@
                                     <artifactId>methode-article-transformer-service</artifactId>
                                     <version>${project.version}</version>
                                     <type>jar</type>
-                                    <outputDirectory>${project.build.directory}/ft-methode-article-transformer/files</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/ft-methode_article_transformer/files</outputDirectory>
                                     <destFileName>methode-article-transformer-service.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
