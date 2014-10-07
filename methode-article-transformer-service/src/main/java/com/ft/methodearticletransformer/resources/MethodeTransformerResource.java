@@ -10,6 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
@@ -18,7 +19,6 @@ import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPubl
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
-import com.yammer.metrics.annotation.Timed;
 
 @Path("/content")
 public class MethodeTransformerResource {

@@ -1,5 +1,6 @@
 package com.ft.methodearticletransformer;
 
+import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.servlets.SlowRequestFilter;
@@ -8,7 +9,6 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 
 import java.util.EnumSet;
-import java.util.concurrent.ExecutorService;
 
 import javax.servlet.DispatcherType;
 
@@ -17,9 +17,6 @@ import com.ft.api.util.transactionid.TransactionIdFilter;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
-import com.ft.methodeapi.client.AssetTypeRequestConfiguration;
-import com.ft.methodeapi.client.MethodeApiClient;
-import com.ft.methodeapi.client.MethodeApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeTransformerConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
@@ -81,12 +78,7 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
     }
 
 	private MethodeFileService configureMethodeFileService(Environment environment, Client clientForMethodeApiClient, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-		final MethodeApiClient methodeApiClient = new MethodeApiClient(
-				clientForMethodeApiClient,
-				methodeApiEndpointConfiguration,
-				buildExecutorService(environment, methodeApiEndpointConfiguration.getAssetTypeRequestConfiguration()));
-        final MethodeFileService methodeFileService = new RestMethodeFileService(methodeApiClient);
-        return methodeFileService;
+        return new RestMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
 	}
 
 	private ResilientClient configureContentReaderClient(Environment environment, EndpointConfiguration semanticReaderEndpointConfiguration) {
@@ -102,21 +94,5 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
 				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance());
 	}
-
-
-	private static ExecutorService buildExecutorService(Environment environment, AssetTypeRequestConfiguration requestConfiguration) {
-
-        int numberOfParallelAssetTypeRequests = 4;
-        if(requestConfiguration!=null) {
-            numberOfParallelAssetTypeRequests = requestConfiguration.getNumberOfParallelAssetTypeRequests();
-        }
-        
-        return environment.lifecycle().executorService("MAPI-worker-%d")
-        		.minThreads(numberOfParallelAssetTypeRequests)
-        		.maxThreads(numberOfParallelAssetTypeRequests)
-        		.keepAliveTime(Duration.minutes(2))
-        		.build();
-
-    }
 
 }

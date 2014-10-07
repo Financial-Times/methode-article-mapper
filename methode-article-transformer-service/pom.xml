@@ -129,17 +129,6 @@
             <version>${methode.api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.ft.methode-api</groupId>
-            <artifactId>methode-api-client</artifactId>
-            <version>${methode.api.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-validator</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.ft.resilient-jersey-wrapper</groupId>
             <artifactId>resilient-jersey-wrapper</artifactId>
             <version>${resilientclient.version}</version>

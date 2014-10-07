@@ -2,7 +2,6 @@ package com.ft.methodearticletransformer.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
-import com.ft.methodeapi.client.MethodeApiEndpointConfiguration;
 
 import io.dropwizard.Configuration;
 
