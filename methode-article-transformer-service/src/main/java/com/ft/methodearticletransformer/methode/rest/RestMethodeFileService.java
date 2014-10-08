@@ -1,5 +1,8 @@
 package com.ft.methodearticletransformer.methode.rest;
 
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -10,7 +13,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.ft.api.jaxrs.client.exceptions.ApiNetworkingException;
 import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
@@ -30,13 +38,6 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 
 public class RestMethodeFileService implements MethodeFileService {
 
@@ -54,7 +55,7 @@ public class RestMethodeFileService implements MethodeFileService {
 		apiHost = methodeApiConfiguration.getEndpointConfiguration().getHost();
 		apiPort = methodeApiConfiguration.getEndpointConfiguration().getPort();
 
-		buildExecutorService(environment, methodeApiConfiguration.getAssetTypeRequestConfiguration());
+		this.executorService = buildExecutorService(environment, methodeApiConfiguration.getAssetTypeRequestConfiguration());
 
 		AssetTypeRequestConfiguration assetTypeRequestConfiguration = methodeApiConfiguration.getAssetTypeRequestConfiguration();
 		if (assetTypeRequestConfiguration != null) {
