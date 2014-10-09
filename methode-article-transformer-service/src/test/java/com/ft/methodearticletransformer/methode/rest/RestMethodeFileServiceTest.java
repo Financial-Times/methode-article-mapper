@@ -8,6 +8,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Environment;
@@ -93,7 +95,8 @@ public class RestMethodeFileServiceTest {
 				Arrays.asList(String.format("%s:%d:%d", TEST_HOST, port, port + 1)),
 				Collections.<String>emptyList());
 
-		AssetTypeRequestConfiguration assetTypeRequestConfiguration = new AssetTypeRequestConfiguration(4, 4);
+		//TODO make it obvious not to change these values
+		AssetTypeRequestConfiguration assetTypeRequestConfiguration = new AssetTypeRequestConfiguration(2, 4);
 
 		MethodeApiEndpointConfiguration methodeApiEndpointConfiguration =
 				new MethodeApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration);
@@ -107,19 +110,41 @@ public class RestMethodeFileServiceTest {
 	
 	@Test
 	public void shouldSuccessfullyRetrieveEomFile() throws Exception {
-        stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse()));
+	    final byte[] fileBytes = "blah, blah, blah".getBytes();
+        stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponseWithBytes(fileBytes)));
         EomFile eomFile = restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
         assertNotNull(eomFile);
-        //TODO - check what got returned?
+        assertArrayEquals(fileBytes, eomFile.getValue());
 	}
 	
 	@Test
-    public void shouldSuccessfullyRetrieveAssetTypes() throws Exception {
+    public void shouldSuccessfullyGetAssetTypesInSingleRequest() throws Exception {
         Set<String> assetIds = Sets.newHashSet("test1", "test2");
-        stubFor(post(toFindAssetTypesUrl()).willReturn(anAssetTypeResponseForAssetIds(assetIds)));
+        Map<String, EomAssetType> expectedAssetTypes = stubResponsesAndGetExpectedAssetTypes(assetIds);
         Map<String, EomAssetType> assetTypes = restMethodeFileService.assetTypes(assetIds, SAMPLE_TRANSACTION_ID);
         assertNotNull(assetTypes);
+        assertEquals(expectedAssetTypes, assetTypes);
     }
+    
+    @Test
+    public void shouldSuccessfullyGetAssetTypesSplitBetweenFewerRequestsThanNumberOfThreads() throws Exception {
+        Set<String> assetIds = Sets.newHashSet("test1", "test2", "test3", "test4", "test5",
+                "test6", "test7", "test8", "test9");
+        Map<String, EomAssetType> expectedAssetTypes = stubResponsesAndGetExpectedAssetTypes(assetIds);
+        Map<String, EomAssetType> assetTypes = restMethodeFileService.assetTypes(assetIds, SAMPLE_TRANSACTION_ID);
+        assertNotNull(assetTypes);
+        assertEquals(expectedAssetTypes, assetTypes);
+    }
+
+    @Test
+    public void shouldSuccessfullyGetAssetTypesSplitBetweenMoreRequestsThanNumberOfThreads() throws Exception {
+        Set<String> assetIds = Sets.newHashSet("test1", "test2", "test3", "test4", "test5");
+        Map<String, EomAssetType> expectedAssetTypes = stubResponsesAndGetExpectedAssetTypes(assetIds);
+        Map<String, EomAssetType> assetTypes = restMethodeFileService.assetTypes(assetIds, SAMPLE_TRANSACTION_ID);
+        assertNotNull(assetTypes);
+        assertEquals(expectedAssetTypes, assetTypes);
+    }
+    //TODO add exception tests for asset types
 
 	@Test
 	public void shouldThrowMethodeFileNotFoundExceptionWhen404FromMethodeApi() {
@@ -152,36 +177,36 @@ public class RestMethodeFileServiceTest {
 		return aResponse().withStatus(code).withHeader("Content-type", "application/json");
 	}
 	
-	private ResponseDefinitionBuilder anEomFileResponse() throws Exception {
-	    return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(eomFileBody());
+	private ResponseDefinitionBuilder anEomFileResponseWithBytes(byte[] fileBytes) throws Exception {
+	    return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(eomFileBody(fileBytes));
 	}
 	
-	private String eomFileBody() throws Exception {
-	    final byte[] fileBytes = "blah, blah, blah".getBytes();
+	private String eomFileBody(byte[] fileBytes) throws Exception {
 	    EomFile eomFile = new EomFile("asdf", "someType", fileBytes, "some attributes", "WebRevise", SYSTEM_ATTRIBUTES);
 	    return objectMapper.writeValueAsString(eomFile);
 	}
 	
-	private ResponseDefinitionBuilder anAssetTypeResponseForAssetIds(Set assetIds) throws Exception {
-        return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(assetTypeBody(assetIds));
-    }
 	
-	private String assetTypeBody(Set assetIds) throws Exception {
-	    Map<String, EomAssetType> expectedOutput = expectedOutputForGetAssetTypes(assetIds, 4);
-	    return objectMapper.writeValueAsString(expectedOutput);
-	}
 	
-    private Map<String, EomAssetType> expectedOutputForGetAssetTypes(Set<String> assetIds, int numberOfPartitions) {
-        List<List<String>> partitionedAssetIdentifiers = Lists.partition(Lists.newArrayList(assetIds), numberOfPartitions);
+	
+	
+	
+    private Map<String, EomAssetType> stubResponsesAndGetExpectedAssetTypes(Set<String> assetIds) throws Exception {
+        List<List<String>> partitionedAssetIdentifiers = Lists.partition(Lists.newArrayList(assetIds), 4);
         
         Map<String, EomAssetType> expectedOutput = Maps.newHashMap();
         
         for (List<String> slice: partitionedAssetIdentifiers) {
             Map<String, EomAssetType> expectedOutputForSlice = getExpectedAssetTypesForSlice(slice);
             expectedOutput.putAll(expectedOutputForSlice);
+            stubFor(post(toFindAssetTypesUrl()).willReturn(anAssetTypeResponseForExpectedOutput(expectedOutput)));
         }
         
         return expectedOutput;
+    }
+    
+    private ResponseDefinitionBuilder anAssetTypeResponseForExpectedOutput(Map<String, EomAssetType> expectedOutput) throws Exception {
+        return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(objectMapper.writeValueAsString(expectedOutput));
     }
 
     private Map<String, EomAssetType> getExpectedAssetTypesForSlice(List<String> slice) {
