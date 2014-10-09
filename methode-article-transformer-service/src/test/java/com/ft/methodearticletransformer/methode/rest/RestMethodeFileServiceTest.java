@@ -59,14 +59,6 @@ public class RestMethodeFileServiceTest {
 	private static final String ROOT = "/";
 	private static final UUID SAMPLE_UUID = UUID.randomUUID();
 	private static final String SAMPLE_TRANSACTION_ID = "tid_test_allieshaveleftus";
-	
-	private final String SYSTEM_ATTRIBUTES = "<props><productInfo><name>FTcom</name>\n" +
-            "<issueDate>20131219</issueDate>\n" +
-            "</productInfo>\n" +
-            "<workFolder>/FT/Companies</workFolder>\n" +
-            "<templateName>/SysConfig/Templates/FT/Base-Story.xml</templateName>\n" +
-            "<summary>t text text text text text text text text text text text text text text text text\n" +
-            " text text text text te...</summary><wordCount>417</wordCount></props>";
 
 	@ClassRule
 	public static WireMockClassRule methodeApiWireMockRule = new WireMockClassRule(0); //will allocate a free port
@@ -120,7 +112,7 @@ public class RestMethodeFileServiceTest {
 
 	@Test
 	public void shouldReturnValidEomFileWhenFileFoundInMethode() {
-		stubFor(get(toFindEomFileUrl()).willReturn(aResponseWithCode(200)));
+		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(200)));
 
 		EomFile eomFile = restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
 		assertThat(eomFile, is(notNullValue()));
@@ -134,7 +126,7 @@ public class RestMethodeFileServiceTest {
 
 	@Test
 	public void shouldThrowMethodeFileNotFoundExceptionWhen404FromMethodeApi() {
-	       stubFor(get(toFindEomFileUrl()).willReturn(aResponseWithCode(404)));
+	       stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(404)));
 
 	        expectedException.expect(MethodeFileNotFoundException.class);
 	        expectedException.expect(hasProperty("uuid", equalTo(SAMPLE_UUID)));
@@ -144,7 +136,7 @@ public class RestMethodeFileServiceTest {
 
 	@Test
 	public void shouldThrowMethodeApiUnavailableExceptionWhen503FromMethodeApi() {
-		stubFor(get(toFindEomFileUrl()).willReturn(aResponseWithCode(503)));
+		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(503)));
 
 		expectedException.expect(MethodeApiUnavailableException.class);
 
@@ -153,7 +145,7 @@ public class RestMethodeFileServiceTest {
 
 	@Test
 	public void shouldThrowUnexpectedMethodeApiExceptionWhen500FromMethodeApi() {
-		stubFor(get(toFindEomFileUrl()).willReturn(aResponseWithCode(500)));
+		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(500)));
 
 		expectedException.expect(UnexpectedMethodeApiException.class);
 
@@ -168,25 +160,15 @@ public class RestMethodeFileServiceTest {
         return urlMatching("/asset-type");
     }
 
-	private ResponseDefinitionBuilder aResponseWithCode(int code) {
+	private ResponseDefinitionBuilder anEomFileResponse(int code) {
 		return aResponse().withStatus(code).withHeader("Content-type", "application/json").withBody(JSON_EOM_FILE);
 	}
 	
-	private ResponseDefinitionBuilder anEomFileResponse() throws Exception {
-	    return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(eomFileBody());
-	}
-	
-	private String eomFileBody() throws Exception {
-	    final byte[] fileBytes = "blah, blah, blah".getBytes();
-	    EomFile eomFile = new EomFile("asdf", "someType", fileBytes, "some attributes", "WebRevise", SYSTEM_ATTRIBUTES);
-	    return objectMapper.writeValueAsString(eomFile);
-	}
-	
-	private ResponseDefinitionBuilder anAssetTypeResponseForAssetIds(Set assetIds) throws Exception {
+	private ResponseDefinitionBuilder anAssetTypeResponseForAssetIds(Set<String> assetIds) throws Exception {
         return aResponse().withStatus(200).withHeader("Content-type", "application/json").withBody(assetTypeBody(assetIds));
     }
 	
-	private String assetTypeBody(Set assetIds) throws Exception {
+	private String assetTypeBody(Set<String> assetIds) throws Exception {
 	    Map<String, EomAssetType> expectedOutput = expectedOutputForGetAssetTypes(assetIds, 4);
 	    return objectMapper.writeValueAsString(expectedOutput);
 	}
