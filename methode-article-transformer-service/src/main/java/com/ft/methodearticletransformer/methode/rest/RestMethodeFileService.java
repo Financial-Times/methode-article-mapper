@@ -157,6 +157,13 @@ public class RestMethodeFileService implements MethodeFileService {
 					}
 					throw (ClientHandlerException) cause;
 				}
+			} catch (RemoteApiException rae) {
+			    switch (rae.getStatus()) {
+                    case 503:
+                        throw new MethodeApiUnavailableException(rae);
+                    default:
+                        throw new UnexpectedMethodeApiException(rae);
+			    }
 			}
 		}
 
