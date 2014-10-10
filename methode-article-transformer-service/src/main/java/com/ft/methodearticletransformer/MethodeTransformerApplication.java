@@ -72,7 +72,7 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
         		methodeApiEndpointConfiguration.getEndpointConfiguration()));
         environment.healthChecks().register("MethodeAPI version", new RemoteDependencyHealthCheck("methode api version", 
         		clientForMethodeApiClient, 
-        		methodeApiEndpointConfiguration.getEndpointConfiguration(), buildInfoResource, "minimum.methode.api.version"));
+        		methodeApiEndpointConfiguration.getEndpointConfiguration(), buildInfoResource, "build.minimum.methode.api.version"));
 
     }
 
