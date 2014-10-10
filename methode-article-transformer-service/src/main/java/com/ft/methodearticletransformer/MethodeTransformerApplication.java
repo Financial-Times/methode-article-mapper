@@ -1,15 +1,6 @@
 package com.ft.methodearticletransformer;
 
-import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
-import io.dropwizard.Application;
-import io.dropwizard.assets.AssetsBundle;
-import io.dropwizard.servlets.SlowRequestFilter;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
-
 import java.util.EnumSet;
-
 import javax.servlet.DispatcherType;
 
 import com.ft.api.util.buildinfo.BuildInfoResource;
@@ -17,6 +8,7 @@ import com.ft.api.util.transactionid.TransactionIdFilter;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
+import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeTransformerConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
@@ -29,6 +21,12 @@ import com.ft.methodearticletransformer.transformation.EomFileProcessorForConten
 import com.ft.mustachemods.SwitchableMustacheViewBundle;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
+import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.servlets.SlowRequestFilter;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
 
 public class MethodeTransformerApplication extends Application<MethodeTransformerConfiguration> {
 
@@ -47,14 +45,15 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
     public void run(final MethodeTransformerConfiguration configuration, final Environment environment) throws Exception {
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
     		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*");
-    	
+
     	BuildInfoResource buildInfoResource = new BuildInfoResource();   	
     	environment.jersey().register(buildInfoResource);
     	
     	ResilientClient semanticReaderClient = configureContentReaderClient(environment, configuration.getSemanticContentStoreReaderConfiguration());
     	MethodeApiEndpointConfiguration methodeApiEndpointConfiguration = configuration.getMethodeApiConfiguration();
     	Client clientForMethodeApiClient = getClientForMethodeApiClient(environment, methodeApiEndpointConfiguration);
-    	
+    	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
+
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeTransformerResource(methodeFileService, 
         		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient)));
@@ -68,8 +67,8 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
         
         
         
-        environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping", 
-        		clientForMethodeApiClient, 
+        environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
+                clientForMethodeApiClientOnAdminPort,
         		methodeApiEndpointConfiguration.getEndpointConfiguration()));
         environment.healthChecks().register("MethodeAPI version", new RemoteDependencyHealthCheck("methode api version", 
         		clientForMethodeApiClient, 
@@ -87,6 +86,10 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
 	
 	private Client getClientForMethodeApiClient(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
 		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).build();
+	}
+
+	private Client getClientForMethodeApiClientOnAdminPort(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
+		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).usingAdminPorts().build();
 	}
 
 	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient) {
