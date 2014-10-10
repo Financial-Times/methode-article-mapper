@@ -19,7 +19,7 @@
 	<packaging>pom</packaging>
 
     <properties>
-        <minimum.methode.api.version></minimum.methode.api.version>
+        <methode.api.version>0.1.408</methode.api.version>
     </properties>
 
 
