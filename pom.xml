@@ -18,10 +18,6 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-    <properties>
-        <methode.api.version>0.1.408</methode.api.version>
-    </properties>
-
 
 	<name>${project.artifactId}</name>
 	<url>http://www.ft.com</url>
