@@ -18,6 +18,11 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
+    <properties>
+        <minimum.methode.api.version></minimum.methode.api.version>
+    </properties>
+
+
 	<name>${project.artifactId}</name>
 	<url>http://www.ft.com</url>
 	<inceptionYear>2014</inceptionYear>
