@@ -58,6 +58,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.net.HostAndPort;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandler;
 import com.sun.jersey.api.client.ClientHandlerException;
@@ -82,7 +83,7 @@ public class RestMethodeFileServiceTest {
 	public static WireMockClassRule methodeApiWireMockRule = new WireMockClassRule(0); //will allocate a free port
 
 	@Rule
-	public WireMockClassRule instanceRule = methodeApiWireMockRule;
+	public WireMockClassRule methodeApiInstanceRule = methodeApiWireMockRule;
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -106,7 +107,7 @@ public class RestMethodeFileServiceTest {
 		fastTimeOuts.setConnectionTimeout(Duration.milliseconds(100));
 		fastTimeOuts.setTimeout(Duration.milliseconds(100));
 
-		int port = instanceRule.port();
+		int port = methodeApiInstanceRule.port();
 
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(
 				Optional.of("methode-file-service-test"),
@@ -123,7 +124,8 @@ public class RestMethodeFileServiceTest {
 
 		environment = new Environment("test-env", null, null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
 
-		Client client = ResilientClientBuilder.in(environment).using(endpointConfiguration).build();
+		HostAndPort endpoint = HostAndPort.fromParts("localhost", port);
+		Client client = ResilientClientBuilder.inTesting(endpoint).build();
 
 		restMethodeFileService = new RestMethodeFileService(environment, client, methodeApiEndpointConfiguration);
 		
@@ -180,11 +182,10 @@ public class RestMethodeFileServiceTest {
 
 	@Test
 	public void shouldThrowMethodeFileNotFoundExceptionWhen404FromMethodeApiRetrievingEomFile() {
-	       stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(404)));
-	        expectedException.expect(MethodeFileNotFoundException.class);
-	        expectedException.expect(hasProperty("uuid", equalTo(SAMPLE_UUID)));
-
-	        restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
+	    stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(404)));
+	    expectedException.expect(MethodeFileNotFoundException.class);
+	    expectedException.expect(hasProperty("uuid", equalTo(SAMPLE_UUID)));
+	    restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
 	}
 
 	@Test
@@ -193,6 +194,13 @@ public class RestMethodeFileServiceTest {
 		expectedException.expect(MethodeApiUnavailableException.class);
 		restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
 	}
+
+    @Test
+    public void shouldThrowUnexpectedMethodeApiExceptionWhen500FromMethodeApiRetrievingEomFile() {
+        stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(500)));
+        expectedException.expect(UnexpectedMethodeApiException.class);
+        restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
+    }
 	
 	@Test
     public void shouldThrowDistinctExceptionForSocketTimeout() {
@@ -253,17 +261,6 @@ public class RestMethodeFileServiceTest {
         expectedException.expect(ApiNetworkingException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
-    
-    //TODO add test for status codes other than 200 being returned, e.g. 503, 500
-
-	@Test
-	public void shouldThrowUnexpectedMethodeApiExceptionWhen500FromMethodeApi() {
-		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(500)));
-
-		expectedException.expect(UnexpectedMethodeApiException.class);
-
-		restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
-	}
 
 	private UrlMatchingStrategy toFindEomFileUrl() {
 		return urlMatching("/eom-file/.*");
