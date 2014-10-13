@@ -18,21 +18,6 @@ public class MethodeTransformerConfiguration extends Configuration {
 		this.methodeApiConfiguration = methodeApiConfiguration;
 	}
 
-	@NotNull
-    @JsonProperty
-    private long slowRequestTimeout;
-    @NotNull
-    @JsonProperty
-    private String slowRequestPattern;
-
-    public long getSlowRequestTimeout() {
-        return slowRequestTimeout;
-    }
-
-    public String getSlowRequestPattern() {
-        return slowRequestPattern;
-    }
-
 	public MethodeApiEndpointConfiguration getMethodeApiConfiguration() {
 		return methodeApiConfiguration;
 	}

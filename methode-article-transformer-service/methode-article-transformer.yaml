@@ -1,6 +1,3 @@
-slowRequestPattern: '*.html'
-slowRequestTimeout: 1000  #1 second
-
 server:
 
   applicationConnectors:

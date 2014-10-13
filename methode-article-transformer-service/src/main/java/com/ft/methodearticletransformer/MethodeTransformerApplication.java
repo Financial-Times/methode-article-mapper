@@ -36,8 +36,6 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
 
     @Override
     public void initialize(final Bootstrap<MethodeTransformerConfiguration> bootstrap) {
-        bootstrap.addBundle(new SwitchableMustacheViewBundle());
-        bootstrap.addBundle(new AssetsBundle("/views"));
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
     }
 
@@ -57,15 +55,6 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeTransformerResource(methodeFileService, 
         		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient)));
-
-        environment.servlets().addFilter(
-                "Slow Servlet Filter",
-                new SlowRequestFilter(Duration.milliseconds(configuration.getSlowRequestTimeout()))).addMappingForUrlPatterns(
-                EnumSet.of(DispatcherType.REQUEST),
-                false,
-                configuration.getSlowRequestPattern());
-        
-        
         
         environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
                 clientForMethodeApiClientOnAdminPort,
