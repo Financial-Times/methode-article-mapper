@@ -41,7 +41,7 @@ public class MethodeTransformerResource {
 		
 		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
         if (uuid == null) {
-            throw ClientError.status(400).context(uuid).error("uuid is required").exception();
+            throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
         
         try {
@@ -58,9 +58,10 @@ public class MethodeTransformerResource {
         }
 		
     }
-	private enum ErrorMessage {
+	public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Unsupported article type - not a compound story");
+		UUID_REQUIRED("Unsupported article type - not a compound story"),
+		METHODE_CONTENT_TYPE_NOT_SUPPORTED("uuid is required");
 
 
 	    private final String text;
