@@ -81,22 +81,22 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
     
     @Override
 	protected String businessImpact() {
-		return "business impact";
+		return "Content being published by journalists created in Methode will not be available.";
 	}
 
 	@Override
 	protected String panicGuideUrl() {
-		return "http://mypanicguide.com";
+		return "https://sites.google.com/a/ft.com/dynamic-publishing-team/methode-article-transformer-panic-guide";
 	}
 
 	@Override
 	protected int severity() {
-		return 0;
+		return 1;
 	}
 
 	@Override
 	protected String technicalSummary() {
-		return "technical summary";
+		return "Cannot ping Methode API. Check the service is up and running.";
 	}
 
 }
