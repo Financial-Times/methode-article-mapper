@@ -70,6 +70,21 @@ public class MethodeArticleTransformerResourceTest {
 	}
 
 	@Test
+	public void shouldThrow400ExceptionWhenInvalidUuidPassed() {
+		try {
+			methodeArticleTransformerResource.getByUuid("tid_yvkt5qfeyw", httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(MethodeArticleTransformerResource.ErrorMessage.INVALID_UUID.toString()));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
 	public void shouldThrow404ExceptionWhenContentNotFoundInMethode() {
 		UUID randomUuid = UUID.randomUUID();
 		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new MethodeFileNotFoundException(randomUuid));
