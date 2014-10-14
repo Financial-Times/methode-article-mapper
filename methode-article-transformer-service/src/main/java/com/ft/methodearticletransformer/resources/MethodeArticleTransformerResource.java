@@ -21,31 +21,40 @@ import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
-public class MethodeTransformerResource {
+public class MethodeArticleTransformerResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
     private final MethodeFileService methodeFileService;
     private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
-    public MethodeTransformerResource(MethodeFileService methodeFileService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+    public MethodeArticleTransformerResource(MethodeFileService methodeFileService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
 		this.methodeFileService = methodeFileService;
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}
 
 	@GET
     @Timed
-    @Path("/{uuid}")
+    @Path("/{uuidString}")
     @Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-    public final Content getByUuid(@PathParam("uuid") String uuid, @Context HttpHeaders httpHeaders) {
+    public final Content getByUuid(@PathParam("uuidString") String uuidString, @Context HttpHeaders httpHeaders) {
 		
-		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
-        if (uuid == null) {
-            throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
+		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuidString, "Publish request");
+        if (uuidString == null) {
+            throw ClientError.status(400).context(uuidString).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
+
+		UUID uuid;
+		try {
+			uuid = UUID.fromString(uuidString);
+		} catch (IllegalArgumentException iae) {
+			throw ClientError.status(400)
+					.reason(ErrorMessage.INVALID_UUID)
+					.exception(iae);
+		}
         
         try {
-        	EomFile eomFile = methodeFileService.fileByUuid(UUID.fromString(uuid), transactionId);
+        	EomFile eomFile = methodeFileService.fileByUuid(uuid, transactionId);
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
         } catch (MethodeFileNotFoundException e) {
 			throw ClientError.status(404)
@@ -61,6 +70,7 @@ public class MethodeTransformerResource {
 	public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
 		UUID_REQUIRED("Unsupported article type - not a compound story"),
+		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("uuid is required");
 
 

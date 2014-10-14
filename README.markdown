@@ -8,7 +8,7 @@ This application uses the following APIs:
  * Methode API
 
 ## Running
-In order to run the project, please run com.ft.methodearticletransformer.MethodeTransformerApplication with the following program
+In order to run the project, please run com.ft.methodearticletransformer.MethodeArticleTransformerApplication with the following program
 parameters: server methode-article-transformer.yaml
 
 Please make sure you are running it in the correct working directory (methode-article-transformer-service).
