@@ -21,14 +21,14 @@ import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
-public class MethodeTransformerResource {
+public class MethodeArticleTransformerResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
     private final MethodeFileService methodeFileService;
     private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
-    public MethodeTransformerResource(MethodeFileService methodeFileService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+    public MethodeArticleTransformerResource(MethodeFileService methodeFileService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
 		this.methodeFileService = methodeFileService;
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}

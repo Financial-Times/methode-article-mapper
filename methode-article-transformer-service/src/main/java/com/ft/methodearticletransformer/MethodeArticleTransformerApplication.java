@@ -9,38 +9,34 @@ import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
-import com.ft.methodearticletransformer.configuration.MethodeTransformerConfiguration;
+import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.rest.RestMethodeFileService;
-import com.ft.methodearticletransformer.resources.MethodeTransformerResource;
+import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
-import com.ft.mustachemods.SwitchableMustacheViewBundle;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.Application;
-import io.dropwizard.assets.AssetsBundle;
-import io.dropwizard.servlets.SlowRequestFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
 
-public class MethodeTransformerApplication extends Application<MethodeTransformerConfiguration> {
+public class MethodeArticleTransformerApplication extends Application<MethodeArticleTransformerConfiguration> {
 
     public static void main(final String[] args) throws Exception {
-        new MethodeTransformerApplication().run(args);
+        new MethodeArticleTransformerApplication().run(args);
     }
 
     @Override
-    public void initialize(final Bootstrap<MethodeTransformerConfiguration> bootstrap) {
+    public void initialize(final Bootstrap<MethodeArticleTransformerConfiguration> bootstrap) {
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
     }
 
     @Override
-    public void run(final MethodeTransformerConfiguration configuration, final Environment environment) throws Exception {
+    public void run(final MethodeArticleTransformerConfiguration configuration, final Environment environment) throws Exception {
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
     		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*");
 
@@ -53,7 +49,7 @@ public class MethodeTransformerApplication extends Application<MethodeTransforme
     	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
 
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
-        environment.jersey().register(new MethodeTransformerResource(methodeFileService, 
+        environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
         		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient)));
         
         environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
