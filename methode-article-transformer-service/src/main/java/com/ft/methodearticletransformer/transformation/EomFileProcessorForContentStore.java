@@ -27,6 +27,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -66,9 +67,9 @@ public class EomFileProcessorForContentStore {
             final DocumentBuilder documentBuilder = getDocumentBuilder();
 
 			final XPath xpath = XPathFactory.newInstance().newXPath();
-			
-            Content content = transformEomFileToContent(uuid, eomFile, documentBuilder, xpath, transactionId);
-            return content;
+
+            return transformEomFileToContent(uuid, eomFile, documentBuilder, xpath, transactionId);
+
 			
 		} catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
@@ -79,13 +80,21 @@ public class EomFileProcessorForContentStore {
 											  String transactionId)
 			throws SAXException, IOException, XPathExpressionException, TransformerException {
 
+        final String attributes = eomFile.getAttributes();
+        final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(attributes)));
+
+        final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
+        if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
+            throw new MethodeMarkedDeletedException(uuid);
+        }
+
         final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
 
         final String headline = xpath
                 .evaluate("/doc/lead/lead-headline/headline/ln", eomFileDocument);
 
-        final String attributes = eomFile.getAttributes();
-        final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(attributes)));
+
+
 
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
