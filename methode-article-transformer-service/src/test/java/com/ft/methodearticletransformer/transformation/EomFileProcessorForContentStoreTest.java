@@ -78,8 +78,8 @@ public class EomFileProcessorForContentStoreTest {
                         "<story><text><body><p>random text for now</p></body>" +
                         "</text></story></doc>").getBytes(UTF8))
                 .build();
-        eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned");
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
     }
 
 
