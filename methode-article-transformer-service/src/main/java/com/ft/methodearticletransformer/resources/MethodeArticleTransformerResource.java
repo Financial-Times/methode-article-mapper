@@ -57,8 +57,13 @@ public class MethodeArticleTransformerResource {
         try {
         	EomFile eomFile = methodeFileService.fileByUuid(uuid, transactionId);
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
-        } catch (MethodeFileNotFoundException | MethodeMarkedDeletedException e) {
+        } catch (MethodeFileNotFoundException e) {
 			throw ClientError.status(404)
+			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
+			.exception(e);
+        } catch (MethodeMarkedDeletedException e) {
+			throw ClientError.status(404)
+            .context(uuid)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
         } catch (MethodeContentNotEligibleForPublishException e) {

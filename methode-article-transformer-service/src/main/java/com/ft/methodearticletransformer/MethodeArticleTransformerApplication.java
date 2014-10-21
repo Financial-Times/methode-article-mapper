@@ -3,6 +3,8 @@ package com.ft.methodearticletransformer;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
 
+import com.ft.api.jaxrs.errors.Errors;
+import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
 import com.ft.jerseyhttpwrapper.ResilientClient;
@@ -12,6 +14,7 @@ import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfigur
 import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
+import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.rest.RestMethodeFileService;
 import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
@@ -58,6 +61,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         environment.healthChecks().register("MethodeAPI version", new RemoteDependencyHealthCheck("methode api version", 
         		clientForMethodeApiClient, 
         		methodeApiEndpointConfiguration.getEndpointConfiguration(), buildInfoResource, "build.minimum.methode.api.version"));
+        environment.jersey().register(RuntimeExceptionMapper.class);
+        // configure JAX-RS Error Handling library to return uuid and "show feedback" feature flag to Methode.
+        Errors.customise(new MethodeArticleTransformerErrorEntityFactory());
 
     }
 
