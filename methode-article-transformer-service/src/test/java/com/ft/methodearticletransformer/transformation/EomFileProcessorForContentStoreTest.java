@@ -4,6 +4,7 @@ import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundSt
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -20,6 +21,7 @@ import java.util.UUID;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,6 +64,24 @@ public class EomFileProcessorForContentStoreTest {
         
         eomFileProcessorForContentStore = new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer);
     }
+
+    @Test(expected = MethodeMarkedDeletedException.class)
+    public void shouldThrowExceptionIfMarkedDeleted(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFile(uuid, "True"))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+
 
 	@Test
     public void shouldNotBarfOnExternalDtd() {
@@ -132,9 +152,14 @@ public class EomFileProcessorForContentStoreTest {
 
         eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
     }
-    
+
     private EomFile createStandardEomFile(UUID uuid) {
-    	return new EomFile.Builder()
+        return createStandardEomFile(uuid, "False");
+    }
+
+    private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
+
+        return new EomFile.Builder()
         	.withUuid(uuid.toString())
         	.withType(EOMCompoundStory.getTypeName())
         	.withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
@@ -148,7 +173,7 @@ public class EomFileProcessorForContentStoreTest {
 					"<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\"><ObjectMetadata>" +
 					"<OutputChannels>" +
 					"<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
-					"<DIFTcomMarkDeleted>False</DIFTcomMarkDeleted></DIFTcom>" +
+					"<DIFTcomMarkDeleted>" + markedDeleted +"</DIFTcomMarkDeleted></DIFTcom>" +
 					"</OutputChannels>" +
 			        "<EditorialNotes><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
 			.withSystemAttributes("<props><productInfo><name>FTcom</name>\n" +

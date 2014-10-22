@@ -18,6 +18,7 @@ import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -58,6 +59,11 @@ public class MethodeArticleTransformerResource {
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
         } catch (MethodeFileNotFoundException e) {
 			throw ClientError.status(404)
+			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
+			.exception(e);
+        } catch (MethodeMarkedDeletedException e) {
+			throw ClientError.status(404)
+            .context(uuid)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
         } catch (MethodeContentNotEligibleForPublishException e) {

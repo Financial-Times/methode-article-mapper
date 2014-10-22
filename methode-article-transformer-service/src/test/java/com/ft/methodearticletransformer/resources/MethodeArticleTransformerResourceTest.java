@@ -18,6 +18,7 @@ import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -100,6 +101,24 @@ public class MethodeArticleTransformerResourceTest {
 					throwable.getClass().getCanonicalName()));
 		}
 	}
+
+    @Test
+    public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
+        UUID randomUuid = UUID.randomUUID();
+        when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new MethodeMarkedDeletedException(randomUuid));
+        try {
+            methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+            fail("No exception was thrown, but expected one.");
+        } catch (WebApplicationClientException wace) {
+            assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+                    equalTo(MethodeArticleTransformerResource.ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+        } catch (Throwable throwable) {
+            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+                    throwable.getClass().getCanonicalName()));
+        }
+    }
+
 
 	@Test
 	public void shouldThrow422ExceptionWhenContentNotEligibleForPublishing() {
