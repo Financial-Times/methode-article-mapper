@@ -62,7 +62,6 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         		clientForMethodeApiClient, 
         		methodeApiEndpointConfiguration.getEndpointConfiguration(), buildInfoResource, "build.minimum.methode.api.version"));
         environment.jersey().register(RuntimeExceptionMapper.class);
-        // configure JAX-RS Error Handling library to return uuid and "show feedback" feature flag to Methode.
         Errors.customise(new MethodeArticleTransformerErrorEntityFactory());
 
     }
