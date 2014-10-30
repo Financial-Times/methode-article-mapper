@@ -121,7 +121,7 @@ public class MethodeArticleTransformerResourceTest {
 
 
 	@Test
-	public void shouldThrow422ExceptionWhenContentNotEligibleForPublishing() {
+	public void shouldThrow404ExceptionWhenContentNotEligibleForPublishing() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
 		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
@@ -133,7 +133,7 @@ public class MethodeArticleTransformerResourceTest {
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
 					equalTo(MethodeArticleTransformerResource.ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED.toString()));
-			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
 					throwable.getClass().getCanonicalName()));

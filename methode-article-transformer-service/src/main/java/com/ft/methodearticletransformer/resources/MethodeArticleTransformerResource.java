@@ -67,7 +67,7 @@ public class MethodeArticleTransformerResource {
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
         } catch (MethodeContentNotEligibleForPublishException e) {
-        	throw ClientError.status(422)
+        	throw ClientError.status(404)
 			.reason(ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED)
 			.exception(e);
         }
@@ -77,7 +77,7 @@ public class MethodeArticleTransformerResource {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
 		UUID_REQUIRED("Unsupported article type - not a compound story"),
 		INVALID_UUID("The UUID passed was invalid"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("uuid is required");
+		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article");
 
 
 	    private final String text;
