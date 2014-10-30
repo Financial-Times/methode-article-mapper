@@ -110,7 +110,6 @@ public class RestMethodeFileService implements MethodeFileService {
 			return clientResponse.getEntity(new GenericType<EomFile>(){});
 		}
 
-		LOGGER.error("received a {} status code when making a GET request to {}", responseStatusCode, fileByUuidUri);
 		ErrorEntity entity = null;
 		try {
 			entity = clientResponse.getEntity(ErrorEntity.class);
