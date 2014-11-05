@@ -33,7 +33,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)\\s*(</p>)|(<p/>)"),
                 stAXTransformingBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)[\\s(<br/>)]*(</p>)"),
-                new RegexReplacerBodyProcessor("(?:</p>)\\s*(?:<p>)", "</p><p>"),
+                new RegexReplacerBodyProcessor("(</p>)\\s*(<p>)", "</p><p>"),
                 new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient)
         );
     }
