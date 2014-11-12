@@ -32,7 +32,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         return asList(
                 new RegexRemoverBodyProcessor("(<p>)\\s*(</p>)|(<p/>)"),
                 stAXTransformingBodyProcessor(),
-                new RegexRemoverBodyProcessor("(<p>)[\\s(<br/>)]*(</p>)"),
+                new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
                 new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient)
