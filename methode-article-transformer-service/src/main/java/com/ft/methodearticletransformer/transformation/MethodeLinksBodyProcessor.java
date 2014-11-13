@@ -184,6 +184,11 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		int responseStatusCode = clientResponse.getStatus();
 		int responseStatusFamily = responseStatusCode / 100;
 
+        try {
+            clientResponse.getEntityInputStream().close(); // So that the connection does not stay open.
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 		return responseStatusFamily != 2;
 	}
 
