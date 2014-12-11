@@ -14,7 +14,11 @@ import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.TreeSet;
 
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
