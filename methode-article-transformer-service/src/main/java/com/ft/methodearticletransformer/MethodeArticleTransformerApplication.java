@@ -7,6 +7,7 @@ import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
+import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
@@ -53,7 +54,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
-        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient)));
+        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, configuration.getFinancialTimesBrand())));
         
         environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
                 clientForMethodeApiClientOnAdminPort,
@@ -82,10 +83,11 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).usingAdminPorts().build();
 	}
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient) {
+	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, Brand financialTimesBrand) {
 		return new EomFileProcessorForContentStore(
 				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance(),
-				new BylineProcessingFieldTransformerFactory().newInstance());
+				new BylineProcessingFieldTransformerFactory().newInstance(),
+                financialTimesBrand);
 	}
 
 }
