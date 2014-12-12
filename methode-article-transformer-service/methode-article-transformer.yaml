@@ -1,3 +1,5 @@
+financialTimesBrandId: http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54
+
 server:
 
   applicationConnectors:

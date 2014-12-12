@@ -9,9 +9,11 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +29,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.ft.content.model.Brand;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +53,13 @@ public class EomFileProcessorForContentStore {
 
 	private final FieldTransformer bodyTransformer;
 	private final FieldTransformer bylineTransformer;
+    private final Brand financialTimesBrand;
 
-    public EomFileProcessorForContentStore(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer) {
+    public EomFileProcessorForContentStore(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
+                                           Brand financialTimesBrand) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
+        this.financialTimesBrand = financialTimesBrand;
     }
 
 	public Content process(EomFile eomFile, String transactionId) {
@@ -111,6 +117,7 @@ public class EomFileProcessorForContentStore {
                 .withTitle(headline)
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
+                .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
                 .build();

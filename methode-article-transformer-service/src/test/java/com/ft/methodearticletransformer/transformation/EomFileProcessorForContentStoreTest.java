@@ -14,10 +14,13 @@ import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.TreeSet;
 
+import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
@@ -38,11 +41,13 @@ public class EomFileProcessorForContentStoreTest {
 	private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 	private static final String TRANSFORMED_BODY = "<p>some other random text</p>";
 	private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
+    private static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
 
     public static final Charset UTF8 = Charset.forName("UTF-8");
 
     private FieldTransformer bodyTransformer;
     private FieldTransformer bylineTransformer;
+    private Brand financialTimesBrand;
     
     private final UUID uuid = UUID.randomUUID();
     private EomFile standardEomFile;
@@ -51,18 +56,23 @@ public class EomFileProcessorForContentStoreTest {
     private EomFileProcessorForContentStore eomFileProcessorForContentStore;
 	private static final String TRANSACTION_ID = "tid_test";
 
-	@Before
+    public EomFileProcessorForContentStoreTest() {
+    }
+
+    @Before
     public void setUp() throws Exception {
         bodyTransformer = mock(FieldTransformer.class);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BODY);
         
         bylineTransformer = mock(FieldTransformer.class);
         when(bylineTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BYLINE);
-        
+
+        financialTimesBrand = new Brand (FINANCIAL_TIMES_BRAND);
+
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedContent();
-        
-        eomFileProcessorForContentStore = new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer);
+
+        eomFileProcessorForContentStore = new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer, financialTimesBrand);
     }
 
     @Test(expected = MethodeMarkedDeletedException.class)
@@ -106,7 +116,7 @@ public class EomFileProcessorForContentStoreTest {
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
                 .withXmlBody(TRANSFORMED_BODY).build();
-        
+
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
 
         verify(bodyTransformer).transform("<body><p>random text for now</p></body>", TRANSACTION_ID);
@@ -192,6 +202,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withTitle("And sacked chimney-sweep pumps boss full of mayonnaise.")
                 .withXmlBody("<p>some other random text</p>")
                 .withByline("")
+                .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
                 .withUuid(uuid).build();
