@@ -30,6 +30,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import com.ft.content.model.Brand;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,8 @@ public class EomFileProcessorForContentStore {
 
         final String attributes = eomFile.getAttributes();
         final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(attributes)));
+
+		verifyEmbargoDate(xpath, attributesDocument, uuid);
 
         final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
         if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
@@ -165,6 +168,17 @@ public class EomFileProcessorForContentStore {
 		} catch (ParseException e) {
 			log.warn("Error parsing date " + dateString, e);
 			return null;
+		}
+	}
+
+	private void verifyEmbargoDate(XPath xpath, Document attributesDocument, UUID uuid) throws XPathExpressionException {
+		final String embargoDateAsAString = xpath
+				.evaluate("/ObjectMetadata/EditorialNotes/EmbargoDate", attributesDocument);
+		if (!Strings.isNullOrEmpty(embargoDateAsAString)) {
+			Date embargoDate = toDate(embargoDateAsAString, DATE_TIME_FORMAT);
+			if (embargoDate.after(new Date())) {
+				throw new EmbargoDateInTheFutureException(uuid, embargoDate);
+			}
 		}
 	}
 

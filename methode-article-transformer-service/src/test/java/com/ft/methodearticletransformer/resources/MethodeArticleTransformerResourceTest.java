@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 import javax.ws.rs.core.HttpHeaders;
 
@@ -15,6 +16,7 @@ import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
@@ -119,7 +121,6 @@ public class MethodeArticleTransformerResourceTest {
         }
     }
 
-
 	@Test
 	public void shouldThrow404ExceptionWhenContentNotEligibleForPublishing() {
 		UUID randomUuid = UUID.randomUUID();
@@ -133,6 +134,27 @@ public class MethodeArticleTransformerResourceTest {
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
 					equalTo(MethodeArticleTransformerResource.ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED.toString()));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenEmbargoDateInTheFuture() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		Date embargoDate = new Date();
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new EmbargoDateInTheFutureException(randomUuid, embargoDate));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.EMBARGO_DATE_IN_THE_FUTURE.toString(), embargoDate)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",

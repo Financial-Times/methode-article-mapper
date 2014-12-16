@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import java.util.TreeSet;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import org.junit.Before;
@@ -79,6 +81,23 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfMarkedDeleted(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFile(uuid, "True"))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+
+    @Test(expected = EmbargoDateInTheFutureException.class)
+    public void shouldThrowExceptionIfEmbargoDateInTheFuture(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFile(uuid, "False", true))
 
                 .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                         "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
@@ -168,6 +187,15 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
+        return createStandardEomFile(uuid, markedDeleted, false);
+    }
+
+    private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture) {
+
+        String embargoDate = "";
+        if (embargoDateInTheFuture) {
+            embargoDate = dateInTheFutureAsStringInMethodeFormat();
+        }
 
         return new EomFile.Builder()
         	.withUuid(uuid.toString())
@@ -185,7 +213,7 @@ public class EomFileProcessorForContentStoreTest {
 					"<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
 					"<DIFTcomMarkDeleted>" + markedDeleted +"</DIFTcomMarkDeleted></DIFTcom>" +
 					"</OutputChannels>" +
-			        "<EditorialNotes><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
+			        "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
 			.withSystemAttributes("<props><productInfo><name>FTcom</name>\n" +
 					"<issueDate>20131219</issueDate>\n" +
 					"</productInfo>\n" +
@@ -195,6 +223,21 @@ public class EomFileProcessorForContentStoreTest {
 					" text text text text te...</summary><wordCount>417</wordCount></props>")
 			.withWorkflowStatus(EomFile.WEB_READY)
         	.build();
+    }
+
+    private String dateInTheFutureAsStringInMethodeFormat() {
+        return dateFromNowInMethodeFormat(10);
+    }
+
+    private String dateFromNowInMethodeFormat(int timeDifference) {
+        Date currentDate = new Date(System.currentTimeMillis());
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(currentDate);
+        cal.add(Calendar.DATE, timeDifference);
+
+        DateFormat methodeDateFormat = new SimpleDateFormat(DATE_TIME_FORMAT);
+        methodeDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return methodeDateFormat.format(cal.getTime());
     }
     
     private Content createStandardExpectedContent() {

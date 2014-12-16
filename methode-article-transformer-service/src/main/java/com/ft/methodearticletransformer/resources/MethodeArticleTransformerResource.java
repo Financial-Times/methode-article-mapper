@@ -15,6 +15,7 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
@@ -66,8 +67,14 @@ public class MethodeArticleTransformerResource {
             .context(uuid)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
-        } catch (MethodeContentNotEligibleForPublishException e) {
+        } catch (EmbargoDateInTheFutureException e) {
+					throw ClientError.status(404)
+					.context(uuid)
+					.error(String.format(ErrorMessage.EMBARGO_DATE_IN_THE_FUTURE.toString(), e.getEmbargoDate()))
+					.exception(e);
+		} catch (MethodeContentNotEligibleForPublishException e) {
         	throw ClientError.status(404)
+			.context(uuid)
 			.reason(ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED)
 			.exception(e);
         }
@@ -77,7 +84,8 @@ public class MethodeArticleTransformerResource {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
 		UUID_REQUIRED("You must pass a UUID"),
 		INVALID_UUID("The UUID passed was invalid"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article");
+		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
+		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future");
 
 
 	    private final String text;
