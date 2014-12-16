@@ -32,6 +32,7 @@ import javax.xml.xpath.XPathFactory;
 import com.ft.content.model.Brand;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -91,6 +92,7 @@ public class EomFileProcessorForContentStore {
         final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(attributes)));
 
 		verifyEmbargoDate(xpath, attributesDocument, uuid);
+		verifyChannel(uuid, eomFile, documentBuilder, xpath);
 
         final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
         if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
@@ -126,7 +128,19 @@ public class EomFileProcessorForContentStore {
                 .build();
 
 	}
-	
+
+	private void verifyChannel(UUID uuid, EomFile eomFile, DocumentBuilder documentBuilder, XPath xpath) throws SAXException, IOException, XPathExpressionException {
+		final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+		final String channel = xpath.evaluate("/props/productInfo/name", systemAttributesDocument);
+		if (notWebChannel(channel)) {
+			throw new NotWebChannelException(uuid);
+		}
+	}
+
+	private boolean notWebChannel(String channel) {
+		return !EomFile.WEB_CHANNEL.equals(channel);
+	}
+
 	private String retrieveField(XPath xpath, String expression, UUID uuid, String fieldName, Document eomFileDocument) throws TransformerException, XPathExpressionException {
 		final Node node = (Node) xpath.evaluate(expression, eomFileDocument, XPathConstants.NODE);
 		return getNodeAsString(node);

@@ -27,6 +27,7 @@ import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,7 +98,24 @@ public class EomFileProcessorForContentStoreTest {
     @Test(expected = EmbargoDateInTheFutureException.class)
     public void shouldThrowExceptionIfEmbargoDateInTheFuture(){
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createStandardEomFile(uuid, "False", true))
+                .withValuesFrom(createStandardEomFileWithEmbargoDateInTheFuture(uuid))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+
+    @Test(expected = NotWebChannelException.class)
+    public void shouldThrowExceptionIfNoFtComChannel(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWithNoFtChannel(uuid))
 
                 .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                         "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
@@ -183,14 +201,22 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False");
+        return createStandardEomFile(uuid, "False", false, "FTcom");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false);
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom");
     }
 
-    private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture) {
+    private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
+        return createStandardEomFile(uuid, "False", false, "NotFTcom");
+    }
+
+    private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
+        return createStandardEomFile(uuid, "False", true, "FTcom");
+    }
+
+    private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture, String channel) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -201,26 +227,26 @@ public class EomFileProcessorForContentStoreTest {
         	.withUuid(uuid.toString())
         	.withType(EOMCompoundStory.getTypeName())
         	.withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-			        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-			        "<doc><lead><lead-headline><headline><ln>" +
-			        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-			        "</ln></headline></lead-headline></lead>" +
-			        "<story><text><body><p>random text for now</p></body>" +
-					"</text></story></doc>").getBytes(UTF8))
+                    "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                    "<doc><lead><lead-headline><headline><ln>" +
+                    "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                    "</ln></headline></lead-headline></lead>" +
+                    "<story><text><body><p>random text for now</p></body>" +
+                    "</text></story></doc>").getBytes(UTF8))
         	.withAttributes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-					"<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\"><ObjectMetadata>" +
-					"<OutputChannels>" +
-					"<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
-					"<DIFTcomMarkDeleted>" + markedDeleted +"</DIFTcomMarkDeleted></DIFTcom>" +
-					"</OutputChannels>" +
-			        "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
-			.withSystemAttributes("<props><productInfo><name>FTcom</name>\n" +
-					"<issueDate>20131219</issueDate>\n" +
-					"</productInfo>\n" +
-					"<workFolder>/FT/Companies</workFolder>\n" +
-					"<templateName>/SysConfig/Templates/FT/Base-Story.xml</templateName>\n" +
-					"<summary>text text text text text text text text text text text text text text text\n" +
-					" text text text text te...</summary><wordCount>417</wordCount></props>")
+                    "<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\"><ObjectMetadata>" +
+                    "<OutputChannels>" +
+                    "<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
+                    "<DIFTcomMarkDeleted>" + markedDeleted + "</DIFTcomMarkDeleted></DIFTcom>" +
+                    "</OutputChannels>" +
+                    "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
+			.withSystemAttributes("<props><productInfo><name>" + channel + "</name>\n" +
+                    "<issueDate>20131219</issueDate>\n" +
+                    "</productInfo>\n" +
+                    "<workFolder>/FT/Companies</workFolder>\n" +
+                    "<templateName>/SysConfig/Templates/FT/Base-Story.xml</templateName>\n" +
+                    "<summary>text text text text text text text text text text text text text text text\n" +
+                    " text text text text te...</summary><wordCount>417</wordCount></props>")
 			.withWorkflowStatus(EomFile.WEB_READY)
         	.build();
     }

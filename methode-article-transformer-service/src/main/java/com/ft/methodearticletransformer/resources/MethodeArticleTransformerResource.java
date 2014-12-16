@@ -20,6 +20,7 @@ import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPubl
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -72,6 +73,10 @@ public class MethodeArticleTransformerResource {
 					.context(uuid)
 					.error(String.format(ErrorMessage.EMBARGO_DATE_IN_THE_FUTURE.toString(), e.getEmbargoDate()))
 					.exception(e);
+		} catch (NotWebChannelException e) {
+			throw ClientError.status(404)
+			.reason(ErrorMessage.NOT_WEB_CHANNEL)
+			.exception(e);
 		} catch (MethodeContentNotEligibleForPublishException e) {
         	throw ClientError.status(404)
 			.context(uuid)
@@ -85,7 +90,8 @@ public class MethodeArticleTransformerResource {
 		UUID_REQUIRED("You must pass a UUID"),
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
-		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future");
+		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future"),
+		NOT_WEB_CHANNEL("This is not a web channel story");
 
 
 	    private final String text;
