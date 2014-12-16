@@ -75,7 +75,7 @@ public class MethodeArticleTransformerResource {
     }
 	public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
-		UUID_REQUIRED("Unsupported article type - not a compound story"),
+		UUID_REQUIRED("You must pass a UUID"),
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article");
 
