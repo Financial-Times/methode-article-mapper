@@ -27,6 +27,7 @@ import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
@@ -165,6 +166,23 @@ public class EomFileProcessorForContentStoreTest {
         fail("Content should not be returned" + content.toString());
     }
 
+    @Test(expected = MethodeMissingFieldException.class)
+    public void shouldThrowExceptionIfNoLastPublicationDate(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWithNoLastPublicationDate(uuid))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+
 	@Test
     public void shouldNotBarfOnExternalDtd() {
         Content content = eomFileProcessorForContentStore.process(standardEomFile, TRANSACTION_ID);
@@ -236,31 +254,35 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY);
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY);
+        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY);
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY);
+        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY);
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit");
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString);
+    }
+
+    private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, "");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
-                                          String channel, String sourceCode, String workflowStatus) {
+                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {

@@ -32,6 +32,7 @@ import javax.xml.xpath.XPathFactory;
 import com.ft.content.model.Brand;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
@@ -111,11 +112,12 @@ public class EomFileProcessorForContentStore {
         final String headline = xpath
                 .evaluate("/doc/lead/lead-headline/headline/ln", eomFileDocument);
 
-
-
-
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
+
+		if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
+			throw new MethodeMissingFieldException(uuid, "publishedDate");
+		}
         
         final String body = retrieveField(xpath, "/doc/story/text/body", uuid, "body", eomFileDocument);
         

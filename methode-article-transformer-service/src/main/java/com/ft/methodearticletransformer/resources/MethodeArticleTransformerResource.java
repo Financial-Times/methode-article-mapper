@@ -20,6 +20,7 @@ import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPubl
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
@@ -89,7 +90,11 @@ public class MethodeArticleTransformerResource {
 			throw ClientError.status(404)
 			.reason(ErrorMessage.NOT_WEB_CHANNEL)
 			.exception(e);
-		} catch (MethodeContentNotEligibleForPublishException e) {
+		} catch (MethodeMissingFieldException e) {
+			throw ClientError.status(404)
+					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
+					.exception(e);
+		}  catch (MethodeContentNotEligibleForPublishException e) {
         	throw ClientError.status(404)
 			.context(uuid)
 			.reason(ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED)
@@ -105,7 +110,8 @@ public class MethodeArticleTransformerResource {
 		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future"),
 		NOT_WEB_CHANNEL("This is not a web channel story"),
 		SOURCE_NOT_ELIGIBLE_FOR_PUBLISH("Source [%s] not eligible for publishing"),
-		WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING("Workflow status [%s] not eligible for publishing");
+		WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING("Workflow status [%s] not eligible for publishing"),
+		METHODE_FIELD_MISSING("Required methode field [%s] is missing");
 
 	    private final String text;
 
