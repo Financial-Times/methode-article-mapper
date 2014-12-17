@@ -22,6 +22,7 @@ import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -79,7 +80,12 @@ public class MethodeArticleTransformerResource {
 					.context(uuid)
 					.error(String.format(ErrorMessage.SOURCE_NOT_ELIGIBLE_FOR_PUBLISH.toString(), e.getSource()))
 					.exception(e);
-		}  catch (NotWebChannelException e) {
+		} catch (WorkflowStatusNotEligibleForPublishException e) {
+			throw ClientError.status(404)
+					.context(uuid)
+					.error(String.format(ErrorMessage.WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING.toString(), e.getWorkflowStatus()))
+					.exception(e);
+		} catch (NotWebChannelException e) {
 			throw ClientError.status(404)
 			.reason(ErrorMessage.NOT_WEB_CHANNEL)
 			.exception(e);
@@ -98,8 +104,8 @@ public class MethodeArticleTransformerResource {
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
 		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future"),
 		NOT_WEB_CHANNEL("This is not a web channel story"),
-		SOURCE_NOT_ELIGIBLE_FOR_PUBLISH("Source [%s] not eligible for publishing");
-
+		SOURCE_NOT_ELIGIBLE_FOR_PUBLISH("Source [%s] not eligible for publishing"),
+		WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING("Workflow status [%s] not eligible for publishing");
 
 	    private final String text;
 

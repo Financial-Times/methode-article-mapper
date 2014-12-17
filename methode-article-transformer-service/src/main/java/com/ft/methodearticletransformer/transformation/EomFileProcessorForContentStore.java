@@ -34,6 +34,7 @@ import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -67,6 +68,10 @@ public class EomFileProcessorForContentStore {
 
 	public Content process(EomFile eomFile, String transactionId) {
 		UUID uuid = UUID.fromString(eomFile.getUuid());
+
+		if(!workflowStatusEligibleForPublishing(eomFile)) {
+			throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
+		}
 
         if(!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
             throw new MethodeContentNotEligibleForPublishException(uuid, "not an " + EOMCompoundStory.getTypeName());
@@ -129,6 +134,10 @@ public class EomFileProcessorForContentStore {
 				.withContentOrigin(METHODE, uuid.toString())
                 .build();
 
+	}
+
+	private boolean workflowStatusEligibleForPublishing(EomFile eomFile) {
+		return EomFile.WEB_REVISE.equals(eomFile.getWorkflowStatus()) || EomFile.WEB_READY.equals(eomFile.getWorkflowStatus());
 	}
 
 	private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {

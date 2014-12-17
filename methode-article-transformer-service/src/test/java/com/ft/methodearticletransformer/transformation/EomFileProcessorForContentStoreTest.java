@@ -29,6 +29,7 @@ import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPubl
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -147,6 +148,23 @@ public class EomFileProcessorForContentStoreTest {
         fail("Content should not be returned" + content.toString());
     }
 
+    @Test(expected = WorkflowStatusNotEligibleForPublishException.class)
+    public void shouldThrowExceptionIfWorkflowStatusNotEligibleForPublishing(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWorkflowStatusNotEligible(uuid))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+
 	@Test
     public void shouldNotBarfOnExternalDtd() {
         Content content = eomFileProcessorForContentStore.process(standardEomFile, TRANSACTION_ID);
@@ -218,27 +236,31 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT");
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY);
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi");
+        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT");
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY);
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT");
+        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT");
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY);
+    }
+
+    private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
-                                          String channel, String sourceCode) {
+                                          String channel, String sourceCode, String workflowStatus) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -269,7 +291,7 @@ public class EomFileProcessorForContentStoreTest {
                     "<templateName>/SysConfig/Templates/FT/Base-Story.xml</templateName>\n" +
                     "<summary>text text text text text text text text text text text text text text text\n" +
                     " text text text text te...</summary><wordCount>417</wordCount></props>")
-			.withWorkflowStatus(EomFile.WEB_READY)
+			.withWorkflowStatus(workflowStatus)
         	.build();
     }
 
