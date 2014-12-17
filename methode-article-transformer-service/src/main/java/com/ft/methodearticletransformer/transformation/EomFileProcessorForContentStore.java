@@ -33,6 +33,7 @@ import com.ft.content.model.Brand;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -93,6 +94,7 @@ public class EomFileProcessorForContentStore {
 
 		verifyEmbargoDate(xpath, attributesDocument, uuid);
 		verifyChannel(uuid, eomFile, documentBuilder, xpath);
+		verifySource(uuid, xpath, attributesDocument);
 
         final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
         if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
@@ -127,6 +129,13 @@ public class EomFileProcessorForContentStore {
 				.withContentOrigin(METHODE, uuid.toString())
                 .build();
 
+	}
+
+	private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
+		final String sourceCode = xpath.evaluate("/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode", attributesDocument);
+		if(!"FT".equals(sourceCode)) {
+			throw new SourceNotEligibleForPublishException(uuid, sourceCode);
+		}
 	}
 
 	private void verifyChannel(UUID uuid, EomFile eomFile, DocumentBuilder documentBuilder, XPath xpath) throws SAXException, IOException, XPathExpressionException {

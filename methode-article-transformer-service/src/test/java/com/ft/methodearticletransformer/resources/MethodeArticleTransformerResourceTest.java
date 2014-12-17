@@ -22,6 +22,7 @@ import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -176,6 +177,27 @@ public class MethodeArticleTransformerResourceTest {
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
 					equalTo(MethodeArticleTransformerResource.ErrorMessage.NOT_WEB_CHANNEL.toString()));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenSourceNotFt() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		final String sourceOtherThanFt = "Pepsi";
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new SourceNotEligibleForPublishException(randomUuid, sourceOtherThanFt));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.SOURCE_NOT_ELIGIBLE_FOR_PUBLISH.toString(), sourceOtherThanFt)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",

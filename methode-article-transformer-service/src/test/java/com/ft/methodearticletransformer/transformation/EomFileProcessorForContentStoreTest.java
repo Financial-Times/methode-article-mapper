@@ -28,6 +28,7 @@ import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -129,6 +130,22 @@ public class EomFileProcessorForContentStoreTest {
         fail("Content should not be returned" + content.toString());
     }
 
+    @Test(expected = SourceNotEligibleForPublishException.class)
+    public void shouldThrowExceptionIfNotFtSource(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileNonFtSource(uuid))
+
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
 
 	@Test
     public void shouldNotBarfOnExternalDtd() {
@@ -142,12 +159,12 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-						"<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-						"<doc><lead><lead-headline><headline><ln>" +
-						"And sacked chimney-sweep pumps boss full of mayonnaise." +
-						"</ln></headline></lead-headline></lead>" +
-						"<story><text><body><p>random text for now</p></body>" +
-						"</text></story></doc>").getBytes(UTF8))
+                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
+                        "<doc><lead><lead-headline><headline><ln>" +
+                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
+                        "</ln></headline></lead-headline></lead>" +
+                        "<story><text><body><p>random text for now</p></body>" +
+                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         
         final Content expectedContent = Content.builder()
@@ -201,22 +218,27 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom");
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT");
+    }
+
+    private EomFile createStandardEomFileNonFtSource(UUID uuid) {
+        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom");
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT");
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom");
+        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT");
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom");
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT");
     }
 
-    private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture, String channel) {
+    private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
+                                          String channel, String sourceCode) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -239,7 +261,7 @@ public class EomFileProcessorForContentStoreTest {
                     "<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
                     "<DIFTcomMarkDeleted>" + markedDeleted + "</DIFTcomMarkDeleted></DIFTcom>" +
                     "</OutputChannels>" +
-                    "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>FT</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
+                    "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>" + sourceCode + "</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
 			.withSystemAttributes("<props><productInfo><name>" + channel + "</name>\n" +
                     "<issueDate>20131219</issueDate>\n" +
                     "</productInfo>\n" +
