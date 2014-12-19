@@ -248,7 +248,7 @@ public class EomFileProcessorForContentStoreTest {
                 .build();
 
         expectedException.expect(MethodeContentNotEligibleForPublishException.class);
-        expectedException.expect(hasProperty("message", equalTo("not an EOM::CompoundStory")));
+        expectedException.expect(hasProperty("message", equalTo("[EOM::SomethingElse] not an EOM::CompoundStory.")));
 
         eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
     }

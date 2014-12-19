@@ -104,7 +104,7 @@ public class MethodeArticleTransformerResource {
     }
 	public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
-		UUID_REQUIRED("You must pass a UUID"),
+		UUID_REQUIRED("No UUID was passed"),
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
 		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future"),

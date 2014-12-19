@@ -137,7 +137,7 @@ public class MethodeArticleTransformerResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(MethodeArticleTransformerResource.ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED.toString()));
+					equalTo("[EOM::DistortedStory] not an EOM::CompoundStory."));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
