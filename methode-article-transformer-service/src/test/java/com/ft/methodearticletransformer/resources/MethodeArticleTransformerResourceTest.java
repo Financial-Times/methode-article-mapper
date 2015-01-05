@@ -17,13 +17,13 @@ import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import org.apache.http.HttpStatus;
@@ -131,7 +131,7 @@ public class MethodeArticleTransformerResourceTest {
 		EomFile eomFile = mock(EomFile.class);
 		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
-				thenThrow(new MethodeContentNotEligibleForPublishException(randomUuid, "oh no!"));
+				thenThrow(new UnsupportedTypeException(randomUuid, "EOM::DistortedStory"));
 		try {
 			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
 			fail("No exception was thrown, but expected one.");
@@ -158,7 +158,7 @@ public class MethodeArticleTransformerResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.EMBARGO_DATE_IN_THE_FUTURE.toString(), embargoDate)));
+					equalTo(String.format("Embargo date [%s] is in the future", embargoDate)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -199,7 +199,7 @@ public class MethodeArticleTransformerResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.SOURCE_NOT_ELIGIBLE_FOR_PUBLISH.toString(), sourceOtherThanFt)));
+					equalTo(String.format("Source [%s] not eligible for publishing", sourceOtherThanFt)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -220,7 +220,7 @@ public class MethodeArticleTransformerResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING.toString(),
+					equalTo(String.format("Workflow status [%s] not eligible for publishing",
 							workflowStatusNotEligibleForPublishing)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {

@@ -35,6 +35,7 @@ import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,6 @@ import org.xml.sax.SAXException;
 
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
-import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
 import com.google.common.base.Strings;
 
@@ -75,7 +75,7 @@ public class EomFileProcessorForContentStore {
 		}
 
         if(!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
-            throw new MethodeContentNotEligibleForPublishException(uuid, "not an " + EOMCompoundStory.getTypeName());
+            throw new UnsupportedTypeException(uuid, eomFile.getType());
         }
 		
 		try {

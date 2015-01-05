@@ -15,14 +15,12 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
-import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
@@ -71,21 +69,6 @@ public class MethodeArticleTransformerResource {
             .context(uuid)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
-        } catch (EmbargoDateInTheFutureException e) {
-					throw ClientError.status(404)
-					.context(uuid)
-					.error(String.format(ErrorMessage.EMBARGO_DATE_IN_THE_FUTURE.toString(), e.getEmbargoDate()))
-					.exception(e);
-		} catch (SourceNotEligibleForPublishException e) {
-			throw ClientError.status(404)
-					.context(uuid)
-					.error(String.format(ErrorMessage.SOURCE_NOT_ELIGIBLE_FOR_PUBLISH.toString(), e.getSource()))
-					.exception(e);
-		} catch (WorkflowStatusNotEligibleForPublishException e) {
-			throw ClientError.status(404)
-					.context(uuid)
-					.error(String.format(ErrorMessage.WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING.toString(), e.getWorkflowStatus()))
-					.exception(e);
 		} catch (NotWebChannelException e) {
 			throw ClientError.status(404)
 			.reason(ErrorMessage.NOT_WEB_CHANNEL)
@@ -94,10 +77,10 @@ public class MethodeArticleTransformerResource {
 			throw ClientError.status(404)
 					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
 					.exception(e);
-		}  catch (MethodeContentNotEligibleForPublishException e) {
+		} catch (MethodeContentNotEligibleForPublishException e) {
         	throw ClientError.status(404)
 			.context(uuid)
-			.reason(ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED)
+			.error(e.getMessage())
 			.exception(e);
         }
 		
@@ -107,10 +90,7 @@ public class MethodeArticleTransformerResource {
 		UUID_REQUIRED("No UUID was passed"),
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
-		EMBARGO_DATE_IN_THE_FUTURE("Embargo date [%s] is in the future"),
 		NOT_WEB_CHANNEL("This is not a web channel story"),
-		SOURCE_NOT_ELIGIBLE_FOR_PUBLISH("Source [%s] not eligible for publishing"),
-		WORKFLOW_STATUS_NOT_ELIGIBLE_FOR_PUBLISHING("Workflow status [%s] not eligible for publishing"),
 		METHODE_FIELD_MISSING("Required methode field [%s] is missing");
 
 	    private final String text;
