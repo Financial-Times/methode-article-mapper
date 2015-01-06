@@ -19,6 +19,9 @@ import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPubl
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -66,19 +69,29 @@ public class MethodeArticleTransformerResource {
             .context(uuid)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
-        } catch (MethodeContentNotEligibleForPublishException e) {
+		} catch (NotWebChannelException e) {
+			throw ClientError.status(404)
+			.reason(ErrorMessage.NOT_WEB_CHANNEL)
+			.exception(e);
+		} catch (MethodeMissingFieldException e) {
+			throw ClientError.status(404)
+					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
+					.exception(e);
+		} catch (MethodeContentNotEligibleForPublishException e) {
         	throw ClientError.status(404)
-			.reason(ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED)
+			.context(uuid)
+			.error(e.getMessage())
 			.exception(e);
         }
 		
     }
 	public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
-		UUID_REQUIRED("Unsupported article type - not a compound story"),
+		UUID_REQUIRED("No UUID was passed"),
 		INVALID_UUID("The UUID passed was invalid"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article");
-
+		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
+		NOT_WEB_CHANNEL("This is not a web channel story"),
+		METHODE_FIELD_MISSING("Required methode field [%s] is missing");
 
 	    private final String text;
 

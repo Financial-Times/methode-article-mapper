@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 import javax.ws.rs.core.HttpHeaders;
 
@@ -15,10 +16,15 @@ import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
-import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -119,20 +125,125 @@ public class MethodeArticleTransformerResourceTest {
         }
     }
 
-
 	@Test
 	public void shouldThrow404ExceptionWhenContentNotEligibleForPublishing() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
 		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
-				thenThrow(new MethodeContentNotEligibleForPublishException(randomUuid, "oh no!"));
+				thenThrow(new UnsupportedTypeException(randomUuid, "EOM::DistortedStory"));
 		try {
 			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(MethodeArticleTransformerResource.ErrorMessage.METHODE_CONTENT_TYPE_NOT_SUPPORTED.toString()));
+					equalTo("[EOM::DistortedStory] not an EOM::CompoundStory."));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenEmbargoDateInTheFuture() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		Date embargoDate = new Date();
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new EmbargoDateInTheFutureException(randomUuid, embargoDate));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format("Embargo date [%s] is in the future", embargoDate)));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenNotWebChannel() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new NotWebChannelException(randomUuid));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(MethodeArticleTransformerResource.ErrorMessage.NOT_WEB_CHANNEL.toString()));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenSourceNotFt() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		final String sourceOtherThanFt = "Pepsi";
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new SourceNotEligibleForPublishException(randomUuid, sourceOtherThanFt));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format("Source [%s] not eligible for publishing", sourceOtherThanFt)));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		final String workflowStatusNotEligibleForPublishing = "Story/Edit";
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new WorkflowStatusNotEligibleForPublishException(randomUuid, workflowStatusNotEligibleForPublishing));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format("Workflow status [%s] not eligible for publishing",
+							workflowStatusNotEligibleForPublishing)));
+			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+		} catch (Throwable throwable) {
+			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
+					throwable.getClass().getCanonicalName()));
+		}
+	}
+
+	@Test
+	public void shouldThrow404ExceptionWhenMethodeFieldMissing() {
+		UUID randomUuid = UUID.randomUUID();
+		EomFile eomFile = mock(EomFile.class);
+		when(methodeFileService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		final String missingField = "publishedDate";
+		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+				thenThrow(new MethodeMissingFieldException(randomUuid, missingField));
+		try {
+			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
+			fail("No exception was thrown, but expected one.");
+		} catch (WebApplicationClientException wace) {
+			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+					equalTo(String.format(MethodeArticleTransformerResource.ErrorMessage.METHODE_FIELD_MISSING.toString(),
+							missingField)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
