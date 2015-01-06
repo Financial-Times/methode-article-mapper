@@ -1,7 +1,5 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -79,33 +77,25 @@ public class EomFileProcessorForContentStore {
         }
 		
 		try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-
-			final XPath xpath = XPathFactory.newInstance().newXPath();
-
-            return transformEomFileToContent(uuid, eomFile, documentBuilder, xpath, transactionId);
-
-			
+            return transformEomFileToContent(uuid, eomFile, transactionId);
 		} catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         } 	
 	}
 
-	private Content transformEomFileToContent(UUID uuid, EomFile eomFile, DocumentBuilder documentBuilder, XPath xpath,
-											  String transactionId)
-			throws SAXException, IOException, XPathExpressionException, TransformerException {
+	private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId)
+			throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
-        final String attributes = eomFile.getAttributes();
-        final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(attributes)));
+		final DocumentBuilder documentBuilder = getDocumentBuilder();
+		final XPath xpath = XPathFactory.newInstance().newXPath();
 
+        final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
 		verifyEmbargoDate(xpath, attributesDocument, uuid);
-		verifyChannel(uuid, eomFile, documentBuilder, xpath);
-		verifySource(uuid, xpath, attributesDocument);
 
-        final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
-        if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
-            throw new MethodeMarkedDeletedException(uuid);
-        }
+		final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+		verifyChannel(uuid, xpath, systemAttributesDocument);
+		verifySource(uuid, xpath, attributesDocument);
+		verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
         final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
 
@@ -115,15 +105,11 @@ public class EomFileProcessorForContentStore {
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
 
-		if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
-			throw new MethodeMissingFieldException(uuid, "publishedDate");
-		}
-        
-        final String body = retrieveField(xpath, "/doc/story/text/body", uuid, "body", eomFileDocument);
-        
-        final String transformedBody = transformField(body,	bodyTransformer, transactionId);
+		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
 
-        final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", uuid, "byline", eomFileDocument),
+        final String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument),
+				bodyTransformer, transactionId);
+        final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", eomFileDocument),
 				bylineTransformer, transactionId); //byline is optional
 
         return Content.builder()
@@ -135,7 +121,12 @@ public class EomFileProcessorForContentStore {
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
                 .build();
+	}
 
+	private void verifyLastPublicationDatePresent(UUID uuid, String lastPublicationDateAsString) {
+		if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
+			throw new MethodeMissingFieldException(uuid, "publishedDate");
+		}
 	}
 
 	private boolean workflowStatusEligibleForPublishing(EomFile eomFile) {
@@ -149,11 +140,17 @@ public class EomFileProcessorForContentStore {
 		}
 	}
 
-	private void verifyChannel(UUID uuid, EomFile eomFile, DocumentBuilder documentBuilder, XPath xpath) throws SAXException, IOException, XPathExpressionException {
-		final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+	private void verifyChannel(UUID uuid, XPath xpath, Document systemAttributesDocument) throws SAXException, IOException, XPathExpressionException {
 		final String channel = xpath.evaluate("/props/productInfo/name", systemAttributesDocument);
 		if (notWebChannel(channel)) {
 			throw new NotWebChannelException(uuid);
+		}
+	}
+
+	private void verifyNotMarkedDeleted(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
+		final String markedDeletedString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted", attributesDocument);
+		if (!Strings.isNullOrEmpty(markedDeletedString) && markedDeletedString.equals("True")) {
+			throw new MethodeMarkedDeletedException(uuid);
 		}
 	}
 
@@ -161,7 +158,7 @@ public class EomFileProcessorForContentStore {
 		return !EomFile.WEB_CHANNEL.equals(channel);
 	}
 
-	private String retrieveField(XPath xpath, String expression, UUID uuid, String fieldName, Document eomFileDocument) throws TransformerException, XPathExpressionException {
+	private String retrieveField(XPath xpath, String expression, Document eomFileDocument) throws TransformerException, XPathExpressionException {
 		final Node node = (Node) xpath.evaluate(expression, eomFileDocument, XPathConstants.NODE);
 		return getNodeAsString(node);
 	}
