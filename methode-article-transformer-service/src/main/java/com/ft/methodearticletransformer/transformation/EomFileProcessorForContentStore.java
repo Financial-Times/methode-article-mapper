@@ -91,11 +91,11 @@ public class EomFileProcessorForContentStore {
 
         final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
 		verifyEmbargoDate(xpath, attributesDocument, uuid);
+		verifySource(uuid, xpath, attributesDocument);
+		verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
 		final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
 		verifyChannel(uuid, xpath, systemAttributesDocument);
-		verifySource(uuid, xpath, attributesDocument);
-		verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
         final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
 
