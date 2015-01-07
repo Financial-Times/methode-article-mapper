@@ -30,6 +30,7 @@ import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -85,14 +86,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfMarkedDeleted(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFile(uuid, "True"))
-
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -102,14 +95,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfEmbargoDateInTheFuture(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithEmbargoDateInTheFuture(uuid))
-
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -119,14 +104,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfNoFtComChannel(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithNoFtChannel(uuid))
-
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -136,14 +113,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfNotFtSource(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileNonFtSource(uuid))
-
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -153,14 +122,15 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfWorkflowStatusNotEligibleForPublishing(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWorkflowStatusNotEligible(uuid))
+                .build();
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
 
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
+    @Test(expected = UnsupportedTypeException.class)
+    public void shouldThrowUnsupportedTypeExceptionIfPublishingDwc(){
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createDwcComponentFile(uuid))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -170,14 +140,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldThrowExceptionIfNoLastPublicationDate(){
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithNoLastPublicationDate(uuid))
-
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
@@ -194,13 +156,6 @@ public class EomFileProcessorForContentStoreTest {
     public void shouldTransformBodyOnPublish() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
                 .build();
         
         final Content expectedContent = Content.builder()
@@ -315,6 +270,40 @@ public class EomFileProcessorForContentStoreTest {
                     " text text text text te...</summary><wordCount>417</wordCount></props>")
 			.withWorkflowStatus(workflowStatus)
         	.build();
+    }
+
+    private EomFile createDwcComponentFile(UUID uuid) {
+
+        return new EomFile.Builder()
+                .withUuid(uuid.toString())
+                .withType("EOM::WebContainer")
+                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<!-- $Id: editorsChoice.dwc,v 1.1 2005/08/05 15:19:37 alant Exp $ -->\n" +
+                        "<!--\n" +
+                        "    Note: The dwc should simply define the dwcContent entity and reference it\n" +
+                        "-->\n" +
+                        "<!DOCTYPE dwc SYSTEM \"/FTcom Production/ZZZ_Templates/DWC/common/ref/dwc.dtd\" [\n" +
+                        "\n" +
+                        "    <!ENTITY dwcContent SYSTEM \"/FTcom Production/ZZZ_Templates/DWC/editorsChoice/ref/editorsChoice_dwc.xml\">\n" +
+                        "    <!ENTITY % entities SYSTEM \"/FTcom Production/ZZZ_Templates/DWC/common/ref/entities.xml\">\n" +
+                        "    %entities;\n" +
+                        "]>\n" +
+                        "<dwc>\n" +
+                        "&dwcContent;\n" +
+                        "</dwc>\n").getBytes(UTF8))
+                .withAttributes("<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTDWC2/classify.dtd\">\n" +
+                        "<ObjectMetadata><FTcom><DIFTcomWebType>editorsChoice_2</DIFTcomWebType>\n" +
+                        "<autoFill/>\n" +
+                        "<footwellDedupe/>\n" +
+                        "<displayCode/>\n" +
+                        "<searchAge>1</searchAge>\n" +
+                        "<agingRule>1</agingRule>\n" +
+                        "<markDeleted>False</markDeleted>\n" +
+                        "</FTcom>\n" +
+                        "</ObjectMetadata>")
+                .withSystemAttributes("<props><productInfo><name>FTcom</name></productInfo></props>")
+                .withWorkflowStatus("") // This is what DWCs get.
+                .build();
     }
 
     private String dateInTheFutureAsStringInMethodeFormat() {

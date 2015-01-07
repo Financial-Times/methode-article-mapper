@@ -68,13 +68,13 @@ public class EomFileProcessorForContentStore {
 	public Content process(EomFile eomFile, String transactionId) {
 		UUID uuid = UUID.fromString(eomFile.getUuid());
 
+		if(!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
+			throw new UnsupportedTypeException(uuid, eomFile.getType());
+		}
+
 		if(!workflowStatusEligibleForPublishing(eomFile)) {
 			throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
 		}
-
-        if(!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
-            throw new UnsupportedTypeException(uuid, eomFile.getType());
-        }
 		
 		try {
             return transformEomFileToContent(uuid, eomFile, transactionId);
