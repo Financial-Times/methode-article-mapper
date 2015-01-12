@@ -61,6 +61,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");
+        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
 
 //		registerStartElementEventHandler(new LinkTagXMLEventHandler(), "a");
 //		registerEndElementEventHandler(new LinkTagXMLEventHandler(), "a");
