@@ -26,5 +26,17 @@ public class StAXTransformingBodyProcessorTest {
         assertThat("processedBody", processedBody, is(equalTo("<a href=\"http://video.ft.com/3920663836001\"></a>")));
     }
 
+    @Test
+    public void shouldProcessYouTubeVideoCorrectly() {
+        XMLEventHandlerRegistry eventHandlerRegistry = new XMLEventHandlerRegistry() {
+            { super.registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");}
+        };
+        bodyProcessor = new StAXTransformingBodyProcessor(eventHandlerRegistry);
+        String videoText = "<p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/YoB8t0B4jx4\" width=\"600\"></iframe>\n" +
+                "</p>";
+        String processedBody = bodyProcessor.process(videoText, new BodyProcessingContext(){});
+        assertThat("processedBody", processedBody, is(equalTo("<a href=\"http://www.youtube.com/embed/YoB8t0B4jx4\"></a>")));
+    }
+
 
 }

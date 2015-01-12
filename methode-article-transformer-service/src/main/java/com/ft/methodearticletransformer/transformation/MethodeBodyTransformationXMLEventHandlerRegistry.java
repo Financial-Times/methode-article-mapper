@@ -62,6 +62,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         // For these elements if the attribute is missing use the fallback handler
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");
         registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
 
 //		registerStartElementEventHandler(new LinkTagXMLEventHandler(), "a");
 //		registerEndElementEventHandler(new LinkTagXMLEventHandler(), "a");

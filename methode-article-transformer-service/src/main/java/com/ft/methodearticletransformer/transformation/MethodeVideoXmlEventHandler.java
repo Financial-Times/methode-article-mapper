@@ -24,14 +24,20 @@ public class MethodeVideoXmlEventHandler extends BaseXMLEventHandler {
         this.videoIdAttributeName = videoIdAttributeName;
         sourceToUrlMap = new HashMap<String, String>();
         sourceToUrlMap.put("brightcove", "http://video.ft.com/%s");
-        sourceToUrlMap.put("youTube", "http://%s");
+        sourceToUrlMap.put("youTube", "%s");
     }
 
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+        String source;
+        if(("iframe").equals(event.getName().toString())) {
+            source = "youTube";
+        }
+        else{
+            source = "brightcove";
+        }
 
-        String source = "brightcove";
         String id = extractVideoId(event);
         String videoUrl = String.format(sourceToUrlMap.get(source), id);
         attributesToAdd = new HashMap<String, String>();
