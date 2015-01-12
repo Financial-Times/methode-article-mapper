@@ -3,6 +3,7 @@ package com.ft.methodearticletransformer.transformation;
 import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.caselessMatcher;
 import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.attributeNameMatcher;
 
+import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.RetainWithoutAttributesXMLEventHandler;
@@ -22,6 +23,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
+        registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new PullQuoteInnerElementsRegistry(this)))), "web-pull-quote");
         // strip html5 tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
@@ -37,11 +39,11 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
                 "plainHtml", "promo-box", "promo-headline", "promo-image", "promo-intro",
-                "promo-link", "promo-title", "promobox-body", "pull-quote", "pull-quote-header",
-                "pull-quote-text", "readthrough", "short-body", "skybox-body", "stories",
+                "promo-link", "promo-title", "promobox-body",
+                "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "videoPlayer", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text", "web-inline-picture",
-                "web-picture", "web-pull-quote", "web-pull-quote-source", "web-pull-quote-text",
+                "web-picture",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );
 
