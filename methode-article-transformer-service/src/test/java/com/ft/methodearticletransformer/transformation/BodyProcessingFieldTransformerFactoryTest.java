@@ -121,8 +121,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<text>It suits the extremists to encourage healthy eating.</text>" +
-                "<source>source1</source>" +
+                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);

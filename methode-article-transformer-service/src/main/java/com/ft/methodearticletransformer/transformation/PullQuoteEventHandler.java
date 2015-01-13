@@ -15,6 +15,8 @@ import java.util.Map;
 public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
 	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
+	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
+	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
 
 	private final PullQuoteXMLParser pullQuoteXMLParser;
 
@@ -50,13 +52,13 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	}
 
 	private void writePullQuoteElement(BodyWriter eventWriter, PullQuoteData dataBean) {
-		eventWriter.writeStartTag("text", noAttributes());
+		eventWriter.writeStartTag(PULL_QUOTE_TEXT, noAttributes());
 		eventWriter.write(dataBean.getQuoteText());
-		eventWriter.writeEndTag("text");
+		eventWriter.writeEndTag(PULL_QUOTE_TEXT);
 
-		eventWriter.writeStartTag("source", noAttributes());
+		eventWriter.writeStartTag(PULL_QUOTE_SOURCE, noAttributes());
 		eventWriter.write(dataBean.getQuoteSource());
-		eventWriter.writeEndTag("source");
+		eventWriter.writeEndTag(PULL_QUOTE_SOURCE);
 	}
 
 	private Map<String, String> noAttributes() {
