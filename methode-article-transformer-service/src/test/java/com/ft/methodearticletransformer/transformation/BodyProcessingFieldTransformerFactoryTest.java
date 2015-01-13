@@ -102,6 +102,56 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void pullQuotesShouldBeReplacedWithAppopriateTags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>\n" +
+                "\t\t\t\t\t<p>It suits the extremists to encourage healthy eating.</p>\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source>source1</web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<text>It suits the extremists to encourage healthy eating.</text>" +
+                "<source>source1</source>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+    @Test
+    public void emptyPullQuotesShouldNotBeWritten() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source></web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+    @Test
     public void removeExcessSpacesBetweenParagraphBlocks() {
         String expectedSentence = String.format("<body><p>This</p>\n<p>is</p>\n<p>a test</p></body>");
         checkTransformation("<body><p>This</p>\n\n\n\n<p>is</p>\n<p>a test</p></body>",expectedSentence);
@@ -117,6 +167,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
 
+        System.out.println("TRANSFORMED BODY:\n" + actualTransformedBody);
 
         assertThat(actualTransformedBody, is(identicalXmlTo(expectedTransformedBody)));
     }
