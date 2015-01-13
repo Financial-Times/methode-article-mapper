@@ -1,7 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.caselessMatcher;
 import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.attributeNameMatcher;
+import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.caselessMatcher;
 
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
@@ -17,6 +17,8 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
 
+        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -41,7 +43,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "plainHtml", "promo-box", "promo-headline", "promo-image", "promo-intro",
                 "promo-link", "promo-title", "promobox-body",
                 "readthrough", "short-body", "skybox-body", "stories",
-                "story", "strap", "videoObject", "videoPlayer", "web-alt-picture", "web-background-news",
+                "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text", "web-inline-picture",
                 "web-picture",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
@@ -63,8 +65,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");
-        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
+
 
 //		registerStartElementEventHandler(new LinkTagXMLEventHandler(), "a");
 //		registerEndElementEventHandler(new LinkTagXMLEventHandler(), "a");
