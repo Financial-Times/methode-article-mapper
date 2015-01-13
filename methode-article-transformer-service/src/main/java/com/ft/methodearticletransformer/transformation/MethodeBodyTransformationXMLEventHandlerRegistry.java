@@ -18,7 +18,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
 
         registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
+//        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
