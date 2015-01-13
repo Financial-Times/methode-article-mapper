@@ -11,49 +11,40 @@ import javax.xml.stream.events.StartElement;
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
-public class MethodeVideoXmlEventHandler extends BaseXMLEventHandler {
+public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String NEW_ELEMENT = "a";
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
+    private static final String VIDEO_URL = "http://video.ft.com/%s";
+    private final XMLEventHandler fallbackHandler;
     private String videoIdAttributeName;
     private Map<String, String> attributesToAdd;
 
-    private Map<String, String> sourceToUrlMap;
-
-    public MethodeVideoXmlEventHandler(String videoIdAttributeName) {
+    public MethodeBrightcoveVideoXmlEventHandler(String videoIdAttributeName, XMLEventHandler fallbackHandler) {
+        this.fallbackHandler = fallbackHandler;
         this.videoIdAttributeName = videoIdAttributeName;
-        sourceToUrlMap = new HashMap<String, String>();
-        sourceToUrlMap.put("brightcove", "http://video.ft.com/%s");
-        sourceToUrlMap.put("youTube", "%s");
     }
 
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        String source;
-        if(("iframe").equals(event.getName().toString())) {
-            source = "youTube";
-        }
-        else{
-            source = "brightcove";
-        }
-
         String id = extractVideoId(event);
-        String videoUrl = String.format(sourceToUrlMap.get(source), id);
+        if(id == null){
+            fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
+        }
+        String videoUrl = String.format(VIDEO_URL, id);
         attributesToAdd = new HashMap<String, String>();
         attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
-
         eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
     }
 
     private String extractVideoId(StartElement event) {
-        return event.getAttributeByName(new QName(videoIdAttributeName)).getValue();
+        return event.getAttributeByName(QName.valueOf(videoIdAttributeName)).getValue();
     }
 
     @Override
     public void handleEndElementEvent(EndElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter) throws XMLStreamException {
         eventWriter.writeEndTag(NEW_ELEMENT);
     }
-
-
 }

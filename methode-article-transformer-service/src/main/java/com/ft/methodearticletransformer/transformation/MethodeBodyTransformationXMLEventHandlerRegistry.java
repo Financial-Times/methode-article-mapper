@@ -17,8 +17,8 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
 
-        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoID"), "videoPlayer");
-//        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("src"), "iframe");
+        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new StripElementAndContentsXMLEventHandler()), "p");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -30,7 +30,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
                 "colgroup", "command", "datalist", "del", "dir", "embed", "fieldset", "form",
-                "frame", "frameset", "head", "iframe", "input", "keygen", "label", "legend",
+                "frame", "frameset", "head", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
                 "s", "script", "select", "source", "strike", "style", "table", "tbody",
@@ -59,7 +59,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         
         // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
         // For these elements if the attribute is missing use the fallback handler 
-        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
+//        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new StripXMLEventHandler(), attributeNameMatcher("channel")), "span");
         
         // Handle slideshows, i.e. where have <a type="slideshow">
