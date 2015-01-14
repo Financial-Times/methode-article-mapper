@@ -42,7 +42,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
                 "plainHtml",
-                "promo-title", "promobox-body",
+                "promobox-body",
                 "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text", "web-inline-picture",

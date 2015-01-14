@@ -18,6 +18,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 	private static final String PULL_QUOTE = "promo-box";
 	private static final String PROMO_LINK = "promo-link";
 	private static final String PROMO_IMAGE = "promo-image";
+	private static final String PROMO_TITLE = "promo-title";
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
 	public PromoBoxXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
@@ -59,6 +60,9 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_IMAGE)) {
 			pullQuoteData.setImagePresent(true);
+		}
+		if (isElementNamed(nextStartElement.getName(), PROMO_TITLE)) {
+			pullQuoteData.setTitle(parseRawContent(PROMO_TITLE, xmlEventReader));
 		}
 	}
 
