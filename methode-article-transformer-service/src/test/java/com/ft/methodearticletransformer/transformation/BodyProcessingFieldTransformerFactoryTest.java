@@ -7,21 +7,33 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Collections;
+
+import javax.ws.rs.core.MediaType;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 
+@RunWith(MockitoJUnitRunner.class)
 public class BodyProcessingFieldTransformerFactoryTest {
 	
 	@Rule
@@ -29,16 +41,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     private FieldTransformer bodyTransformer;
 
-    private MethodeFileService methodeFileService;
-	private ResilientClient semanticStoreContentReaderClient;
+    @Mock private MethodeFileService methodeFileService;
+    @Mock private ResilientClient semanticStoreContentReaderClient;
+    @Mock private WebResource webResource;
+    @Mock private Builder builder;
+    @Mock private ClientResponse clientResponse;
+    @Mock private InputStream inputStream;
+    
 	private static final String TRANSACTION_ID = "tid_test";
 
 	@Before
     public void setup() {
-        methodeFileService = mock(MethodeFileService.class);
-		semanticStoreContentReaderClient = mock(ResilientClient.class);
         when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance();
+        when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResource);
+        when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+        when(clientResponse.getStatus()).thenReturn(404);
+        when(clientResponse.getEntityInputStream()).thenReturn(inputStream);
     }
 
     @Test
@@ -129,6 +150,158 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void bigNumbersShouldBeReplacedWithAppopriateTags() {
+        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
+                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></body>";
+
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
+                "<big-number-headline>£350m</big-number-headline>" +
+                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "</big-number></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void promoBoxWithPromoLinkIsNotBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
+                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
+                "</promo-headline>\n" +
+                "<promo-link>http://www.test.com</promo-link>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></body>";
+
+        String processedBigNumber = "<body><p>patelka</p></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void promoBoxWithEmptyPromoLinkIsBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
+                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
+                "</promo-headline>\n" +
+                "<promo-link></promo-link>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></body>";
+
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
+                "<big-number-headline>£350m</big-number-headline>" +
+                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "</big-number></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void promoBoxWithPromoImageIsNotBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td>" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-headline><p>HEADLINE TEXT</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-image fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/Copy%20of%20Copy%20of%20secondaryimageccd1.jpg?uuid=220972be-972b-11e4-be20-002128161462\" tmx=\"167 96 167 96\"/>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>PROMOBOX BODY</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>&gt;</promo-box></p></body>";
+
+        String processedBigNumber = "<body><p>patelka</p></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void promoBoxWithPromoTitleIsNotBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title><p>PROMOBOX INDEPTH</p>\n" +
+                "</promo-title>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-headline><p>HEADLINE TEXT</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>PROMOBOX BODY</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>&gt;</promo-box></p></body>";
+
+        String processedBigNumber = "<body><p>patelka</p></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void promoBoxWithPromoTitleThatIsEmptyIsBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title>" +
+                "</promo-title>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-headline><p>£350m</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>&gt;</promo-box></p></body>";
+
+        String processedBigNumber = "<body><p>patelka</p><p><big-number>" +
+                "<big-number-headline>£350m</big-number-headline>" +
+                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "</big-number></p></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
+    public void emptyBigNumbersShouldBeOmitted() {
+        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
+                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\"></p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p></p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></body>";
+
+        String processedBigNumber = "<body><p>patelka</p></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
     public void emptyPullQuotesShouldNotBeWritten() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
@@ -149,6 +322,19 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedPullQuote = "<body><p>patelka</p></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+    
+    @Test
+    public void slideshowShouldBeConvertedToPointToSlideshowOnWebsite() {
+        String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" + 
+                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
+        
+        String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
+        		"<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+        
+        checkTransformation(slideshowFromMethode, processedSlideshow);
+                
     }
 
     @Test

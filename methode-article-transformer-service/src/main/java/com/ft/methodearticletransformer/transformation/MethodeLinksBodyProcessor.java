@@ -276,8 +276,13 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             if(path.startsWith("/intl")) {
                 newHref =  ftAssetUri.resolve(path.substring(5)).toString();
             } else {
-            	// do this to get rid of query params and fragment identifiers from the url
-            	newHref =  ftAssetUri.resolve(path).toString(); 
+                //TODO - make sure this is properly tested
+                if (isSlideshowUrl(oldHref)) {
+                    newHref = oldHref;
+                } else {
+                    // do this to get rid of query params and fragment identifiers from the url
+                    newHref =  ftAssetUri.resolve(path).toString();                    
+                }
             }
 
         } else {
@@ -288,6 +293,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
 	}
     
+    private boolean isSlideshowUrl(String oldHref) {
+        return oldHref.contains("#slide0");
+    }
+
     private Optional<String> extractId(Node node) {
         return extractId(getHref(node));
 	}

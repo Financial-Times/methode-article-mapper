@@ -25,7 +25,8 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
-        registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new PullQuoteInnerElementsRegistry()))), "web-pull-quote");
+        registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "web-pull-quote");
+        registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "promo-box");
         // strip html5 tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
@@ -40,8 +41,8 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
-                "plainHtml", "promo-box", "promo-headline", "promo-image", "promo-intro",
-                "promo-link", "promo-title", "promobox-body",
+                "plainHtml",
+                "promobox-body",
                 "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text", "web-inline-picture",
@@ -64,7 +65,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
-        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");
+        registerStartAndEndElementEventHandler(new SlideshowEventHandler(new SlideshowXMLParser(), new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");
 
 
 //		registerStartElementEventHandler(new LinkTagXMLEventHandler(), "a");
