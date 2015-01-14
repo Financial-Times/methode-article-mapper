@@ -1,8 +1,5 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.attributeNameMatcher;
-import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.caselessMatcher;
-
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
@@ -12,6 +9,10 @@ import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler
 import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.StripXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
 
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
@@ -41,13 +42,13 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         
         // strip html5 tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
-                "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
+                "applet", "audio", "base", "basefont", "button", "canvas", "col",
                 "colgroup", "command", "datalist", "del", "dir", "embed", "fieldset", "form",
                 "frame", "frameset", "head", "iframe", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
-                "s", "script", "select", "source", "strike", "style", "table", "tbody",
-                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr"
+                "s", "script", "select", "source", "strike", "style",
+                "textarea", "track", "video", "wbr"
         );
         // strip methode tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
@@ -67,13 +68,16 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),
                 "strong", "em", "sub", "sup", "br",
                 "h1", "h2", "h3", "h4", "h5", "h6",
-                "ol", "ul", "li"
+                "ol", "ul", "li",
+                "tr", "td", "th", "thead", "tbody", "caption"
         );
         
         // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
         // For these elements if the attribute is missing use the fallback handler 
 //        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new StripXMLEventHandler(), attributeNameMatcher("channel")), "span");
+
+        registerStartAndEndElementEventHandler(new RetainWithSpecificAttributesWithFallbackXMLEventHandler(new StripElementAndContentsXMLEventHandler(), caselessMatcher("class", "data-table"), "class"), "table");
         
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
@@ -82,5 +86,25 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
 //		registerStartElementEventHandler(new LinkTagXMLEventHandler(), "a");
 //		registerEndElementEventHandler(new LinkTagXMLEventHandler(), "a");
+    }
+
+    public static StartElementMatcher caselessMatcher(final String attributeName, final String attributeValue) {
+        return new StartElementMatcher() {
+            @Override
+            public boolean matches(final StartElement element) {
+                final Attribute channel = element.getAttributeByName(new QName(attributeName));
+                return (channel == null || !attributeValue.equalsIgnoreCase(channel.getValue())) ? false : true;
+            }
+        };
+    }
+
+    public static StartElementMatcher attributeNameMatcher(final String attributeName) {
+        return new StartElementMatcher() {
+            @Override
+            public boolean matches(final StartElement element) {
+                final Attribute channel = element.getAttributeByName(new QName(attributeName));
+                return (channel == null) ? false : true;
+            }
+        };
     }
 }

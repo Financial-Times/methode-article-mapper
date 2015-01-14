@@ -259,6 +259,129 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void shouldTransformDataTableWithDifferentFormatting() {
+        String dataTableFromMethode = "<body><div><web-table><table class=\"data-table\" width=\"100%\"><caption>Table (Falcon Style)</caption>\n" +
+                "<thead><tr><th>Column A</th>\n" +
+                "<th>Column B</th>\n" +
+                "<th>Column C</th>\n" +
+                "<th>Column D</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody><tr><td>0</td>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "<td>3</td>\n" +
+                "</tr>\n" +
+                "<tr><td>4</td>\n" +
+                "<td>5</td>\n" +
+                "<td>6</td>\n" +
+                "<td>7</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n" +
+                "</table>\n" +
+                "</web-table>\n" +
+                "</div></body>";
+
+        String processedDataTable = "<body><table class=\"data-table\"><caption>Table (Falcon Style)</caption>\n" +
+                "<thead><tr><th>Column A</th>\n" +
+                "<th>Column B</th>\n" +
+                "<th>Column C</th>\n" +
+                "<th>Column D</th>\n" +
+                "</tr>\n" +
+                "</thead>\n" +
+                "<tbody><tr><td>0</td>\n" +
+                "<td>1</td>\n" +
+                "<td>2</td>\n" +
+                "<td>3</td>\n" +
+                "</tr>\n" +
+                "<tr><td>4</td>\n" +
+                "<td>5</td>\n" +
+                "<td>6</td>\n" +
+                "<td>7</td>\n" +
+                "</tr>\n" +
+                "</tbody>\n\n\n" +
+                "</table></body>";
+
+        checkTransformation(dataTableFromMethode, processedDataTable);
+
+
+    }
+
+    @Test
+    public void shouldTransformDataTable() {
+        String dataTableFromMethode = "<body><div><table class=\"data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
+                "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
+                "</caption>\n" +
+                "<tr><th width=\"25%\">Sales</th>\n" +
+                "<th width=\"25%\">Net profit</th>\n" +
+                "<th width=\"25%\">Earnings per share</th>\n" +
+                "<th width=\"25%\">Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">324↑ ↓324</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">453↑ ↓435</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">123↑ ↓989</td>\n" +
+                "<td width=\"25%\" align=\"center\" valign=\"middle\">748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</div></body>";
+
+        String processedDataTable = "<body><table class=\"data-table\">" +
+                "<caption>KarCrash Q1  02/2014- period from to 09/2014\n" +
+                "</caption>\n" +
+                "<tr><th>Sales</th>\n" +
+                "<th>Net profit</th>\n" +
+                "<th>Earnings per share</th>\n" +
+                "<th>Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "</tr>\n" +
+                "<tr><td>324↑ ↓324</td>\n" +
+                "<td>453↑ ↓435</td>\n" +
+                "<td>123↑ ↓989</td>\n" +
+                "<td>748↑ ↓986</td>\n" +
+                "</tr>\n\n" +
+                "</table></body>";
+
+        checkTransformation(dataTableFromMethode, processedDataTable);
+    }
+
+    @Test
+    public void shouldNotTransformTable() {
+        String tableFromMethode = "<body><div><table class=\"pseudo-data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
+                "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
+                "</caption>\n" +
+                "<tr><th width=\"25%\">Sales</th>\n" +
+                "<th width=\"25%\">Net profit</th>\n" +
+                "<th width=\"25%\">Earnings per share</th>\n" +
+                "<th width=\"25%\">Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">324↑ ↓324</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">453↑ ↓435</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">123↑ ↓989</td>\n" +
+                "<td width=\"25%\" align=\"center\" valign=\"middle\">748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</div></body>";
+
+        String processedTable = "<body>\n</body>";
+
+        checkTransformation(tableFromMethode, processedTable);
+    }
+
+    @Test
     public void promoBoxWithPromoTitleThatIsEmptyIsBigNumber() {
         String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title>" +
                 "</promo-title>\n" +

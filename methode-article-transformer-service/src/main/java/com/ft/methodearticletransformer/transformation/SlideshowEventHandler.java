@@ -15,7 +15,6 @@ import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.StartElementMatcher;
 import com.google.common.collect.ImmutableMap;
 
 
