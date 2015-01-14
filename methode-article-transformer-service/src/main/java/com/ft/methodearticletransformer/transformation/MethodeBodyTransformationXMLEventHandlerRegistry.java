@@ -25,8 +25,20 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
+        
+        //rich content
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "web-pull-quote");
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "promo-box");
+        
+        //timelines
+        registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
+                "timeline", "timeline-header", "timeline-credits",
+                "timeline-source", "timeline-byline", "timeline-item",
+                "timeline-image", "timeline-date", "timeline-title",
+                "timeline-body"
+                );
+        
+        
         // strip html5 tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
