@@ -7,21 +7,33 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Collections;
+
+import javax.ws.rs.core.MediaType;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 
+@RunWith(MockitoJUnitRunner.class)
 public class BodyProcessingFieldTransformerFactoryTest {
 	
 	@Rule
@@ -29,16 +41,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     private FieldTransformer bodyTransformer;
 
-    private MethodeFileService methodeFileService;
-	private ResilientClient semanticStoreContentReaderClient;
+    @Mock private MethodeFileService methodeFileService;
+    @Mock private ResilientClient semanticStoreContentReaderClient;
+    @Mock private WebResource webResource;
+    @Mock private Builder builder;
+    @Mock private ClientResponse clientResponse;
+    @Mock private InputStream inputStream;
+    
 	private static final String TRANSACTION_ID = "tid_test";
 
 	@Before
     public void setup() {
-        methodeFileService = mock(MethodeFileService.class);
-		semanticStoreContentReaderClient = mock(ResilientClient.class);
         when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance();
+        when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResource);
+        when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+        when(clientResponse.getStatus()).thenReturn(404);
+        when(clientResponse.getEntityInputStream()).thenReturn(inputStream);
     }
 
     @Test
@@ -233,6 +254,19 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedPullQuote = "<body><p>patelka</p></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+    
+    @Test
+    public void slideshowShouldBeConvertedToPointToSlideshowOnWebsite() {
+        String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" + 
+                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
+        
+        String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
+        		"<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+        
+        checkTransformation(slideshowFromMethode, processedSlideshow);
+                
     }
 
     @Test
