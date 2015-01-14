@@ -7,6 +7,7 @@ public class BigNumberData {
 	private String headline;
 	private String intro;
 	private String link;
+	private boolean imagePresent;
 
 	public String getHeadline() {
 		return headline;
@@ -28,7 +29,7 @@ public class BigNumberData {
 
 	public boolean isValidBigNumberData() {
 
-		if ( StringUtils.isNotEmpty(link)) {
+		if ( StringUtils.isNotEmpty(link) || imagePresent) {
 			return false;
 		}
 		return containsValidData(this.headline) || containsValidData(this.intro);
@@ -39,4 +40,7 @@ public class BigNumberData {
 		return !StringUtils.isBlank(data);
 	}
 
+	public void setImagePresent(boolean imagePresent) {
+		this.imagePresent = imagePresent;
+	}
 }
