@@ -49,9 +49,12 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
 
 
         if (xmlEventReader.hasNext()) {
-            XMLEvent nextEvent = xmlEventReader.nextEvent();
-            if (nextEvent.isCharacters()) {
-                potentialEvents.add(new EventsAndAttributes(nextEvent.asCharacters(), null));
+            XMLEvent peekEvent = xmlEventReader.peek();
+            if(peekEvent.isCharacters()) {
+                XMLEvent nextEvent = xmlEventReader.nextEvent();
+                if (nextEvent.isCharacters()) {
+                    potentialEvents.add(new EventsAndAttributes(nextEvent.asCharacters(), null));
+                }
             }
         }
 

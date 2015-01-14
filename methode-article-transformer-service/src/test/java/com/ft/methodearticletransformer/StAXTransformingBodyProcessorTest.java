@@ -42,5 +42,17 @@ public class StAXTransformingBodyProcessorTest {
         assertThat("processedBody", processedBody, is(equalTo("<p>Youtube Video<a href=\"http://www.youtube.com/embed/YoB8t0B4jx4\"></a></p>")));
     }
 
+    @Test
+    public void shouldProcessYouTubeVideoCorrectlyWithoutBeforeText() {
+        XMLEventHandlerRegistry eventHandlerRegistry = new XMLEventHandlerRegistry() {
+            { super.registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new StripElementAndContentsXMLEventHandler()), "p");}
+        };
+        bodyProcessor = new StAXTransformingBodyProcessor(eventHandlerRegistry);
+        String videoText = "<p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/YoB8t0B4jx4\" width=\"600\"></iframe>\n" +
+                "</p>";
+        String processedBody = bodyProcessor.process(videoText, new BodyProcessingContext(){});
+        assertThat("processedBody", processedBody, is(equalTo("<p><a href=\"http://www.youtube.com/embed/YoB8t0B4jx4\"></a></p>")));
+    }
+
 
 }
