@@ -18,7 +18,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
 
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new StripElementAndContentsXMLEventHandler()), "p");
+//        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new StripElementAndContentsXMLEventHandler()), "p");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
