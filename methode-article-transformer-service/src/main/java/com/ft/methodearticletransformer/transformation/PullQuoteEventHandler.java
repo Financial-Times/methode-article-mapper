@@ -43,6 +43,7 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 				if(dataBean.isAllRequiredDataPresent()) {
 					eventWriter.writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
 					writePullQuoteElement(eventWriter, dataBean);
+					eventWriter.writeEndTag(PULL_QUOTE_ELEMENT);
 				}
 			}
 
@@ -63,11 +64,6 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
 	private Map<String, String> noAttributes() {
 		return Collections.emptyMap();
-	}
-
-	@Override
-	public void handleEndElementEvent(EndElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter) throws XMLStreamException {
-		eventWriter.writeEndTag(PULL_QUOTE_ELEMENT);
 	}
 
 	protected boolean isElementOfCorrectType(StartElement event) {
