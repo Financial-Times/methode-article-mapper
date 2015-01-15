@@ -310,6 +310,52 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }
 
+
+    @Test
+    public void shouldNotBarfOnTwoPromoBoxes() {
+        String bigNumberFromMethode = "<body><p>A big number!</p>\n" +
+                "<p><promo-box align=\"left\" class=\"numbers-component\"><table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350M</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>The cost of eating at Leon and Tossed every single day.</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></p>\n" +
+                "<p></p>\n" +
+                "<p></p>\n" +
+                "<p>A big number right aligned.</p>\n" +
+                "<p><promo-box align=\"right\" class=\"numbers-component\"><table width=\"170px\" align=\"right\" cellpadding=\"6px\"><tr><td><promo-headline><p>52p</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>The weekly saving made by making your own lunch.</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box>\n" +
+                "</p>\n" +
+                "</body>";
+
+        String processedBigNumber = "<body><p>A big number!</p>\n" +
+                "<p><big-number><big-number-headline>£350M</big-number-headline>" +
+                "<big-number-intro>The cost of eating at Leon and Tossed every single day.</big-number-intro>" +
+                "</big-number></p>\n" +
+                "<p>A big number right aligned.</p>\n" +
+                "<p><big-number>" +
+                "<big-number-headline>52p</big-number-headline>" +
+                "<big-number-intro>The weekly saving made by making your own lunch.</big-number-intro>" +
+                "</big-number>\n" +
+                "</p>\n" +
+                "</body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+
     @Test
     public void shouldTransformDataTableWithDifferentFormatting() {
         String dataTableFromMethode = "<body><div><web-table><table class=\"data-table\" width=\"100%\"><caption>Table (Falcon Style)</caption>\n" +

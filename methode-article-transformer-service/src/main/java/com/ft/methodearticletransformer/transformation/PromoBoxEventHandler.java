@@ -7,7 +7,6 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import java.util.Collections;
 import java.util.Map;
@@ -43,6 +42,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 				if(dataBean.isValidBigNumberData()) {
 					eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
 					writePullQuoteElement(eventWriter, dataBean);
+					eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
 				}
 			}
 
@@ -63,11 +63,6 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
 	private Map<String, String> noAttributes() {
 		return Collections.emptyMap();
-	}
-
-	@Override
-	public void handleEndElementEvent(EndElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter) throws XMLStreamException {
-		eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
 	}
 
 	protected boolean isElementOfCorrectType(StartElement event) {
