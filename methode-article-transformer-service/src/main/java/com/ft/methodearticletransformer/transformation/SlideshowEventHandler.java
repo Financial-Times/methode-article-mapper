@@ -66,6 +66,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
     
     private void writeSlideshowElement(BodyWriter eventWriter, SlideshowData dataBean) {
         eventWriter.writeStartTag(A_TAG_NAME, getValidAttributes(dataBean));
+        eventWriter.writeEndTag(A_TAG_NAME);
     }
 
     

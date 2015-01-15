@@ -557,6 +557,23 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(slideshowFromMethode, processedSlideshow);
                 
     }
+
+    @Test
+    public void shouldNotBarfOnTwoSlideshows() {
+        String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
+                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p>" +
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-001234567890\">" +
+                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
+
+        String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
+                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
+                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
+                "</body>";
+
+        checkTransformation(slideshowFromMethode, processedSlideshow);
+
+    }
     
     @Test
     public void timelineShouldBeRetained() {
