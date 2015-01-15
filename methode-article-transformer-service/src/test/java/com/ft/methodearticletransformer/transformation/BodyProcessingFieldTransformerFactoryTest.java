@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -397,12 +396,11 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>6</td>\n" +
                 "<td>7</td>\n" +
                 "</tr>\n" +
-                "</tbody>\n\n\n" +
-                "</table></body>";
+                "</tbody>\n" +
+                "</table>\n" +
+                "\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
-
-
     }
 
     @Test
@@ -445,8 +443,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>453↑ ↓435</td>\n" +
                 "<td>123↑ ↓989</td>\n" +
                 "<td>748↑ ↓986</td>\n" +
-                "</tr>\n\n" +
-                "</table></body>";
+                "</tr>\n" +
+                "</table>\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
     }
@@ -477,6 +475,60 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedTable = "<body>\n</body>";
 
         checkTransformation(tableFromMethode, processedTable);
+    }
+
+    @Test
+    public void shouldNotKeepCaptionOutsideDataTable() {
+        String captionOutsideDataTable = "<body><caption>patelka</caption></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
+    }
+
+    @Test
+    public void shouldNotKeepTrsOutsideDataTable() {
+        String captionOutsideDataTable = "<body><tr>patelka</tr></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
+    }
+
+    @Test
+    public void shouldNotKeepTdsOutsideDataTable() {
+        String captionOutsideDataTable = "<body><td>patelka</td></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
+    }
+
+    @Test
+    public void shouldNotKeepTFootsOutsideDataTable() {
+        String captionOutsideDataTable = "<body><tfoot>patelka</tfoot></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
+    }
+
+    @Test
+    public void shouldNotKeepTBodiesOutsideDataTable() {
+        String captionOutsideDataTable = "<body><tbody>patelka</tbody></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
+    }
+
+    @Test
+    public void shouldNotKeepThsOutsideDataTable() {
+        String captionOutsideDataTable = "<body><th>patelka</th></body>";
+
+        String processed = "<body/>";
+
+        checkTransformation(captionOutsideDataTable, processed);
     }
 
     @Test

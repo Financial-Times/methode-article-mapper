@@ -30,6 +30,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         //rich content
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "web-pull-quote");
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "promo-box");
+        registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
         
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
@@ -42,13 +43,13 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         
         // strip html5 tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
-                "applet", "audio", "base", "basefont", "button", "canvas", "col",
+                "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
                 "colgroup", "command", "datalist", "del", "dir", "embed", "fieldset", "form",
                 "frame", "frameset", "head", "iframe", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
-                "s", "script", "select", "source", "strike", "style",
-                "textarea", "track", "video", "wbr"
+                "s", "script", "select", "source", "strike", "style", "tbody",
+                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr"
         );
         // strip methode tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
@@ -68,16 +69,13 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),
                 "strong", "em", "sub", "sup", "br",
                 "h1", "h2", "h3", "h4", "h5", "h6",
-                "ol", "ul", "li",
-                "tr", "td", "th", "thead", "tbody", "caption"
+                "ol", "ul", "li"
         );
         
         // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
         // For these elements if the attribute is missing use the fallback handler 
 //        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new StripXMLEventHandler(), attributeNameMatcher("channel")), "span");
-
-        registerStartAndEndElementEventHandler(new RetainWithSpecificAttributesWithFallbackXMLEventHandler(new StripElementAndContentsXMLEventHandler(), caselessMatcher("class", "data-table"), "class"), "table");
         
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
