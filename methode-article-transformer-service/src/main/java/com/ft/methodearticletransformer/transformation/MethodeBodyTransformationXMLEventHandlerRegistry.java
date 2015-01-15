@@ -1,5 +1,9 @@
 package com.ft.methodearticletransformer.transformation;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
@@ -10,16 +14,13 @@ import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHa
 import com.ft.bodyprocessing.xml.eventhandlers.StripXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
 
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
         registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new RetainWithoutAttributesXMLEventHandler()), "p");
+        registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -48,7 +49,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "frame", "frameset", "head", "iframe", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
-                "s", "script", "select", "source", "strike", "style", "tbody",
+                "s", "select", "source", "strike", "style", "tbody",
                 "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr"
         );
         // strip methode tags whose bodies we don't want
@@ -76,7 +77,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         // For these elements if the attribute is missing use the fallback handler 
 //        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
         registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new StripXMLEventHandler(), attributeNameMatcher("channel")), "span");
-        
+
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
         registerStartAndEndElementEventHandler(new SlideshowEventHandler(new SlideshowXMLParser(), new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type","slideshow")), "a");

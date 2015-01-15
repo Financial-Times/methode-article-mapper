@@ -10,6 +10,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHa
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 import com.ft.methodearticletransformer.transformation.MethodeBrightcoveVideoXmlEventHandler;
 import com.ft.methodearticletransformer.transformation.MethodeOtherVideoXmlEventHandler;
+import com.ft.methodearticletransformer.transformation.PodcastXMLEventHandler;
 import org.junit.Test;
 
 public class StAXTransformingBodyProcessorTest {
@@ -53,6 +54,18 @@ public class StAXTransformingBodyProcessorTest {
 //        String processedBody = bodyProcessor.process(videoText, new BodyProcessingContext(){});
 //        assertThat("processedBody", processedBody, is(equalTo("<p><a href=\"http://www.youtube.com/embed/YoB8t0B4jx4\"></a></p>")));
 //    }
+
+    @Test
+    public void shouldProcessPodcastsCorrectly() {
+        XMLEventHandlerRegistry eventHandlerRegistry = new XMLEventHandlerRegistry() {
+            { super.registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");}
+        };
+        bodyProcessor = new StAXTransformingBodyProcessor(eventHandlerRegistry);
+        String podcast = "<script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
+                "</script>";
+        String processedBody = bodyProcessor.process(podcast, new BodyProcessingContext(){});
+        assertThat("processedBody", processedBody, is(equalTo("<a href=\"podcast.ft.com/p/2463\"></a>")));
+    }
 
 
 }
