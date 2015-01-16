@@ -24,15 +24,20 @@ import org.codehaus.stax2.ri.evt.EndElementEventImpl;
 import org.codehaus.stax2.ri.evt.StartElementEventImpl;
 
 public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
-
+    private static final String NEW_ELEMENT = "a";
+    private static final String NEW_ELEMENT_ATTRIBUTE = "href";
     private final String targetedHtmlClass;
-    private final XMLEventHandler fallbackHandler   ;
+    private final XMLEventHandler fallbackHandler;
+    private List<String> validRegexes; //because all 3rd party content is put into iframes we only want to keep some.
+
 
     public MethodeOtherVideoXmlEventHandler(String targetedHtmlClass, XMLEventHandler fallbackHandler) {
         this.targetedHtmlClass = targetedHtmlClass;
         this.fallbackHandler = fallbackHandler;
+        validRegexes = new ArrayList<String>();
+        validRegexes.add("^http://player.vimeo.com/video/[\\S]+");
+        validRegexes.add("^http://www.youtube.com/embed/[\\S]+");
     }
-
 
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
@@ -45,31 +50,22 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
 
         List<XMLEvent> potentialEvents = new ArrayList<XMLEvent>();
 
-
-        StartElement pStartElementEvent = StartElementEventImpl.construct(null, new QName("p"), null, null, null);
+        StartElement pStartElementEvent = StartElementEventImpl.construct(null, new QName(event.getName().toString()), null, null, null);
         EndElement pEndElementEvent = new EndElementEventImpl(null, new QName("p"), null);
         potentialEvents.add(pStartElementEvent);
 
-
-        if (xmlEventReader.hasNext()) {
-            XMLEvent nextEvent = xmlEventReader.nextEvent();
-            if (nextEvent.isCharacters()) {
-                potentialEvents.add(nextEvent.asCharacters());
-            }
-        }
-
-        XMLEvent found = skipBlockUnlessConditionSatisfied(xmlEventReader, "p", "iframe", "src", "^http://[.a-zA-Z0-9/?=]*");
+        XMLEvent found = getEventAndSkipBlock(xmlEventReader, event.getName().toString(), "iframe", "src", validRegexes);
         if(found != null) {
 
             Attribute srcAttribute = found.asStartElement().getAttributeByName(QName.valueOf("src"));
 
             String videoLink =  srcAttribute.getValue();
             List<Attribute> attributesToAdd = new ArrayList<Attribute>();
-            Attribute attribute = new AttributeEventImpl(null, new QName("href"), videoLink, false);
+            Attribute attribute = new AttributeEventImpl(null, new QName(NEW_ELEMENT_ATTRIBUTE), videoLink, false);
             attributesToAdd.add(attribute);
 
-            StartElement aStartElementEvent = StartElementEventImpl.construct(null, new QName("a"), attributesToAdd.iterator(), null, null);
-            EndElement aEndElementEvent = new EndElementEventImpl(null, new QName("a"), null);
+            StartElement aStartElementEvent = StartElementEventImpl.construct(null, new QName(NEW_ELEMENT), attributesToAdd.iterator(), null, null);
+            EndElement aEndElementEvent = new EndElementEventImpl(null, new QName(NEW_ELEMENT), null);
 
             potentialEvents.add(aStartElementEvent);
             potentialEvents.add(aEndElementEvent);
@@ -88,7 +84,7 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
 
                 while(it.hasNext()){
                     Attribute attribute = (Attribute)it.next();
-                    attributes.put(attribute.getName().toString(), attribute.getValue().toString());
+                    attributes.put(attribute.getName().toString(), attribute.getValue());
                 }
 
                 eventWriter.writeStartTag(event.asStartElement().getName().toString(), attributes);
@@ -103,8 +99,8 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
         }
     }
 
-    private XMLEvent skipBlockUnlessConditionSatisfied(XMLEventReader reader, String primaryElementName, String secondaryElementName,
-                                                     String secondaryElementAttributeName, String secondaryElementAttributeValueRegex)
+    private XMLEvent getEventAndSkipBlock(XMLEventReader reader, String primaryElementName, String secondaryElementName,
+                                                     String secondaryElementAttributeName, List<String> secondaryElementAttributeValueRegex)
                                                      throws XMLStreamException {
         XMLEvent xmlEvent = null;
         int primaryOpenElementNameCount = 1;
@@ -118,8 +114,10 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
 
                 if ((secondaryElementName).equals(newStartElement.getName().getLocalPart())) {
                     Attribute attribute = newStartElement.getAttributeByName(QName.valueOf(secondaryElementAttributeName));
-                    if (Pattern.matches(secondaryElementAttributeValueRegex, attribute.getValue())) {
-                        xmlEvent = nextEvent;
+                    for (String regex :secondaryElementAttributeValueRegex){
+                        if (Pattern.matches(regex, attribute.getValue())) {
+                            xmlEvent = nextEvent;
+                        }
                     }
                 }
             }

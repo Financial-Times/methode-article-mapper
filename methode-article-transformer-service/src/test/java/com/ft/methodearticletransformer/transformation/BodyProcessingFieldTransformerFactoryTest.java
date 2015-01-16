@@ -627,6 +627,92 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+     public void shouldProcessPodcastsCorrectly() {
+        String podcastFromMethode = "<body><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
+                "</script></body>";
+        String processedPodcast = "<body><a href=\"podcast.ft.com/p/2463\"></a></body>";
+        checkTransformation(podcastFromMethode, processedPodcast);
+    }
+
+    @Test
+     public void shouldProcessMultiplePodcastsCorrectly() {
+        String podcastFromMethode = "<body><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n</script>" +
+                "<script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
+                "</script></body>";
+        String processedPodcast = "<body><a href=\"podcast.ft.com/p/2463\"></a><a href=\"podcast.ft.com/p/2463\"></a></body>";
+        checkTransformation(podcastFromMethode, processedPodcast);
+    }
+
+    @Test
+    public void shouldProcessVideoTagCorrectly() {
+        String videoTextfromMethode = "<body>" +
+                "<videoPlayer videoID=\"3920663836001\">" +
+                "<web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
+                "</videoPlayer>" +
+                "</body>";
+        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\"></a></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
+    public void shouldFallbackWhenVideoTagErrors() {
+        String videoTextfromMethode = "<body><videoPlayer><web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
+                "</videoPlayer></body>";
+        String processedVideoText = "<body></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
+    public void shouldFallbackWhenVideoTagErrors2() {
+        String videoTextfromMethode = "<body><videoPlayer videoID=\"\"><web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
+                "</videoPlayer></body>";
+        String processedVideoText = "<body/>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+
+    @Test
+    public void shouldProcessVimeoTagCorrectly() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
+                "</p></body>";
+        String processedVideoText = "<body><p><a href=\"http://player.vimeo.com/video/77761436\"></a></p></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
+    public void shouldProcessYouTubeVideoCorrectly() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
+                "</p></body>";
+        String processedVideoText = "<body><p><a href=\"http://www.youtube.com/embed/77761436\"></a></p></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+
+
+    @Test
+    public void shouldNotProcessOtherIframes() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe>\n" +
+                "</p></body>";
+        String processedVideoText = "<body/>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
+    public void shouldNotProcessOtherScriptTags() {
+        String podcastFromMethode = "<body><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){alert('Something!')}/* ]]> */\n" +
+                "\"</script></body>";
+        String processedPodcast = "<body/>";
+        checkTransformation(podcastFromMethode, processedPodcast);
+    }
+
+    @Test
+    public void shouldNotProcessOtherScriptTags2() {
+        String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://someStyleSheet\"></script></body>";
+        String processedPodcast = "<body/>";
+        checkTransformation(podcastFromMethode, processedPodcast);
+    }
+
+    @Test
     public void removeExcessSpacesBetweenParagraphBlocks() {
         String expectedSentence = String.format("<body><p>This</p>\n<p>is</p>\n<p>a test</p></body>");
         checkTransformation("<body><p>This</p>\n\n\n\n<p>is</p>\n<p>a test</p></body>",expectedSentence);
