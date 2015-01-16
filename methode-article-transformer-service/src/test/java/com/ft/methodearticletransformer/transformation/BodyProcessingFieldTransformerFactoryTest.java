@@ -394,8 +394,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>6</td>\n" +
                 "<td>7</td>\n" +
                 "</tr>\n" +
-                "</tbody>\n\n\n" +
-                "</table></body>";
+                "</tbody>\n" +
+                "</table>\n\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
 
@@ -442,8 +442,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>453↑ ↓435</td>\n" +
                 "<td>123↑ ↓989</td>\n" +
                 "<td>748↑ ↓986</td>\n" +
-                "</tr>\n\n" +
-                "</table></body>";
+                "</tr>\n" +
+                "</table>\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
     }
