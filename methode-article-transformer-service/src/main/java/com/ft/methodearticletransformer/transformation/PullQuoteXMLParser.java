@@ -1,15 +1,15 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 import org.apache.commons.lang.StringUtils;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.StartElement;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements XmlParser<PullQuoteData> {
 
@@ -39,7 +39,7 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 		if (!StringUtils.isBlank(unprocessedContent)) {
 			return stAXTransformingBodyProcessor.process(unprocessedContent, bodyProcessingContext);
 		}
-		return null;
+		return "";
 	}
 
 	@Override

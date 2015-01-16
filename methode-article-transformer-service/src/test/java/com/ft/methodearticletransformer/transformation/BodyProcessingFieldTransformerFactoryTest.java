@@ -5,24 +5,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
-
 import javax.ws.rs.core.MediaType;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.jerseyhttpwrapper.ResilientClient;
@@ -31,6 +22,13 @@ import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BodyProcessingFieldTransformerFactoryTest {
@@ -396,11 +394,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>6</td>\n" +
                 "<td>7</td>\n" +
                 "</tr>\n" +
-                "</tbody>\n" +
-                "</table>\n" +
-                "\n</body>";
+                "</tbody>\n\n\n" +
+                "</table></body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
+
+
     }
 
     @Test
@@ -443,8 +442,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>453↑ ↓435</td>\n" +
                 "<td>123↑ ↓989</td>\n" +
                 "<td>748↑ ↓986</td>\n" +
-                "</tr>\n" +
-                "</table>\n</body>";
+                "</tr>\n\n" +
+                "</table></body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
     }
@@ -475,60 +474,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedTable = "<body>\n</body>";
 
         checkTransformation(tableFromMethode, processedTable);
-    }
-
-    @Test
-    public void shouldNotKeepCaptionOutsideDataTable() {
-        String captionOutsideDataTable = "<body><caption>patelka</caption></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
-    }
-
-    @Test
-    public void shouldNotKeepTrsOutsideDataTable() {
-        String captionOutsideDataTable = "<body><tr>patelka</tr></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
-    }
-
-    @Test
-    public void shouldNotKeepTdsOutsideDataTable() {
-        String captionOutsideDataTable = "<body><td>patelka</td></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
-    }
-
-    @Test
-    public void shouldNotKeepTFootsOutsideDataTable() {
-        String captionOutsideDataTable = "<body><tfoot>patelka</tfoot></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
-    }
-
-    @Test
-    public void shouldNotKeepTBodiesOutsideDataTable() {
-        String captionOutsideDataTable = "<body><tbody>patelka</tbody></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
-    }
-
-    @Test
-    public void shouldNotKeepThsOutsideDataTable() {
-        String captionOutsideDataTable = "<body><th>patelka</th></body>";
-
-        String processed = "<body/>";
-
-        checkTransformation(captionOutsideDataTable, processed);
     }
 
     @Test
@@ -593,6 +538,33 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+    @Test
+    public void pullQuotesWithNoSourceShouldBeWritten() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>It suits the extremists to encourage healthy eating.\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source></web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-source></pull-quote-source>" +
+                "</pull-quote>" +
+                "</body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
