@@ -1,5 +1,4 @@
 @BodyProcessing
-@Ignore
 Feature: Body processing
 
   Scenario Outline:

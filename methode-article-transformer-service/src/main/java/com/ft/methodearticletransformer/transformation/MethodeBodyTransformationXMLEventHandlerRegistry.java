@@ -56,12 +56,13 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
-                "plainHtml",
-                "promobox-body",
+                "plainHtml", "promo-headline", "promo-image", "promo-intro",
+                "promo-link", "promo-title", "promobox-body", "pull-quote", "pull-quote-header",
+                "pull-quote-text",
                 "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text", "web-inline-picture",
-                "web-picture",
+                "web-picture", "web-pull-quote-source", "web-pull-quote-text",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );
 
