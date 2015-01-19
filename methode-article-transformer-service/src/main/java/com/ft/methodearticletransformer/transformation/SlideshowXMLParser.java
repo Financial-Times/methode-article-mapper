@@ -12,22 +12,17 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements XmlParser<SlideshowData> {
 
     private static final String DEFAULT_ELEMENT_NAME = "a";
     private static final QName HREF_QNAME = QName.valueOf("href");
     private static final String UUID_KEY = "uuid";
-    
-    protected SlideshowXMLParser() {
+
+    public SlideshowXMLParser() {
         super(DEFAULT_ELEMENT_NAME);
-    }
-    
-    /**
-     * Overloaded element name passed in using this constructor.
-     * @param startElementName
-     */
-    protected SlideshowXMLParser(String startElementName) {
-        super(startElementName);
     }
 
     @Override
@@ -45,7 +40,7 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
             if(attributesSides.length == 2) {
                 // Split all query (key/value) parameters found
                 String[] attributes = StringUtils.splitPreserveAllTokens(attributesSides[1], "&");
-                
+
                 // Search for the UUID (key/value) parameter, ignore all others
                 for(String attribute: attributes){
                     String[] keyValue = StringUtils.splitPreserveAllTokens(attribute, "=");
@@ -53,13 +48,25 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
                         // ensure there's a key AND a value for the UUID before populating the bean with the UUID data
                         if(keyValue.length == 2){
                             dataBean.setUuid(keyValue[1]);
+                            dataBean.setQueryParams(exceptForUuid(attributes));
                         }
                     }
                 }
             }
         }
     }
-    
+
+    private List<String> exceptForUuid(String[] attributes) {
+        List<String> attributesExceptForUuid = new ArrayList<>();
+        for(String attribute: attributes){
+            String[] keyValue = StringUtils.splitPreserveAllTokens(attribute, "=");
+            if(!UUID_KEY.equalsIgnoreCase(keyValue[0])){
+                attributesExceptForUuid.add(attribute);
+            }
+        }
+        return attributesExceptForUuid;
+    }
+
     @Override
     public boolean doesTriggerElementContainAllDataNeeded() {
         return false;
@@ -68,8 +75,5 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
     @Override
     public void transformFieldContentToStructuredFormat(SlideshowData dataBean,
             BodyProcessingContext bodyProcessingContext) {
-        // Do nothing, no need for further data processing.
     }
-
-
 }

@@ -13,6 +13,10 @@ import static org.mockito.Mockito.when;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import com.ft.bodyprocessing.BodyProcessingException;
@@ -50,6 +54,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	@Before
     public void setup() {
         when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
+        EomAssetType storyAsset1 = new EomAssetType.Builder()
+                .uuid("49336a18-051c-11e3-98a0-002128161462")
+                .type("EOM::Story")
+                .build();
+        EomAssetType storyAsset2 = new EomAssetType.Builder()
+                .uuid("49336a18-051c-11e3-98a0-001234567890")
+                .type("EOM::Story")
+                .build();
+        when(methodeFileService.assetTypes(Collections.singleton("49336a18-051c-11e3-98a0-002128161462"), TRANSACTION_ID))
+                .thenReturn(Collections.singletonMap("49336a18-051c-11e3-98a0-002128161462", storyAsset1));
+        Set<String> setWithBothUuids = new HashSet<>();
+        setWithBothUuids.add("49336a18-051c-11e3-98a0-002128161462");
+        setWithBothUuids.add("49336a18-051c-11e3-98a0-001234567890");
+        Map<String, EomAssetType> mapWithBothUuids = new HashMap<>();
+        mapWithBothUuids.put("49336a18-051c-11e3-98a0-002128161462", storyAsset1);
+        mapWithBothUuids.put("49336a18-051c-11e3-98a0-001234567890", storyAsset2);
+        when(methodeFileService.assetTypes(setWithBothUuids, TRANSACTION_ID))
+                .thenReturn(mapWithBothUuids);
+
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance();
         when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
@@ -579,14 +602,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
         		"<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
         
         checkTransformation(slideshowFromMethode, processedSlideshow);
-                
+    }
+
+    @Test
+    public void slideshowWithEmptyHeadlineShouldBeConvertedToPointToSlideshowOnWebsite() {
+        String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
+                "<DIHeadlineCopy/></a></p></body>";
+
+        String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
+                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+
+        checkTransformation(slideshowFromMethode, processedSlideshow);
     }
 
     @Test
     public void shouldNotBarfOnTwoSlideshows() {
         String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
                 "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
-                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p>" +
+                "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 1</DIHeadlineCopy></a></p>" +
                 "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-001234567890\">" +
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
 
