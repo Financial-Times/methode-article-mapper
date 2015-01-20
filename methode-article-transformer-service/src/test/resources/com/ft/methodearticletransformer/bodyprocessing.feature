@@ -26,7 +26,7 @@ Feature: Body processing
     | basefont                   |
     | button                     |
     | canvas                     |
-    #| caption                    |
+    | caption                    |
     | col                        |
     | colgroup                   |
     | command                    |
@@ -67,13 +67,13 @@ Feature: Body processing
     | strike                     |
     | style                      |
     | table                      |
-    #| tbody                      |
-    #| td                         |
+    | tbody                      |
+    | td                         |
     | textarea                   |
-    #| tfoot                      |
-    #| th                         |
-    #| thead                      |
-    #| tr                         |
+    | tfoot                      |
+    | th                         |
+    | thead                      |
+    | tr                         |
     | track                      |
     | video                      |
     | wbr                        |
