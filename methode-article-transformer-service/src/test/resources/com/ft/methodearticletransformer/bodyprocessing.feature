@@ -310,7 +310,7 @@ Feature: Body processing
 
 
   @Technical
-  Scenario Outline: Links to anchors are removed
+  Scenario Outline: Links to anchors only are removed
     Given I have an "link to an anchor" in a Methode article body like <before>
     When I transform it into our Content Store format
     Then the hyperlink should be like <after>
@@ -322,6 +322,7 @@ Feature: Body processing
     | <p><a href="#top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p> | <p>Foo</p>                          |
     | <p><a href="#top">5. example.com</a><a name="foo">Foo</a></p>                  | <p>5. example.comFoo</p>            |
     | <p><a href="" name="anchorname"/>Text</p>                                      | <p>Text</p>                         |
+    | <p><a href="http://www.bbc.co.uk//article#menu">link</a></p>                   | <p><a href="http://www.bbc.co.uk//article#menu">link</a></p> |
 
   @Technical
   Scenario Outline: Images are removed
