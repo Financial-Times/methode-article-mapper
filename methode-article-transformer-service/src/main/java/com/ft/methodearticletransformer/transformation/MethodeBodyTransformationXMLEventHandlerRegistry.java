@@ -17,10 +17,6 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
     public MethodeBodyTransformationXMLEventHandlerRegistry() {
-
-        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new RetainWithoutAttributesXMLEventHandler()), "p");
-        registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -32,7 +28,11 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "web-pull-quote");
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "promo-box");
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
-        
+
+        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new RetainWithoutAttributesXMLEventHandler()), "p");
+        registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
+
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
                 "timeline", "timeline-header", "timeline-credits",
