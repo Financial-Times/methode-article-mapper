@@ -1,7 +1,7 @@
 @BodyProcessing
 Feature: Body processing
 
-  Scenario Outline:
+  Scenario Outline: Strip tag and retain contents
     Given I have body text in Methode XML format containing <tagname>
     When I transform it into our Content Store format
     Then the start tag <tagname> should have been removed
@@ -11,7 +11,7 @@ Feature: Body processing
   Examples:
     | tagname |
 
-  Scenario Outline:
+  Scenario Outline: Strip tag and contents
     Given I have body text in Methode XML format containing <tagname>
     When I transform it into our Content Store format
     Then the start tag <tagname> should have been removed
@@ -122,7 +122,7 @@ Feature: Body processing
     | xref                       |
     | xrefs                      |
 
-  Scenario Outline:
+  Scenario Outline: Retain tag and contents
     Given I have body text in Methode XML format containing <tagname>
     When I transform it into our Content Store format
     Then the start tag <tagname> should be present
@@ -146,7 +146,7 @@ Feature: Body processing
     | ul      |
     | li      |
 
-  Scenario Outline:
+  Scenario Outline: Tag names are transformed
     Given I have body text in Methode XML format containing <tagname>
     When I transform it into our Content Store format
     Then the start tag <tagname> should have been replaced by <replacement>
@@ -211,7 +211,7 @@ Feature: Body processing
     | <body><p>Part 1 <span title="not a strikeout">containing</span> text</p></body> | <body><p>Part 1 containing text</p></body> |
 
   @Technical
-  Scenario Outline: Comments
+  Scenario Outline: Remove comments
     Given I have body text in Methode XML like <before>
     When I transform it into our Content Store format
     Then the body should be like <after>
