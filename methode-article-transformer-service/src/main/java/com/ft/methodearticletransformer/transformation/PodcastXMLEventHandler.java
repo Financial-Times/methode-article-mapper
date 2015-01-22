@@ -44,7 +44,7 @@ public class PodcastXMLEventHandler extends BaseXMLEventHandler {
         Pattern pattern2 = Pattern.compile(EMBED_REGEX);
         Matcher matcher = pattern.matcher(tagbody);
         if(!matcher.find()){
-            return;  //?
+            return;  //by default this ignores this whole block regardless of the fallback and the content
         }
 
         String match = matcher.group(0);
