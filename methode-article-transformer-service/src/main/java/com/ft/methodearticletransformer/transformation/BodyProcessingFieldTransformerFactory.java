@@ -24,7 +24,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     @Override
     public FieldTransformer newInstance() {
-        com.ft.bodyprocessing.BodyProcessorChain bodyProcessorChain = new BodyProcessorChain(bodyProcessors());
+        BodyProcessorChain bodyProcessorChain = new BodyProcessorChain(bodyProcessors());
         return new BodyProcessingFieldTransformer(bodyProcessorChain);
     }
 
