@@ -9,6 +9,7 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements XmlParser<PullQuoteData> {
@@ -16,6 +17,7 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 	private static final String QUOTE_SOURCE = "web-pull-quote-source";
 	private static final String QUOTE_TEXT = "web-pull-quote-text";
 	private static final String PULL_QUOTE = "web-pull-quote";
+    private static final String DUMMY_SOURCE_TEXT = "EM-dummyText";
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
 	public PullQuoteXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
@@ -50,7 +52,11 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 			pullQuoteData.setQuoteText(parseRawContent(QUOTE_TEXT, xmlEventReader));
 		}
 		if (isElementNamed(nextStartElement.getName(), QUOTE_SOURCE)) {
-			pullQuoteData.setQuoteSource(parseRawContent(QUOTE_SOURCE, xmlEventReader));
+            String source = parseRawContent(QUOTE_SOURCE, xmlEventReader);
+            if(!Strings.isNullOrEmpty(source) && source.contains(DUMMY_SOURCE_TEXT)){
+                source = "";
+            }
+			pullQuoteData.setQuoteSource(source);
 		}
 	}
 
