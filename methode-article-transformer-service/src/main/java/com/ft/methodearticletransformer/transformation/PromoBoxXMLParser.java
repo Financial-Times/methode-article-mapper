@@ -16,7 +16,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 
 	private static final String PROMO_INTRO = "promo-intro";
 	private static final String PROMO_HEADLINE = "promo-headline";
-	private static final String PULL_QUOTE = "promo-box";
+	private static final String PROMO_BOX = "promo-box";
 	private static final String PROMO_LINK = "promo-link";
 	private static final String PROMO_IMAGE = "promo-image";
 	private static final String PROMO_TITLE = "promo-title";
@@ -24,7 +24,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
 	public PromoBoxXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
-		super(PULL_QUOTE);
+		super(PROMO_BOX);
 		checkNotNull(stAXTransformingBodyProcessor, "The StAXTransformingBodyProcessor cannot be null.");
 		this.stAXTransformingBodyProcessor = stAXTransformingBodyProcessor;
 	}
@@ -48,23 +48,23 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 	}
 
 	@Override
-	protected void populateBean(PromoBoxData pullQuoteData, StartElement nextStartElement,
+	protected void populateBean(PromoBoxData promoBoxData, StartElement nextStartElement,
 								XMLEventReader xmlEventReader) {
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
-			pullQuoteData.setHeadline(getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)));
+			promoBoxData.setHeadline(getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_INTRO)) {
-			pullQuoteData.setIntro(getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)));
+			promoBoxData.setIntro(getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_LINK)) {
-			pullQuoteData.setLink(getValueOrDefault(parseRawContent(PROMO_LINK, xmlEventReader)));
+			promoBoxData.setLink(getValueOrDefault(parseRawContent(PROMO_LINK, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_IMAGE)) {
-			pullQuoteData.setImagePresent(true);
+			promoBoxData.setImagePresent(true);
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_TITLE)) {
-			pullQuoteData.setTitle(getValueOrDefault(parseRawContent(PROMO_TITLE, xmlEventReader)));
+			promoBoxData.setTitle(getValueOrDefault(parseRawContent(PROMO_TITLE, xmlEventReader)));
 		}
 	}
 
