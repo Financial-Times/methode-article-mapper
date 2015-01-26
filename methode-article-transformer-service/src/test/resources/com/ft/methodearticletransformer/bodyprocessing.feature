@@ -258,10 +258,15 @@ Feature: Body processing
 
   Examples:
     | before                                                         | after                                                         |
+    # Text within the a tag is preserved:
     | <a href="http://www.google.com">google.com</a>                 | <a href="http://www.google.com">google.com</a>                |
+    # Links within other tags are preserved:
     | <h1><a href="http://www.google.com">google.com</a></h1>        | <h1><a href="http://www.google.com">google.com</a></h1>       |
+    # Title attribute is preserved:
     | <a href="http://www.google.com" title="Google">google.com</a>  | <a href="http://www.google.com" title="Google">google.com</a> |
+    # Target attribute is dropped:
     | <a href="http://www.google.com" target="_blank">google.com</a> | <a href="http://www.google.com">google.com</a>                |
+    # Alt attribute is preserved:
     | <a href="http://www.google.com" alt="Google">google.com</a>    | <a href="http://www.google.com" alt="Google">google.com</a>   |
 
   @Technical
