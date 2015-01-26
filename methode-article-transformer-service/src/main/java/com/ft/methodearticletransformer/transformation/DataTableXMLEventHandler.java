@@ -42,12 +42,12 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 		if (isElementOfCorrectType(startElement)) {
 
 			// Parse the xml needed to create a bean
-			DataTableData dataBean = parseElementData(startElement, xmlEventReader);
+			DataTableData dataBean = dataTableDataXmlParser.parseElementData(startElement, xmlEventReader);
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
 				// process raw data and add any assets to the context
-				transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
+				dataTableDataXmlParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
 
 				// ensure that the mutated bean data is still valid for processing after the transform field content processing
 				if(dataBean.isAllRequiredDataPresent()) {
@@ -78,11 +78,4 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 		return false;
 	}
 
-	void transformFieldContentToStructuredFormat(DataTableData dataBean, BodyProcessingContext bodyProcessingContext) {
-		dataTableDataXmlParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
-	}
-
-	DataTableData parseElementData(StartElement startElement,XMLEventReader xmlEventReader) throws XMLStreamException {
-		return dataTableDataXmlParser.parseElementData(startElement, xmlEventReader);
-	}
 }
