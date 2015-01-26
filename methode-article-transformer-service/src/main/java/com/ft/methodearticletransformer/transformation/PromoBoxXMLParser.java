@@ -12,7 +12,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
-public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements XmlParser<BigNumberData> {
+public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements XmlParser<PromoBoxData> {
 
 	private static final String PROMO_INTRO = "promo-intro";
 	private static final String PROMO_HEADLINE = "promo-headline";
@@ -30,14 +30,14 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 	}
 
 	@Override
-	public void transformFieldContentToStructuredFormat(BigNumberData bigNumberData, BodyProcessingContext bodyProcessingContext) {
-		bigNumberData.setHeadline(transformRawContentToStructuredFormat(bigNumberData.getHeadline(), bodyProcessingContext));
-		bigNumberData.setIntro(transformRawContentToStructuredFormat(bigNumberData.getIntro(), bodyProcessingContext));
+	public void transformFieldContentToStructuredFormat(PromoBoxData promoBoxData, BodyProcessingContext bodyProcessingContext) {
+		promoBoxData.setHeadline(transformRawContentToStructuredFormat(promoBoxData.getHeadline(), bodyProcessingContext));
+		promoBoxData.setIntro(transformRawContentToStructuredFormat(promoBoxData.getIntro(), bodyProcessingContext));
 	}
 
 	@Override
-	public BigNumberData createDataBeanInstance() {
-		return new BigNumberData();
+	public PromoBoxData createDataBeanInstance() {
+		return new PromoBoxData();
 	}
 
 	private String transformRawContentToStructuredFormat(String unprocessedContent, BodyProcessingContext bodyProcessingContext) {
@@ -48,7 +48,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 	}
 
 	@Override
-	protected void populateBean(BigNumberData pullQuoteData, StartElement nextStartElement,
+	protected void populateBean(PromoBoxData pullQuoteData, StartElement nextStartElement,
 								XMLEventReader xmlEventReader) {
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {

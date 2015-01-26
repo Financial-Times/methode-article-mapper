@@ -16,6 +16,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	private static final String BIG_NUMBER_ELEMENT = "big-number";
 	private static final String BIG_NUMBER_HEADLINE = "big-number-headline";
 	private static final String BIG_NUMBER_INTRO = "big-number-intro";
+	private static final String PROMO_BOX = "promo-box";
 
 	private final PromoBoxXMLParser promoBoxXMLParser;
 
@@ -28,13 +29,15 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 										BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
 
 		// Confirm that the startEvent is of the correct type
-		if (isElementOfCorrectType(startElement)) {
+		if (isPromoBox(startElement)) {
 
 			// Parse the xml needed to create a bean
-			BigNumberData dataBean = parseElementData(startElement, xmlEventReader);
+			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader);
 
 			// Add asset to the context and create the aside element if all required data is present
-			if (dataBean.isValidBigNumberData()) {
+			if (promoBoxIsValidBigNumber(dataBean)) {
+				// We assume this promo box is a valid big number.
+
 				// process raw data and add any assets to the context
 				transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
 
@@ -47,11 +50,15 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 			}
 
 		} else {
-			throw new BodyProcessingException("event must correspond to " + BIG_NUMBER_ELEMENT + " tag");
+			throw new BodyProcessingException("event must correspond to " + PROMO_BOX + " tag");
 		}
 	}
 
-	private void writePullQuoteElement(BodyWriter eventWriter, BigNumberData dataBean) {
+	private boolean promoBoxIsValidBigNumber(PromoBoxData dataBean) {
+		return dataBean.isValidBigNumberData();
+	}
+
+	private void writePullQuoteElement(BodyWriter eventWriter, PromoBoxData dataBean) {
 		eventWriter.writeStartTag(BIG_NUMBER_HEADLINE, noAttributes());
 		eventWriter.write(dataBean.getHeadline());
 		eventWriter.writeEndTag(BIG_NUMBER_HEADLINE);
@@ -65,15 +72,15 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		return Collections.emptyMap();
 	}
 
-	protected boolean isElementOfCorrectType(StartElement event) {
-		return event.getName().getLocalPart().toLowerCase().equals("promo-box");
+	protected boolean isPromoBox(StartElement event) {
+		return event.getName().getLocalPart().toLowerCase().equals(PROMO_BOX);
 	}
 
-	private BigNumberData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
+	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
 		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader);
 	}
 
-	private void transformFieldContentToStructuredFormat(BigNumberData dataBean, BodyProcessingContext bodyProcessingContext) {
+	private void transformFieldContentToStructuredFormat(PromoBoxData dataBean, BodyProcessingContext bodyProcessingContext) {
 		promoBoxXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
 	}
 }

@@ -2,7 +2,7 @@ package com.ft.methodearticletransformer.transformation;
 
 import org.apache.commons.lang.StringUtils;
 
-public class BigNumberData {
+public class PromoBoxData {
 
 	private String headline;
 	private String intro;
