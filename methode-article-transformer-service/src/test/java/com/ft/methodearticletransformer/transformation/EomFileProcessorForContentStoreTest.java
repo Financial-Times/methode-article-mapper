@@ -3,6 +3,7 @@ package com.ft.methodearticletransformer.transformation;
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
@@ -32,6 +33,7 @@ import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -208,36 +210,58 @@ public class EomFileProcessorForContentStoreTest {
         eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
     }
 
+    @Test
+    public void testShouldAddMainImageIfPresent() throws Exception {
+        final UUID imageUuid = UUID.randomUUID();
+        final UUID expectedMainImageUuid = ImageSetUuidGenerator.fromImageUuid(imageUuid);
+        final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid);
+
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        assertThat(content.getMainImage(), equalTo(expectedMainImageUuid.toString()));
+    }
+
+    @Test
+    public void testMainImageIsNullIfMissing() throws Exception {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        assertThat(content.getMainImage(), nullValue());
+    }
+
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "");
+    }
+
+    private EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid) {
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "fileref=\"/FT/Graphics/Online/Master_2048x1152/someImageFIleName.jpg?uuid=" + mainImageUuid + "\"");
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, "");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "");
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "");
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "");
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString);
+        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, "");
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, "");
+        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, "", "");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
-                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString) {
+                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString, String mainImageUuid) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -249,18 +273,23 @@ public class EomFileProcessorForContentStoreTest {
         	.withType(EOMCompoundStory.getTypeName())
         	.withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
                     "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                    "<doc><lead><lead-headline><headline><ln>" +
+                    "<doc><lead><lead-images id=\"U2701877253086gfF\"><web-master width=\"2048\" height=\"1152\" id=\"U2701877253086TGC\" " + mainImageUuid + "/>\n" +
+                    "<web-skybox-picture/>\n" +
+                    "<web-alt-picture/>\n" +
+                    "<web-popup-preview width=\"167\" height=\"96\"/>\n" +
+                    "<web-popup/>\n" +
+                    "</lead-images><lead-headline><headline><ln>" +
                     "And sacked chimney-sweep pumps boss full of mayonnaise." +
                     "</ln></headline></lead-headline></lead>" +
                     "<story><text><body><p>random text for now</p></body>" +
                     "</text></story></doc>").getBytes(UTF8))
-        	.withAttributes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\"><ObjectMetadata>" +
-                    "<OutputChannels>" +
-                    "<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
-                    "<DIFTcomMarkDeleted>" + markedDeleted + "</DIFTcomMarkDeleted></DIFTcom>" +
-                    "</OutputChannels>" +
-                    "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>" + sourceCode + "</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
+                .withAttributes("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\"><ObjectMetadata>" +
+                        "<OutputChannels>" +
+                        "<DIFTcom><DIFTcomLastPublication>" + lastPublicationDateAsString + "</DIFTcomLastPublication>" +
+                        "<DIFTcomMarkDeleted>" + markedDeleted + "</DIFTcomMarkDeleted></DIFTcom>" +
+                        "</OutputChannels>" +
+                        "<EditorialNotes><EmbargoDate>" + embargoDate + "</EmbargoDate><Sources><Source><SourceCode>" + sourceCode + "</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>")
 			.withSystemAttributes("<props><productInfo><name>" + channel + "</name>\n" +
                     "<issueDate>20131219</issueDate>\n" +
                     "</productInfo>\n" +
@@ -269,7 +298,7 @@ public class EomFileProcessorForContentStoreTest {
                     "<summary>text text text text text text text text text text text text text text text\n" +
                     " text text text text te...</summary><wordCount>417</wordCount></props>")
 			.withWorkflowStatus(workflowStatus)
-        	.build();
+                .build();
     }
 
     private EomFile createDwcComponentFile(UUID uuid) {

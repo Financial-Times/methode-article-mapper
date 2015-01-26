@@ -35,6 +35,8 @@ import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -105,6 +107,8 @@ public class EomFileProcessorForContentStore {
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
 
+		final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
+
 		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
 
         final String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument),
@@ -117,10 +121,19 @@ public class EomFileProcessorForContentStore {
                 .withTitle(headline)
                 .withXmlBody(transformedBody)
                 .withByline(transformedByline)
+				.withMainImage(mainImage)
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
                 .build();
+	}
+
+	private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
+		final String imageUuid = StringUtils.substringAfter(xpath.evaluate("/doc/lead/lead-images/web-master/@fileref", eomFileDocument), "uuid=");
+		if (!Strings.isNullOrEmpty(imageUuid)) {
+			return ImageSetUuidGenerator.fromImageUuid(UUID.fromString(imageUuid)).toString();
+		}
+		return null;
 	}
 
 	private void verifyLastPublicationDatePresent(UUID uuid, String lastPublicationDateAsString) {
