@@ -59,7 +59,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
         slideshowXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
     }
 
-    SlideshowData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
+    private SlideshowData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
         return slideshowXMLParser.parseElementData(startElement, xmlEventReader);
     }
     
