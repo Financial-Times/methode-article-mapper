@@ -146,7 +146,7 @@ Feature: Body processing
     | ul      |
     | li      |
 
-  Scenario Outline: Tag names are transformed
+  Scenario Outline: Some tag names are transformed to their valid HTML 5 equivalents
     Given I have body text in Methode XML format containing <tagname>
     When I transform it into our Content Store format
     Then the start tag <tagname> should have been replaced by <replacement>
@@ -227,8 +227,9 @@ Feature: Body processing
     Then the body should be like <after>
 
   Examples:
-    | before | after |
-    |        |       |
+    | before        | after   |
+    |               |         |
+    | <body></body> | <body/> |
 
   @Technical
   Scenario Outline: Entity translation to unicode
