@@ -227,8 +227,9 @@ Feature: Body processing
     Then the body should be like <after>
 
   Examples:
-    | before | after |
-    |        |       |
+    | before        | after   |
+    |               |         |
+    | <body></body> | <body/> |
 
   @Technical
   Scenario Outline: Entity translation to unicode
