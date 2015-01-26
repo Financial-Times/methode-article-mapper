@@ -1,15 +1,16 @@
 package com.ft.methodearticletransformer.transformation;
 
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
-import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
-import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import org.apache.commons.lang.StringUtils;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
+import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
+import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
+import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 
 public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements XmlParser<BigNumberData> {
 
@@ -19,6 +20,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 	private static final String PROMO_LINK = "promo-link";
 	private static final String PROMO_IMAGE = "promo-image";
 	private static final String PROMO_TITLE = "promo-title";
+    private static final String DUMMY_SOURCE_TEXT = "EM-dummyText";
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
 	public PromoBoxXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
@@ -42,7 +44,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 		if (!StringUtils.isBlank(unprocessedContent)) {
 			return stAXTransformingBodyProcessor.process(unprocessedContent, bodyProcessingContext);
 		}
-		return null;
+		return "";
 	}
 
 	@Override
@@ -50,19 +52,19 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 								XMLEventReader xmlEventReader) {
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
-			pullQuoteData.setHeadline(parseRawContent(PROMO_HEADLINE, xmlEventReader));
+			pullQuoteData.setHeadline(getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_INTRO)) {
-			pullQuoteData.setIntro(parseRawContent(PROMO_INTRO, xmlEventReader));
+			pullQuoteData.setIntro(getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_LINK)) {
-			pullQuoteData.setLink(parseRawContent(PROMO_LINK, xmlEventReader));
+			pullQuoteData.setLink(getValueOrDefault(parseRawContent(PROMO_LINK, xmlEventReader)));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_IMAGE)) {
 			pullQuoteData.setImagePresent(true);
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_TITLE)) {
-			pullQuoteData.setTitle(parseRawContent(PROMO_TITLE, xmlEventReader));
+			pullQuoteData.setTitle(getValueOrDefault(parseRawContent(PROMO_TITLE, xmlEventReader)));
 		}
 	}
 
@@ -70,4 +72,12 @@ public class PromoBoxXMLParser extends BaseXMLParser<BigNumberData> implements X
 	public boolean doesTriggerElementContainAllDataNeeded() {
 		return false;
 	}
+
+    //TODO This is currently duplicated across Parsers
+    private String getValueOrDefault(String value){
+        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
+            return "";
+        }
+        return value;
+    }
 }

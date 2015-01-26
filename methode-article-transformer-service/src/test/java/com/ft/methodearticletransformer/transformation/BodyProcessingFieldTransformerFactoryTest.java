@@ -271,6 +271,28 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void bigNumbersShouldReturnEmptyHeadlineIfHeadlineIsEmpty() {
+        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
+                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>\n" +
+                "</promo-box></body>";
+
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
+                "<big-number-headline></big-number-headline>" +
+                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "</big-number></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
     public void promoBoxWithPromoLinkIsNotBigNumber() {
         String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
                 "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +

@@ -49,14 +49,10 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 								XMLEventReader xmlEventReader) {
 		// look for either web-pull-quote-text or web-pull-quote-source
 		if (isElementNamed(nextStartElement.getName(), QUOTE_TEXT)) {
-			pullQuoteData.setQuoteText(parseRawContent(QUOTE_TEXT, xmlEventReader));
+			pullQuoteData.setQuoteText(getValueOrDefault(getValueOrDefault(parseRawContent(QUOTE_TEXT, xmlEventReader))));
 		}
 		if (isElementNamed(nextStartElement.getName(), QUOTE_SOURCE)) {
-            String source = parseRawContent(QUOTE_SOURCE, xmlEventReader);
-            if(!Strings.isNullOrEmpty(source) && source.contains(DUMMY_SOURCE_TEXT)){
-                source = "";
-            }
-			pullQuoteData.setQuoteSource(source);
+			pullQuoteData.setQuoteSource(getValueOrDefault(parseRawContent(QUOTE_SOURCE, xmlEventReader)));
 		}
 	}
 
@@ -64,4 +60,12 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 	public boolean doesTriggerElementContainAllDataNeeded() {
 		return false;
 	}
+
+    //TODO This is currently duplicated across Parsers
+    private String getValueOrDefault(String value){
+        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
+            return "";
+        }
+        return value;
+    }
 }

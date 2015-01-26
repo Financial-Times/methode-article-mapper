@@ -1,20 +1,22 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.StartElement;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements XmlParser<DataTableData> {
 
 	private static final String START_ELEMENT_NAME = "table";
+    private static final String DUMMY_SOURCE_TEXT = "EM-dummyText";
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
 	public DataTableXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
@@ -50,6 +52,14 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 		if (!StringUtils.isBlank(unprocessedContent)) {
 			return stAXTransformingBodyProcessor.process(unprocessedContent, bodyProcessingContext);
 		}
-		return null;
+		return "";
 	}
+
+    //TODO This is currently duplicated across Parsers
+    private String getValueOrDefault(String value){
+        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
+            return "";
+        }
+        return value;
+    }
 }
