@@ -6,7 +6,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
@@ -52,8 +51,4 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
         return event.getAttributeByName(QName.valueOf(videoIdAttributeName)).getValue();
     }
 
-    @Override
-    public void handleEndElementEvent(EndElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter) throws XMLStreamException {
-        //do nothing
-    }
 }
