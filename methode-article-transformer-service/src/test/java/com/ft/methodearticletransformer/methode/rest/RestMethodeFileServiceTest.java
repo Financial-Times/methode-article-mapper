@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.http.conn.ConnectTimeoutException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -65,8 +66,6 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
-
-import cucumber.api.java.After;
 
 public class RestMethodeFileServiceTest {
 

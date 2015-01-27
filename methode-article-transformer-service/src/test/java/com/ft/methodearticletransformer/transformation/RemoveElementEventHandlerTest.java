@@ -1,7 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.attributeNameMatcher;
-import static com.ft.methodearticletransformer.transformation.RemoveElementEventHandler.caselessMatcher;
+import static com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry.attributeNameMatcher;
+import static com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry.caselessMatcher;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;

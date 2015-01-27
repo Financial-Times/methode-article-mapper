@@ -62,8 +62,9 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
 	private static final String ANCHOR_PREFIX = "#";
     public static final String FT_COM_WWW_URL = "http://www.ft.com/";
+	public static final String TYPE = "type";
 
-    private final com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService;
+	private final com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
 
 	public MethodeLinksBodyProcessor(com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient) {
@@ -255,8 +256,8 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	}
 
 	private Optional<String> getTitleAttributeIfExists(Node node) {
-		if(node.getAttributes().getNamedItem("title") != null){
-			String nodeValue = node.getAttributes().getNamedItem("title").getNodeValue();
+		if(getAttribute(node, "title") != null){
+			String nodeValue = getAttribute(node, "title").getNodeValue();
 			return Optional.fromNullable(nodeValue);
 		}
 		return Optional.absent();
@@ -276,19 +277,40 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             if(path.startsWith("/intl")) {
                 newHref =  ftAssetUri.resolve(path.substring(5)).toString();
             } else {
-            	// do this to get rid of query params and fragment identifiers from the url
-            	newHref =  ftAssetUri.resolve(path).toString(); 
+                if (isSlideshowUrl(aTag)) {
+                    newHref = oldHref;
+                } else {
+                    // do this to get rid of query params and fragment identifiers from the url
+                    newHref =  ftAssetUri.resolve(path).toString();                    
+                }
             }
 
         } else {
             newHref = "http://www.ft.com/cms/s/"+ uuid + ".html";
         }
 
-        aTag.getAttributes().getNamedItem("href").setNodeValue(newHref);
+        getAttribute(aTag, "href").setNodeValue(newHref);
 
+		// We might have added a type attribute to identify the type of content this links to.
+		// If so, it should be removed, because it is not HTML5 compliant.
+		removeTypeAttributeIfPresent(aTag);
 	}
-    
-    private Optional<String> extractId(Node node) {
+
+	private void removeTypeAttributeIfPresent(Node aTag) {
+		if (getAttribute(aTag, TYPE) != null) {
+			aTag.getAttributes().removeNamedItem(TYPE);
+		}
+	}
+
+	private boolean isSlideshowUrl(Node aTag) {
+		return getAttribute(aTag, TYPE) != null && getAttribute(aTag, TYPE).getNodeValue().equals("slideshow");
+    }
+
+	private Node getAttribute(Node aTag, String attributeName) {
+		return aTag.getAttributes().getNamedItem(attributeName);
+	}
+
+	private Optional<String> extractId(Node node) {
         return extractId(getHref(node));
 	}
 

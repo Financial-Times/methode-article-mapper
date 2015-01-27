@@ -2,10 +2,8 @@ package com.ft.methodearticletransformer.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
@@ -39,30 +37,5 @@ public class RemoveElementEventHandler extends BaseXMLEventHandler {
 	@Override // Only called where the start tag used the fallback event handler
 	public void handleEndElementEvent(final EndElement event, final XMLEventReader xmlEventReader, final BodyWriter eventWriter) throws XMLStreamException {
 		fallbackEventHandler.handleEndElementEvent(event, xmlEventReader, eventWriter);
-	}	
-	
-	public interface StartElementMatcher {
-		boolean matches(StartElement element);
 	}
-	
-    public static StartElementMatcher caselessMatcher(final String attributeName, final String attributeValue) {
-    	return new StartElementMatcher() {
-			@Override
-			public boolean matches(final StartElement element) {
-				final Attribute channel = element.getAttributeByName(new QName(attributeName));
-				return (channel == null || !attributeValue.equalsIgnoreCase(channel.getValue())) ? false : true; 
-			}
-        };
-    }
-    
-    public static StartElementMatcher attributeNameMatcher(final String attributeName) {
-    	return new StartElementMatcher() {
-			@Override
-			public boolean matches(final StartElement element) {
-				final Attribute channel = element.getAttributeByName(new QName(attributeName));
-				return (channel == null) ? false : true; 
-			}
-        };
-    }	
-    
 }
