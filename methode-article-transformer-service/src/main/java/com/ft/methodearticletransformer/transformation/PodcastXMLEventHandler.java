@@ -57,7 +57,7 @@ public class PodcastXMLEventHandler extends BaseXMLEventHandler {
             String[] arrOfValues = listOfValues.split(",");
             String podcastAddress = arrOfValues[0].replaceAll("'", "");
             String podcastId = arrOfValues[1].replaceAll("'", "");
-            String href = podcastAddress + "/p/" + podcastId;
+            String href = "http://" + podcastAddress + "/p/" + podcastId;
             Map<String, String> attributesToAdd = new HashMap<String, String>();
             attributesToAdd.put(ANCHOR_HREF, href);
             eventWriter.writeStartTag(ANCHOR_TAG, attributesToAdd);
