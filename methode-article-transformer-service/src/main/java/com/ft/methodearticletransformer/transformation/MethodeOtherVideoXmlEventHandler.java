@@ -32,8 +32,8 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
         this.targetedHtmlClass = targetedHtmlClass;
         this.fallbackHandler = fallbackHandler;
         validRegexes = new ArrayList<String>();
-        validRegexes.add("^http://player.vimeo.com/video/[\\S]+");
-        validRegexes.add("^http://www.youtube.com/embed/[\\S]+");
+        validRegexes.add("^(https?:)?(\\/\\/)?player.vimeo.com/video/[\\S]+");
+        validRegexes.add("^(https?:)?(\\/\\/)?www.youtube.com/embed/[\\S]+");
     }
 
     @Override
