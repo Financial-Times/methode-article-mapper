@@ -1,9 +1,11 @@
 package com.ft.methodearticletransformer.transformation;
 
-import java.util.HashMap;
+import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -57,9 +59,12 @@ public class PodcastXMLEventHandler extends BaseXMLEventHandler {
             String[] arrOfValues = listOfValues.split(",");
             String podcastAddress = arrOfValues[0].replaceAll("'", "");
             String podcastId = arrOfValues[1].replaceAll("'", "");
-            String href = podcastAddress + "/p/" + podcastId;
-            Map<String, String> attributesToAdd = new HashMap<String, String>();
-            attributesToAdd.put(ANCHOR_HREF, href);
+            URI uri = UriBuilder.fromPath("p")
+                    .host(podcastAddress)
+                    .path(podcastId)
+                    .scheme("http")
+                    .build();
+            Map<String, String> attributesToAdd = Collections.singletonMap(ANCHOR_HREF, uri.toString());
             eventWriter.writeStartTag(ANCHOR_TAG, attributesToAdd);
             eventWriter.writeEndTag(ANCHOR_TAG);
         }

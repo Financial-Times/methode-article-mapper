@@ -714,7 +714,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
                 "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
                 "</script></body>";
-        String processedPodcast = "<body><a href=\"podcast.ft.com/p/2463\"></a></body>";
+        String processedPodcast = "<body><a href=\"http://podcast.ft.com/p/2463\"></a></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
@@ -725,7 +725,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
                 "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
                 "</script></body>";
-        String processedPodcast = "<body><a href=\"podcast.ft.com/p/2463\"></a><a href=\"podcast.ft.com/p/2463\"></a></body>";
+        String processedPodcast = "<body><a href=\"http://podcast.ft.com/p/2463\"></a><a href=\"http://podcast.ft.com/p/2463\"></a></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
