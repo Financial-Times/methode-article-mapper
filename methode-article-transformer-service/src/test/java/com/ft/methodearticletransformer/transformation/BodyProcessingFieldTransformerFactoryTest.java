@@ -766,6 +766,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void shouldProcessVimeoTagWithNoProtocolCorrectly() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"//player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
+                "</p></body>";
+        String processedVideoText = "<body><p><a href=\"//player.vimeo.com/video/77761436\"></a></p></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
     public void shouldProcessYouTubeVideoCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
@@ -773,6 +781,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
+    @Test
+    public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
+                "</p></body>";
+        String processedVideoText = "<body><p><a href=\"https://www.youtube.com/embed/77761436\"></a></p></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
 
 
     @Test
