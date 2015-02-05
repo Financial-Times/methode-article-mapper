@@ -25,6 +25,7 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
 
     private static final String INCORRECT_ELEMENT = "a";
     private static final String PULL_QUOTE_ELEMENT = "web-pull-quote";
+    private static final String TRANSFORMED_PULL_QUOTE = "pull-quote";
     private static final String PULL_QUOTE_TEXT = "text";
     private static final String PULL_QUOTE_SOURCE = "source";
 
@@ -74,10 +75,10 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
         when(mockPullQuoteData.getQuoteText()).thenReturn(PULL_QUOTE_TEXT);
         when(mockPullQuoteData.getQuoteSource()).thenReturn(PULL_QUOTE_SOURCE);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
+        verify(mockBodyWriter).writeStartTag(TRANSFORMED_PULL_QUOTE, noAttributes());
         verify(mockBodyWriter).write(mockPullQuoteData.getQuoteText());
         verify(mockBodyWriter).write(mockPullQuoteData.getQuoteSource());
-        verify(mockBodyWriter).writeEndTag(PULL_QUOTE_ELEMENT);
+        verify(mockBodyWriter).writeEndTag(TRANSFORMED_PULL_QUOTE);
     }
 
     private Map<String, String> noAttributes() {

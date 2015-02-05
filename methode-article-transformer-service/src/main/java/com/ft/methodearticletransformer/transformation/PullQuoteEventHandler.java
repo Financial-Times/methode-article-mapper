@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
-	private static final String PULL_QUOTE_ELEMENT = "web-pull-quote";
+	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
 	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
 	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
 
