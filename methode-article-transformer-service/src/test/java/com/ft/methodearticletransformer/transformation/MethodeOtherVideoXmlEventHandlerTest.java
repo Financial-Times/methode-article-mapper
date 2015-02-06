@@ -79,8 +79,8 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         EndElement secondEndElement = getEndElement(SECONDARY_ELEMENT_NAME);
         EndElement firstEndElement = getEndElement(NEW_ELEMENT);
 
-        when(mockXmlEventReader.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true);
-        when(mockXmlEventReader.nextEvent()).thenReturn(firstElement).thenReturn(secondaryElement).thenReturn(secondEndElement).thenReturn(firstEndElement);
+        when(mockXmlEventReader.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true);
+        when(mockXmlEventReader.nextEvent()).thenReturn(secondaryElement).thenReturn(secondEndElement).thenReturn(firstEndElement);
         eventHandler.handleStartElementEvent(firstElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(NEW_ELEMENT, null);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, finalAttributes);
@@ -102,8 +102,8 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         EndElement secondEndElement = getEndElement(SECONDARY_ELEMENT_NAME);
         EndElement firstEndElement = getEndElement(NEW_ELEMENT);
 
-        when(mockXmlEventReader.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true).thenReturn(true);
-        when(mockXmlEventReader.nextEvent()).thenReturn(firstElement).thenReturn(secondaryElement).thenReturn(secondEndElement).thenReturn(firstEndElement);
+        when(mockXmlEventReader.hasNext()).thenReturn(true).thenReturn(true).thenReturn(true);
+        when(mockXmlEventReader.nextEvent()).thenReturn(secondaryElement).thenReturn(secondEndElement).thenReturn(firstEndElement);
         eventHandler.handleStartElementEvent(firstElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(NEW_ELEMENT, null);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, finalAttributes);
