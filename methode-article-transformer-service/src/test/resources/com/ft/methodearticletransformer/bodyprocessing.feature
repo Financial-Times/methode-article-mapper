@@ -111,7 +111,6 @@ Feature: Body processing
     | web-background-news        |
     | web-background-news-header |
     | web-background-news-text   |
-    | web-inline-picture         |
     | web-picture                |
     | web-pull-quote             |
     | web-pull-quote-source      |
@@ -382,3 +381,12 @@ Scenario Outline: Internal links are transformed
     # International link is no longer international, and query parameter is removed:
     | <p>An ft.com page: <a href="http://www.ft.com/intl/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html?hello" title="Title" target="_blank">Link with intl and param</a></p> | <p>An ft.com page: <a href="http://www.ft.com/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html" title="Title">Link with intl and param</a></p> |
 
+Scenario Outline: Inline image links are transformed
+  Given I have an "inline image link" in a Methode article body like <before>
+  When I transform it into our Content Store format
+  Then the body should be like <after>
+
+  Examples:
+    | before                                                                                                                                                                                                               | after                                                                                                          |
+    # Link to an image set that exists in the content store should be converted into a <content>[...]</content> link and all the attributes and any text between the <web-inline-picture> opening and closing tags should be dropped:
+    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content id="3b630b4a-4d51-11e4-a7d4-002128161462" type="http://www.ft.com/ontology/content/ImageSet"/></p> |
