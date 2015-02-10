@@ -29,7 +29,7 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
 
     private static final String VIDEO_PLAYER_ELEMENT = "videoPlayer";
     private static final String TRANSFORMED_ELEMENT = "a";
-    private static final String NEW_ELEMENT_ATTRIBUTE = "href";
+    private static final String HREF_ATTRIBUTE = "href";
     private static final String VIDEO_URL = "http://video.ft.com/%s";
     private static final String VIDEO_ID_ATTRIBUTE_NAME = "videoID";
     private static final String VIDEO_ID = "3920663836001";
@@ -48,7 +48,7 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
 
     @Test
     public void shouldUseFallbackHandlerIfStartElementVideoIdAttributeValuesAreEmpty() throws Exception {
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
         attributes.put("", "");
         StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT, attributes);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -58,11 +58,11 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
         String videoUrl = String.format(VIDEO_URL, VIDEO_ID);
-        Map<String, String> wpAttributes = new HashMap<String, String>();
-        wpAttributes.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
+        Map<String, String> wpAttributes = new HashMap<>();
+        wpAttributes.put(HREF_ATTRIBUTE, videoUrl);
         wpAttributes.put(VIDEO_ID_ATTRIBUTE_NAME, VIDEO_ID);
         Map<String, String> transformedAttributes = new HashMap<>();
-        transformedAttributes.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
+        transformedAttributes.put(HREF_ATTRIBUTE, videoUrl);
         StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT, wpAttributes);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, transformedAttributes);

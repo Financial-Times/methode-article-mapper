@@ -25,7 +25,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
 
     private SlideshowEventHandler eventHandler;
 
-    private static final String NEW_ELEMENT = "a";
+    private static final String START_ELEMENT_TAG = "a";
     private static final String INCORRECT_TAG_NAME = "g";
     private static final String HREF_ATTRIBUTE_NAME = "href";
     private static final String SLIDESHOW_URL_TEMPLATE = "http://www.ft.com/cms/s/null.html#slide0";
@@ -54,19 +54,19 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldNotWriteIfAllValidDataIsNotPresent() throws Exception{
+    public void shouldNotWriteIfIfIfNotAllValidDataIsPresent() throws Exception{
         Map<String, String> attributes = new HashMap<>();
         attributes.put(ATTRIBUTE_TYPE, ATTRIBUTE_VALUE);
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
-        StartElement startElement = getStartElementWithAttributes(NEW_ELEMENT, attributes);
+        StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
         when(mockElementMatcher.matches(startElement)).thenReturn(true);
         when(mockXmlParser.parseElementData(startElement, mockXMLEventReader)).thenReturn(mockSlideshowData);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(false);
 
         eventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter, times(0)).writeStartTag(NEW_ELEMENT, attributes);
-        verify(mockBodyWriter, times(0)).writeEndTag(NEW_ELEMENT);
+        verify(mockBodyWriter, times(0)).writeStartTag(START_ELEMENT_TAG, attributes);
+        verify(mockBodyWriter, times(0)).writeEndTag(START_ELEMENT_TAG);
     }
 
     @Test
@@ -74,14 +74,14 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(ATTRIBUTE_TYPE, ATTRIBUTE_VALUE);
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
-        StartElement startElement = getStartElementWithAttributes(NEW_ELEMENT, attributes);
+        StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
         when(mockElementMatcher.matches(startElement)).thenReturn(true);
         when(mockXmlParser.parseElementData(startElement, mockXMLEventReader)).thenReturn(mockSlideshowData);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(true);
 
         eventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(NEW_ELEMENT, attributes);
-        verify(mockBodyWriter).writeEndTag(NEW_ELEMENT);
+        verify(mockBodyWriter).writeStartTag(START_ELEMENT_TAG, attributes);
+        verify(mockBodyWriter).writeEndTag(START_ELEMENT_TAG);
     }
 }

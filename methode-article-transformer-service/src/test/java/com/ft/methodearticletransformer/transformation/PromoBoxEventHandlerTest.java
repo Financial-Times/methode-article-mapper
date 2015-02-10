@@ -27,7 +27,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String BIG_NUMBER_ELEMENT = "big-number";
     private static final String BIG_NUMBER_HEADLINE_VALUE = "headline";
     private static final String BIG_NUMBER_INTRO_VALUE = "intro";
-    private static final String NEW_ELEMENT = "promo-box";
+    private static final String METHODE_PROMO_BOX_ELEMENT = "promo-box";
     private static final String INCORRECT_ELEMENT = "a";
 
     @Mock private XMLEventReader mockXmlEventReader;
@@ -45,12 +45,11 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     public void shouldThrowBodyProcessingExceptionIfOpeningTagIsNotPromoBox() throws Exception {
         StartElement startElement = getStartElement(INCORRECT_ELEMENT);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(INCORRECT_ELEMENT, noAttributes());
     }
 
     @Test
     public void shouldNotTransformContentIfAllValidDataIsNotPresent() throws Exception {
-        StartElement startElement = getStartElement(NEW_ELEMENT);
+        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -60,7 +59,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Test
     public void shouldNotWriteTransformedContentIfAllValidDataIsNotPresentAfterTransformation() throws Exception {
-        StartElement startElement = getStartElement(NEW_ELEMENT);
+        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -70,7 +69,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
-        StartElement startElement = getStartElement(NEW_ELEMENT);
+        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(true);
         when(mockPromoBoxData.getHeadline()).thenReturn(BIG_NUMBER_HEADLINE_VALUE);

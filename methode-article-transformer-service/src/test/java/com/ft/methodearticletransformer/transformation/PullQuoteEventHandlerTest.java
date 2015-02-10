@@ -44,7 +44,6 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
     public void shouldThrowBodyProcessingExceptionIfOpeningTagIsNotPullQuote() throws Exception {
         StartElement startElement = getStartElement(INCORRECT_ELEMENT);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(INCORRECT_ELEMENT, noAttributes());
     }
 
     @Test
