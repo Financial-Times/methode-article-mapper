@@ -7,6 +7,7 @@ import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
+import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
 
         Map<String, String> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("id", UUID);
+        expectedAttributes.put("id", ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString());
         expectedAttributes.put("type", IMAGE_SET_TYPE);
         verify(mockEventWriter).writeStartTag(CONTENT_TAG, expectedAttributes);
         verify(mockEventWriter).writeEndTag(CONTENT_TAG);
@@ -111,7 +112,8 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
                 "arbitrary text</web-inline-picture>", UUID);
         final String actual = processor.process(inputXml, null);
 
-        String expectedXml = String.format("<content id=\"%s\" type=\"%s\"></content>", UUID, IMAGE_SET_TYPE);
+        String expectedXml = String.format("<content id=\"%s\" type=\"%s\"></content>",
+                ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString(), IMAGE_SET_TYPE);
         assertEquals(expectedXml, actual);
     }
 }

@@ -5,6 +5,7 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
+import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -12,6 +13,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +29,10 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
         String uuid = getUuidForImage(event);
+        String imageSetUuid = ImageSetUuidGenerator.fromImageUuid(UUID.fromString(uuid)).toString();
 
         HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("id", uuid);
+        attributes.put("id", imageSetUuid);
         attributes.put("type", IMAGE_SET_TYPE);
 
         eventWriter.writeStartTag(CONTENT_TAG, attributes);
