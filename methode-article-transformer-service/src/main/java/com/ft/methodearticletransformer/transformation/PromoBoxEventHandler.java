@@ -44,7 +44,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 				// ensure that the mutated bean data is still valid for processing after the transform field content processing
 				if(dataBean.isValidBigNumberData()) {
 					eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-					writePullQuoteElement(eventWriter, dataBean);
+                    writeBigNumberElement(eventWriter, dataBean);
 					eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
 				}
 			}
@@ -58,7 +58,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		return dataBean.isValidBigNumberData();
 	}
 
-	private void writePullQuoteElement(BodyWriter eventWriter, PromoBoxData dataBean) {
+	private void writeBigNumberElement(BodyWriter eventWriter, PromoBoxData dataBean) {
 		eventWriter.writeStartTag(BIG_NUMBER_HEADLINE, noAttributes());
 		eventWriter.write(dataBean.getHeadline());
 		eventWriter.writeEndTag(BIG_NUMBER_HEADLINE);

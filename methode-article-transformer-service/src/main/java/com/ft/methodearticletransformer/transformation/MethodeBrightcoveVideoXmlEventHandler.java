@@ -15,6 +15,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.google.common.base.Strings;
 
 public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
+
     private static final String NEW_ELEMENT = "a";
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
     private static final String VIDEO_URL = "http://video.ft.com/%s";
