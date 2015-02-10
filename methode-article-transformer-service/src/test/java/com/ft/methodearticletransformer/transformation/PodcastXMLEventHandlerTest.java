@@ -39,7 +39,7 @@ public class PodcastXMLEventHandlerTest extends BaseXMLEventHandlerTest  {
     private static final String INCORRECT_TARGETED_CLASS_ATTRIBUTE = "img";
     private static final String ANCHOR_TAG = "a";
     private static final String ANCHOR_HREF = "href";
-    private static final String PODCAST_ADDRESS = "podcast.ft.com";
+    private static final String PODCAST_ADDRESS = "http://podcast.ft.com";
     private static final String PODCAST_ID = "2463";
     private static final String TEXT = "<![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award'," +
                                         "'Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */";
@@ -74,7 +74,7 @@ public class PodcastXMLEventHandlerTest extends BaseXMLEventHandlerTest  {
         EndElement endElement = getEndElement(NEW_ELEMENT);
 
         String href = PODCAST_ADDRESS + "/p/" + PODCAST_ID;
-        Map<String, String> attributesToAdd = new HashMap<String, String>();
+        Map<String, String> attributesToAdd = new HashMap<>();
         attributesToAdd.put(ANCHOR_HREF, href);
 
         getTheCharsToTheEndOfTag(endElement);
