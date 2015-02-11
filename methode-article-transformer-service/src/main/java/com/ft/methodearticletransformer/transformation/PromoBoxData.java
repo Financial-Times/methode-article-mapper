@@ -33,10 +33,6 @@ public class PromoBoxData {
 	}
 
 	public boolean isValidBigNumberData() {
-
-		if ( StringUtils.isNotEmpty(link) || imagePresent || StringUtils.isNotEmpty(title)) {
-			return false;
-		}
 		return containsValidData(this.headline) || containsValidData(this.intro);
 	}
 
