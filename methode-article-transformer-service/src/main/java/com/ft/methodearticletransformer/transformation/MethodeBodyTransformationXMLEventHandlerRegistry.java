@@ -35,7 +35,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
-                "timeline", "timeline-header", "timeline-credits",
+                "ft-timeline", "timeline-header", "timeline-credits",
                 "timeline-sources", "timeline-byline", "timeline-item",
                 "timeline-image", "timeline-date", "timeline-title",
                 "timeline-body"
