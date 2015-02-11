@@ -85,7 +85,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 	private Map<String, String> attributeClassEqualToNumberComponent() {
 		Map<String, String> attributeClassEqualToNumberComponent = new HashMap<>();
 		attributeClassEqualToNumberComponent.put(PromoBoxEventHandler.PROMO_CLASS_ATTRIBUTE,
-				PromoBoxEventHandler.NUMBERS_COMPONENT_IDENTIFIER);
+				PromoBoxEventHandler.NUMBERS_COMPONENT_CLASS);
 		return attributeClassEqualToNumberComponent;
 	}
 

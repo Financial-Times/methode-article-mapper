@@ -19,7 +19,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	private static final String BIG_NUMBER_HEADLINE = "big-number-headline";
 	private static final String BIG_NUMBER_INTRO = "big-number-intro";
 	private static final String PROMO_BOX = "promo-box";
-	public static final String NUMBERS_COMPONENT_IDENTIFIER = "numbers-component";
+	public static final String NUMBERS_COMPONENT_CLASS = "numbers-component";
 	public static final String PROMO_CLASS_ATTRIBUTE = "class";
 
 	private final PromoBoxXMLParser promoBoxXMLParser;
@@ -90,6 +90,6 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	}
 
 	private boolean isNumbersComponent(Attribute classAttribute) {
-		return classAttribute != null && NUMBERS_COMPONENT_IDENTIFIER.equals(classAttribute.getValue());
+		return classAttribute != null && NUMBERS_COMPONENT_CLASS.equals(classAttribute.getValue());
 	}
 }
