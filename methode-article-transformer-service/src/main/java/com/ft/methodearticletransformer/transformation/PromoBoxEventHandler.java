@@ -5,8 +5,10 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import java.util.Collections;
 import java.util.Map;
@@ -17,6 +19,8 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	private static final String BIG_NUMBER_HEADLINE = "big-number-headline";
 	private static final String BIG_NUMBER_INTRO = "big-number-intro";
 	private static final String PROMO_BOX = "promo-box";
+	public static final String NUMBERS_COMPONENT_CLASS = "numbers-component";
+	public static final String PROMO_CLASS_ATTRIBUTE = "class";
 
 	private final PromoBoxXMLParser promoBoxXMLParser;
 
@@ -35,7 +39,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader);
 
 			// Add asset to the context and create the aside element if all required data is present
-			if (promoBoxIsValidBigNumber(dataBean)) {
+			if (promoBoxIsValidBigNumber(startElement, dataBean)) {
 				// We assume this promo box is a valid big number.
 
 				// process raw data and add any assets to the context
@@ -54,8 +58,9 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		}
 	}
 
-	private boolean promoBoxIsValidBigNumber(PromoBoxData dataBean) {
-		return dataBean.isValidBigNumberData();
+	private boolean promoBoxIsValidBigNumber(StartElement startElement, PromoBoxData dataBean) {
+		Attribute classAttribute = startElement.getAttributeByName(new QName(PROMO_CLASS_ATTRIBUTE));
+		return isNumbersComponent(classAttribute) && dataBean.isValidBigNumberData();
 	}
 
 	private void writeBigNumberElement(BodyWriter eventWriter, PromoBoxData dataBean) {
@@ -82,5 +87,9 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
 	private void transformFieldContentToStructuredFormat(PromoBoxData dataBean, BodyProcessingContext bodyProcessingContext) {
 		promoBoxXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
+	}
+
+	private boolean isNumbersComponent(Attribute classAttribute) {
+		return classAttribute != null && NUMBERS_COMPONENT_CLASS.equals(classAttribute.getValue());
 	}
 }

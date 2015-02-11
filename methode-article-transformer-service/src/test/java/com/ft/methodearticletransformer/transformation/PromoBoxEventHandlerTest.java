@@ -13,6 +13,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.times;
@@ -43,13 +44,13 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Test(expected=BodyProcessingException.class)
     public void shouldThrowBodyProcessingExceptionIfOpeningTagIsNotPromoBox() throws Exception {
-        StartElement startElement = getStartElement(INCORRECT_ELEMENT);
+        StartElement startElement = getStartElementWithAttributes(INCORRECT_ELEMENT, attributeClassEqualToNumberComponent());
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
     }
 
     @Test
     public void shouldNotTransformContentIfAllValidDataIsNotPresent() throws Exception {
-        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
+		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -59,7 +60,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Test
     public void shouldNotWriteTransformedContentIfAllValidDataIsNotPresentAfterTransformation() throws Exception {
-        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
+		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -69,8 +70,8 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
-        StartElement startElement = getStartElement(METHODE_PROMO_BOX_ELEMENT);
-        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
+		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
+		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(true);
         when(mockPromoBoxData.getHeadline()).thenReturn(BIG_NUMBER_HEADLINE_VALUE);
         when(mockPromoBoxData.getIntro()).thenReturn(BIG_NUMBER_INTRO_VALUE);
@@ -81,7 +82,14 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
         verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
     }
 
-    private Map<String, String> noAttributes() {
+	private Map<String, String> attributeClassEqualToNumberComponent() {
+		Map<String, String> attributeClassEqualToNumberComponent = new HashMap<>();
+		attributeClassEqualToNumberComponent.put(PromoBoxEventHandler.PROMO_CLASS_ATTRIBUTE,
+				PromoBoxEventHandler.NUMBERS_COMPONENT_CLASS);
+		return attributeClassEqualToNumberComponent;
+	}
+
+	private Map<String, String> noAttributes() {
         return Collections.emptyMap();
     }
 }
