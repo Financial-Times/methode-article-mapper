@@ -617,7 +617,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Test
     public void timelineShouldBeRetained() {
         String timelineFromMethode = "<body><p>Intro text</p>" +
-        		"<timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
+        		"<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
         		"<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
         		"<timeline-sources>FT Research</timeline-sources>\r\n" +
         		"<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
@@ -625,10 +625,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
         		"<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
         		"<timeline-title>1997</timeline-title>\r\n" +
         		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
-        		"</timeline></body>";
+        		"</ft-timeline></body>";
         
         String processedTimeline = "<body><p>Intro text</p>" +
-                "<timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
                 "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
                 "<timeline-sources>FT Research</timeline-sources>\r\n" +
                 "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
@@ -636,7 +636,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
                 "<timeline-title>1997</timeline-title>\r\n" +
                 "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
-                "</timeline></body>";
+                "</ft-timeline></body>";
         
         checkTransformation(timelineFromMethode, processedTimeline);
     }
