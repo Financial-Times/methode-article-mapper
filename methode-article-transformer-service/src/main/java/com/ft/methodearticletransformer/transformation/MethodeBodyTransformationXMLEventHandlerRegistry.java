@@ -35,7 +35,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
-                "ft-timeline", "timeline-header", "timeline-credits",
+                "timeline", "timeline-header", "timeline-credits",
                 "timeline-sources", "timeline-byline", "timeline-item",
                 "timeline-image", "timeline-date", "timeline-title",
                 "timeline-body"
@@ -67,6 +67,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         );
 
 		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
+		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("ft-timeline"), "timeline");
 
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
