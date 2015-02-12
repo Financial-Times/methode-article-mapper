@@ -43,6 +43,11 @@ public class PodcastXMLEventHandlerTest extends BaseXMLEventHandlerTest  {
     private static final String PODCAST_ID = "2463";
     private static final String TEXT = "<![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award'," +
                                         "'Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */";
+	private static final String DATA_ASSET_TYPE = "data-asset-type";
+	private static final String DATA_EMBEDDED = "data-embedded";
+	private static final String TITLE = "title";
+	private static final String PODCAST = "podcast";
+	private static final String TRUE = "true";
 
     @Before
     public void setup() throws Exception  {
@@ -76,6 +81,9 @@ public class PodcastXMLEventHandlerTest extends BaseXMLEventHandlerTest  {
         String href = PODCAST_ADDRESS + "/p/" + PODCAST_ID;
         Map<String, String> attributesToAdd = new HashMap<>();
         attributesToAdd.put(ANCHOR_HREF, href);
+		attributesToAdd.put(DATA_ASSET_TYPE, PODCAST);
+		attributesToAdd.put(DATA_EMBEDDED, TRUE);
+		attributesToAdd.put(TITLE, "Golden Flannel of the year award");
 
         getTheCharsToTheEndOfTag(endElement);
 
