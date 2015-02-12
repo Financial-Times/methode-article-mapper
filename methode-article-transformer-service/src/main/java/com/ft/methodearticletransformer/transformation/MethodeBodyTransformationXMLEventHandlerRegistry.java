@@ -66,6 +66,8 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );
 
+		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
+
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),

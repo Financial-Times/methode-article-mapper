@@ -169,6 +169,15 @@ Feature: Body processing
     | before               | after                |
     | <p>Blah<br/>Blah</p> | <p>Blah<br/>Blah</p> |
 
+  Scenario Outline: Subhead should become a h3 with the class attribute equal to ft-subhead
+    Given I have body text in Methode XML like <before>
+    When I transform it into our Content Store format
+    Then the body should be like <after>
+
+  Examples:
+    | before                     | after                               |
+    | <subhead>Duchess</subhead> | <h3 class="ft-subhead">Duchess</h3> |
+
   @Technical
   Scenario Outline: Empty Paragraphs
     Given I have body text in Methode XML like <before>
