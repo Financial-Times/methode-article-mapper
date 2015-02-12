@@ -758,6 +758,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation("<body><p>This one is not empty</p><p>This should not be removed <br/></p><p><br/></p><p> <br/> </p></body>",expectedSentence);
     }
 
+	@Test
+	public void shouldTransformSubheadIntoH3ClassFtSubhead() {
+		String subheadFromMethode = "<body><p>his is some normal text.</p><p>More text</p><subhead>This is a subhead.</subhead><p>This is some more normal text.</p><subhead>This is another subhead.</subhead></body>";
+		String processedSubhead = "<body><p>his is some normal text.</p><p>More text</p><h3 class=\"ft-subhead\">This is a subhead.</h3><p>This is some more normal text.</p><h3 class=\"ft-subhead\">This is another subhead.</h3></body>";
+		checkTransformation(subheadFromMethode, processedSubhead);
+	}
+
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
 
