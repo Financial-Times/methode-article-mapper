@@ -25,6 +25,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
     private static final String SLIDESHOW_URL_TEMPLATE = "http://www.ft.com/cms/s/%s.html#slide0";
 	public static final String DATA_ASSET_TYPE = "data-asset-type";
 	public static final String SLIDESHOW = "slideshow";
+	public static final String TITLE = "title";
 
 	private XMLEventHandler fallbackEventHandler;
     private XmlParser<SlideshowData> slideshowXMLParser;
@@ -76,6 +77,9 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
         String slideshowUrl = String.format(SLIDESHOW_URL_TEMPLATE, dataBean.getUuid()) + queryParamsIfPresent(dataBean);
         validAttributes.put(HREF_ATTRIBUTE_NAME, slideshowUrl);
 		validAttributes.put(DATA_ASSET_TYPE, SLIDESHOW);
+		if (StringUtils.isNotEmpty(dataBean.getTitle())) {
+			validAttributes.put(TITLE, dataBean.getTitle());
+		}
 
 		// Hack to mark slideshow links for following processing (will be dropped before output)
         validAttributes.put("type", "slideshow");
