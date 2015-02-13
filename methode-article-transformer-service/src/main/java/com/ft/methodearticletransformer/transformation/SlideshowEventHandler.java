@@ -18,13 +18,15 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang.StringUtils;
 
 public class SlideshowEventHandler extends BaseXMLEventHandler {
-    
-    private static final String A_TAG_NAME = "a";
+
+	private static final String A_TAG_NAME = "a";
     private static final String HREF_ATTRIBUTE_NAME = "href";
     
     private static final String SLIDESHOW_URL_TEMPLATE = "http://www.ft.com/cms/s/%s.html#slide0";
+	public static final String DATA_ASSET_TYPE = "data-asset-type";
+	public static final String SLIDESHOW = "slideshow";
 
-    private XMLEventHandler fallbackEventHandler;
+	private XMLEventHandler fallbackEventHandler;
     private XmlParser<SlideshowData> slideshowXMLParser;
     private final StartElementMatcher matcher;  
 
@@ -73,6 +75,9 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 
         String slideshowUrl = String.format(SLIDESHOW_URL_TEMPLATE, dataBean.getUuid()) + queryParamsIfPresent(dataBean);
         validAttributes.put(HREF_ATTRIBUTE_NAME, slideshowUrl);
+		validAttributes.put(DATA_ASSET_TYPE, SLIDESHOW);
+
+		// Hack to mark slideshow links for following processing (will be dropped before output)
         validAttributes.put("type", "slideshow");
 
         return ImmutableMap.copyOf(validAttributes);

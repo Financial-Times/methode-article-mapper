@@ -73,6 +73,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     public void shouldWriteTransformedElementsToWriter() throws Exception{
         Map<String, String> attributes = new HashMap<>();
         attributes.put(ATTRIBUTE_TYPE, ATTRIBUTE_VALUE);
+		attributes.put(SlideshowEventHandler.DATA_ASSET_TYPE, SlideshowEventHandler.SLIDESHOW);
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
         StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
