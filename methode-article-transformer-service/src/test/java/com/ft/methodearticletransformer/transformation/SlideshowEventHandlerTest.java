@@ -32,7 +32,6 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String ATTRIBUTE_TYPE = "type";
     private static final String ATTRIBUTE_VALUE = "slideshow";
 	private static final String TITLE_STRING = "Type title";
-	private static final String EMPTY_TITLE_STRING = "";
 
     @Mock private XMLEventHandler mockFallbackEventHandler;
     @Mock private XmlParser<SlideshowData> mockXmlParser;
@@ -76,6 +75,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(ATTRIBUTE_TYPE, ATTRIBUTE_VALUE);
 		attributes.put(SlideshowEventHandler.DATA_ASSET_TYPE, SlideshowEventHandler.SLIDESHOW);
+		attributes.put(SlideshowEventHandler.DATA_EMBEDDED, SlideshowEventHandler.YEP);
 		attributes.put(SlideshowEventHandler.TITLE, TITLE_STRING);
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
         StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);

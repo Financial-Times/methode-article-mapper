@@ -580,7 +580,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
         
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-        		"<p><a data-asset-type=\"slideshow\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+        		"<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
         
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -592,7 +592,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy/></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a data-asset-type=\"slideshow\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -606,8 +606,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a data-asset-type=\"slideshow\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
-                "<p><a data-asset-type=\"slideshow\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
                 "</body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);

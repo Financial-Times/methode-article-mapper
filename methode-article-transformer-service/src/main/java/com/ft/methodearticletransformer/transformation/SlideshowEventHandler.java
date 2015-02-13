@@ -26,6 +26,8 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 	public static final String DATA_ASSET_TYPE = "data-asset-type";
 	public static final String SLIDESHOW = "slideshow";
 	public static final String TITLE = "title";
+	public static final String DATA_EMBEDDED = "data-embedded";
+	public static final String YEP = "true";
 
 	private XMLEventHandler fallbackEventHandler;
     private XmlParser<SlideshowData> slideshowXMLParser;
@@ -77,6 +79,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
         String slideshowUrl = String.format(SLIDESHOW_URL_TEMPLATE, dataBean.getUuid()) + queryParamsIfPresent(dataBean);
         validAttributes.put(HREF_ATTRIBUTE_NAME, slideshowUrl);
 		validAttributes.put(DATA_ASSET_TYPE, SLIDESHOW);
+		validAttributes.put(DATA_EMBEDDED, YEP); // If we know it's a slideshow, it's embedded. Otherwise it's just a link.
 		if (StringUtils.isNotEmpty(dataBean.getTitle())) {
 			validAttributes.put(TITLE, dataBean.getTitle());
 		}
