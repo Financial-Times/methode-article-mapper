@@ -7,6 +7,7 @@ import java.util.List;
 public class SlideshowData {
 private String uuid;
     private List<String> queryParams;
+	private String title;
 
     public String getUuid() {
         return uuid;
@@ -15,11 +16,11 @@ private String uuid;
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
-    
+
     public boolean isAllRequiredDataPresent() {
         return containsValidData(this.uuid);
     }
-    
+
     protected boolean containsValidData(String data) {
         return !StringUtils.isBlank(data);
     }
@@ -31,4 +32,12 @@ private String uuid;
     public List<String> getQueryParams() {
         return queryParams;
     }
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
 }

@@ -31,6 +31,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String SLIDESHOW_URL_TEMPLATE = "http://www.ft.com/cms/s/null.html#slide0";
     private static final String ATTRIBUTE_TYPE = "type";
     private static final String ATTRIBUTE_VALUE = "slideshow";
+	private static final String TITLE_STRING = "Type title";
 
     @Mock private XMLEventHandler mockFallbackEventHandler;
     @Mock private XmlParser<SlideshowData> mockXmlParser;
@@ -73,11 +74,15 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     public void shouldWriteTransformedElementsToWriter() throws Exception{
         Map<String, String> attributes = new HashMap<>();
         attributes.put(ATTRIBUTE_TYPE, ATTRIBUTE_VALUE);
+		attributes.put(SlideshowEventHandler.DATA_ASSET_TYPE, SlideshowEventHandler.SLIDESHOW);
+		attributes.put(SlideshowEventHandler.DATA_EMBEDDED, SlideshowEventHandler.YEP);
+		attributes.put(SlideshowEventHandler.TITLE, TITLE_STRING);
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
         StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
         when(mockElementMatcher.matches(startElement)).thenReturn(true);
         when(mockXmlParser.parseElementData(startElement, mockXMLEventReader)).thenReturn(mockSlideshowData);
+		when(mockSlideshowData.getTitle()).thenReturn(TITLE_STRING);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(true);
 
         eventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
