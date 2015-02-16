@@ -75,8 +75,8 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
         when(mockPullQuoteData.getQuoteSource()).thenReturn(PULL_QUOTE_SOURCE);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_PULL_QUOTE, noAttributes());
-        verify(mockBodyWriter).write(mockPullQuoteData.getQuoteText());
-        verify(mockBodyWriter).write(mockPullQuoteData.getQuoteSource());
+        verify(mockBodyWriter).writeRaw(mockPullQuoteData.getQuoteText());
+        verify(mockBodyWriter).writeRaw(mockPullQuoteData.getQuoteSource());
         verify(mockBodyWriter).writeEndTag(TRANSFORMED_PULL_QUOTE);
     }
 

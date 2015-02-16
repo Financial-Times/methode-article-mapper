@@ -162,12 +162,39 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
+
+	@Test
+	public void markupInsidePullQuotesShouldBeTransformed() {
+		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+				"\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+				"\t\t<tr>\n" +
+				"\t\t\t<td>\n" +
+				"\t\t\t\t<web-pull-quote-text>\n" +
+				"\t\t\t\t\t<p>It suits the extremists to encourage <b>healthy</b> eating.</p>\n" +
+				"\t\t\t\t</web-pull-quote-text>\n" +
+				"\t\t\t</td>\n" +
+				"\t\t</tr>\n" +
+				"\t\t<tr>\n" +
+				"\t\t\t<td>\n" +
+				"\t\t\t\t<web-pull-quote-source><b>source1</b></web-pull-quote-source>\n" +
+				"\t\t\t</td>\n" +
+				"\t\t</tr>\n" +
+				"\t</table>&gt;\n" +
+				"</web-pull-quote></body>";
+
+		String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+				"<pull-quote-text><p>It suits the extremists to encourage <strong>healthy</strong> eating.</p></pull-quote-text>" +
+				"<pull-quote-source><strong>source1</strong></pull-quote-source>" +
+				"</pull-quote></body>";
+
+		checkTransformation(pullQuoteFromMethode, processedPullQuote);
+	}
 
     @Test
     public void pullQuotesShouldReturnEmptySrcIfDummySource() {
@@ -189,7 +216,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote></body>";
 
@@ -234,12 +261,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</p></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote>" +
                 "<p>" +
                 "<pull-quote>" +
-                "<pull-quote-text>It suits the people to encourage drinking.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the people to encourage drinking.</p></pull-quote-text>" +
                 "<pull-quote-source>source2</pull-quote-source>" +
                 "</pull-quote>" +
                 "</p>" +
