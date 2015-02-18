@@ -47,15 +47,9 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
-				// process raw data and add any assets to the context
-				dataTableDataXmlParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
-
-				// ensure that the mutated bean data is still valid for processing after the transform field content processing
-				if(dataBean.isAllRequiredDataPresent()) {
-					eventWriter.writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableAttribute());
-					eventWriter.writeRaw(dataBean.getBody());
-					eventWriter.writeEndTag(DATA_TABLE_HTML_ELEMENT_NAME);
-				}
+				eventWriter.writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableAttribute());
+				eventWriter.writeRaw(dataBean.getBody());
+				eventWriter.writeEndTag(DATA_TABLE_HTML_ELEMENT_NAME);
 			}
 
 		} else {

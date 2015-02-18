@@ -389,13 +389,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String dataTableFromMethode = "<body><div><web-table><table class=\"data-table\" width=\"100%\"><caption>Table (Falcon Style)</caption>\n" +
                 "<thead><tr><th>Column A</th>\n" +
                 "<th>Column B</th>\n" +
-                "<th>Column C</th>\n" +
+                "<th><b>Column C</b></th>\n" +
                 "<th>Column D</th>\n" +
                 "</tr>\n" +
                 "</thead>\n" +
                 "<tbody><tr><td>0</td>\n" +
                 "<td>1</td>\n" +
-                "<td>2</td>\n" +
+                "<td><b>2</b></td>\n" +
                 "<td>3</td>\n" +
                 "</tr>\n" +
                 "<tr><td>4</td>\n" +
@@ -411,13 +411,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedDataTable = "<body><table class=\"data-table\"><caption>Table (Falcon Style)</caption>\n" +
                 "<thead><tr><th>Column A</th>\n" +
                 "<th>Column B</th>\n" +
-                "<th>Column C</th>\n" +
+                "<th><strong>Column C</strong></th>\n" +
                 "<th>Column D</th>\n" +
                 "</tr>\n" +
                 "</thead>\n" +
                 "<tbody><tr><td>0</td>\n" +
                 "<td>1</td>\n" +
-                "<td>2</td>\n" +
+                "<td><strong>2</strong></td>\n" +
                 "<td>3</td>\n" +
                 "</tr>\n" +
                 "<tr><td>4</td>\n" +
