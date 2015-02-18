@@ -33,9 +33,6 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 			// Parse the xml needed to create a bean
 			PullQuoteData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
-			// process raw data and add any assets to the context
-			transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
-
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
 				writePullQuoteElement(eventWriter, dataBean);
@@ -71,9 +68,5 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	private PullQuoteData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
 										   BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
 		return pullQuoteXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
-	}
-
-	private void transformFieldContentToStructuredFormat(PullQuoteData dataBean, BodyProcessingContext bodyProcessingContext) {
-		pullQuoteXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
 	}
 }
