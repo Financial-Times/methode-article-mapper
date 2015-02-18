@@ -52,7 +52,7 @@ public class DataTableXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldExitIfRequiredDataIsNotPresent() throws Exception {
         StartElement startElement = getStartElementWithAttributes(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
-        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockDataTableData);
+        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockDataTableData);
         when(mockDataTableData.isAllRequiredDataPresent()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockDataTableXMLParser, times(0)).transformFieldContentToStructuredFormat(mockDataTableData, mockBodyProcessingContext);
@@ -62,7 +62,7 @@ public class DataTableXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotWriteIfRequiredDataIsNotPresentAfterTransformation() throws Exception {
         StartElement startElement = getStartElementWithAttributes(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
-        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockDataTableData);
+        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockDataTableData);
         when(mockDataTableData.isAllRequiredDataPresent()).thenReturn(true).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
@@ -73,7 +73,7 @@ public class DataTableXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldWriteTransformedTableElementsToWriter() throws Exception {
         StartElement startElement = getStartElementWithAttributes(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
-        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockDataTableData);
+        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockDataTableData);
         when(mockDataTableData.isAllRequiredDataPresent()).thenReturn(true).thenReturn(true);
         when(mockDataTableData.getBody()).thenReturn(DATA_TABLE_BODY);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);

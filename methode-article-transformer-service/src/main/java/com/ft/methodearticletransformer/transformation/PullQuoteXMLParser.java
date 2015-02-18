@@ -46,7 +46,7 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 
 	@Override
 	protected void populateBean(PullQuoteData pullQuoteData, StartElement nextStartElement,
-								XMLEventReader xmlEventReader) {
+								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either web-pull-quote-text or web-pull-quote-source
 		if (isElementNamed(nextStartElement.getName(), QUOTE_TEXT)) {
 			pullQuoteData.setQuoteText(getValueOrDefault(getValueOrDefault(parseRawContent(QUOTE_TEXT, xmlEventReader))));

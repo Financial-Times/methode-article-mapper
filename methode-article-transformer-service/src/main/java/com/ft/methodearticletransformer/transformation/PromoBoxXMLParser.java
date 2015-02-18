@@ -49,7 +49,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 
 	@Override
 	protected void populateBean(PromoBoxData promoBoxData, StartElement nextStartElement,
-								XMLEventReader xmlEventReader) {
+								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
 			promoBoxData.setHeadline(getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)));

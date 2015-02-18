@@ -51,7 +51,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotTransformContentIfAllValidDataIsNotPresent() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
@@ -61,7 +61,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotWriteTransformedContentIfAllValidDataIsNotPresentAfterTransformation() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
@@ -71,7 +71,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPromoBoxData);
+		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true).thenReturn(true);
         when(mockPromoBoxData.getHeadline()).thenReturn(BIG_NUMBER_HEADLINE_VALUE);
         when(mockPromoBoxData.getIntro()).thenReturn(BIG_NUMBER_INTRO_VALUE);

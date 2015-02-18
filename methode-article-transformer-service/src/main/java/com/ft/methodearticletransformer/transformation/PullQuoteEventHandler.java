@@ -31,7 +31,7 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 		if (isElementOfCorrectType(startElement)) {
 
 			// Parse the xml needed to create a bean
-			PullQuoteData dataBean = parseElementData(startElement, xmlEventReader);
+			PullQuoteData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
 			// process raw data and add any assets to the context
 			transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
@@ -68,8 +68,9 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 		return event.getName().getLocalPart().toLowerCase().equals("web-pull-quote");
 	}
 
-	private PullQuoteData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
-		return pullQuoteXMLParser.parseElementData(startElement, xmlEventReader);
+	private PullQuoteData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
+										   BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+		return pullQuoteXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 	}
 
 	private void transformFieldContentToStructuredFormat(PullQuoteData dataBean, BodyProcessingContext bodyProcessingContext) {

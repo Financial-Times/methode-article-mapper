@@ -36,7 +36,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		if (isPromoBox(startElement)) {
 
 			// Parse the xml needed to create a bean
-			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader);
+			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (promoBoxIsValidBigNumber(startElement, dataBean)) {
@@ -81,8 +81,9 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		return event.getName().getLocalPart().toLowerCase().equals(PROMO_BOX);
 	}
 
-	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
-		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader);
+	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
+										  BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 	}
 
 	private void transformFieldContentToStructuredFormat(PromoBoxData dataBean, BodyProcessingContext bodyProcessingContext) {

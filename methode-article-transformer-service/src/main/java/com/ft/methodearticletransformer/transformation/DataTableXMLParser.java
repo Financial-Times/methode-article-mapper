@@ -32,7 +32,8 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 	}
 
 	@Override
-	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader) throws UnexpectedElementStructureException {
+	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader,
+							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
 		if (isElementNamed(nextStartElement.getName(), START_ELEMENT_NAME)) {
 			dataTableData.setBody(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement));
 		}

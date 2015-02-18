@@ -42,7 +42,8 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 		if (isElementOfCorrectType(startElement)) {
 
 			// Parse the xml needed to create a bean
-			DataTableData dataBean = dataTableDataXmlParser.parseElementData(startElement, xmlEventReader);
+			DataTableData dataBean = dataTableDataXmlParser.parseElementData(startElement, xmlEventReader,
+					bodyProcessingContext);
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
