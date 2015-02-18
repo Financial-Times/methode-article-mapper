@@ -23,6 +23,7 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
@@ -103,7 +104,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>";
 
         //Does include some strange extra spaces in the output file
-        final String expectedTransformedBody = "<body>\n<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
+        final String expectedTransformedBody = String.format("<body><p><content id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\n</p>\n" +
+                "<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
                 "alongside Picasso, “before death overtakes him”. Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n" +
                 "<p>Did she protest too much? Tate’s poster image for the retrospective <em>Saloua Raouda Choucair</em> is a classic post-cubist self-portrait. " +
                 "The artist has simplified her features into a mask-like countenance; her clothes – white turban, green sweater, " +
@@ -114,7 +116,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "which opened this week. But it is a disingenuous choice: the painting is the sole portrait in the show, and a rare figurative work. " +
                 "The only others are nudes, made while Raouda Choucair studied with “tubist” painter Fernand Léger; they subvert his muscly female figures into awkwardly " +
                 "posed blocks of flesh, breasts and faces sketched rudimentarily, to imply a feminist agenda – models " +
-                "reading about art history in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>";
+                "reading about art history in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>",
+                ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString("7784185e-a888-11e2-8e5d-00144feabdc0")).toString());
 
         checkTransformation(originalBody, expectedTransformedBody);
     }
