@@ -282,7 +282,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-headline>\n" +
                 "</td>\n" +
                 "</tr>\n" +
-                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about <b>£350m</b> a year — although some anticipate inflation of up to 70%</p>\n" +
                 "</promo-intro>\n" +
                 "</td>\n" +
                 "</tr>\n" +
@@ -290,8 +290,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-box></body>";
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
-                "<big-number-headline>£350m</big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-headline><p>£350m</p></big-number-headline>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about <strong>£350m</strong> a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
@@ -313,7 +313,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
                 "<big-number-headline></big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
@@ -369,13 +369,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</body>";
 
         String processedBigNumber = "<body><p>A big number!</p>\n" +
-                "<p><big-number><big-number-headline>£350M</big-number-headline>" +
-                "<big-number-intro>The cost of eating at Leon and Tossed every single day.</big-number-intro>" +
+                "<p><big-number><big-number-headline><p>£350M</p></big-number-headline>" +
+                "<big-number-intro><p>The cost of eating at Leon and Tossed every single day.</p></big-number-intro>" +
                 "</big-number></p>\n" +
                 "<p>A big number right aligned.</p>\n" +
                 "<p><big-number>" +
-                "<big-number-headline>52p</big-number-headline>" +
-                "<big-number-intro>The weekly saving made by making your own lunch.</big-number-intro>" +
+                "<big-number-headline><p>52p</p></big-number-headline>" +
+                "<big-number-intro><p>The weekly saving made by making your own lunch.</p></big-number-intro>" +
                 "</big-number>\n" +
                 "</p>\n" +
                 "</body>";
@@ -524,8 +524,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</table>&gt;</promo-box></p></body>";
 
         String processedBigNumber = "<body><p>patelka</p><p><big-number>" +
-                "<big-number-headline>£350m</big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-headline><p>£350m</p></big-number-headline>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></p></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);

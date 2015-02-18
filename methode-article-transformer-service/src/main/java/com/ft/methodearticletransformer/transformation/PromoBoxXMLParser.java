@@ -31,8 +31,8 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 
 	@Override
 	public void transformFieldContentToStructuredFormat(PromoBoxData promoBoxData, BodyProcessingContext bodyProcessingContext) {
-		promoBoxData.setHeadline(transformRawContentToStructuredFormat(promoBoxData.getHeadline(), bodyProcessingContext));
-		promoBoxData.setIntro(transformRawContentToStructuredFormat(promoBoxData.getIntro(), bodyProcessingContext));
+		// TODO Remove this method when possible, as it is now deprecated.
+		throw new IllegalStateException("This method should no longer be called.");
 	}
 
 	@Override
@@ -52,10 +52,12 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
-			promoBoxData.setHeadline(getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)));
+			promoBoxData.setHeadline(transformRawContentToStructuredFormat(
+					getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_INTRO)) {
-			promoBoxData.setIntro(getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)));
+			promoBoxData.setIntro(transformRawContentToStructuredFormat(
+					getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_LINK)) {
 			promoBoxData.setLink(getValueOrDefault(parseRawContent(PROMO_LINK, xmlEventReader)));
