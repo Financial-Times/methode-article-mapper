@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.transformation;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,12 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 
 public class PodcastXMLEventHandler extends BaseXMLEventHandler {
 
-    private BaseXMLEventHandler fallbackHandler;
+	private static final String DATA_ASSET_TYPE = "data-asset-type";
+	private static final String DATA_EMBEDDED = "data-embedded";
+	private static final String TITLE = "title";
+	private static final String PODCAST = "podcast";
+	private static final String TRUE = "true";
+	private BaseXMLEventHandler fallbackHandler;
     private static final String EMBED_REGEX = "(embedLink)(\\()([^\\)]+)(\\))";
     private static final String ANCHOR_TAG = "a";
     private static final String ANCHOR_HREF = "href";
@@ -59,12 +65,17 @@ public class PodcastXMLEventHandler extends BaseXMLEventHandler {
             String[] arrOfValues = listOfValues.split(",");
             String podcastAddress = arrOfValues[0].replaceAll("'", "");
             String podcastId = arrOfValues[1].replaceAll("'", "");
+			String podcastTitle = arrOfValues[4].replaceAll("'", "");
             URI uri = UriBuilder.fromPath("p")
                     .host(podcastAddress)
                     .path(podcastId)
                     .scheme("http")
                     .build();
-            Map<String, String> attributesToAdd = Collections.singletonMap(ANCHOR_HREF, uri.toString());
+            Map<String, String> attributesToAdd = new HashMap<>();
+			attributesToAdd.put(ANCHOR_HREF, uri.toString());
+			attributesToAdd.put(DATA_ASSET_TYPE, PODCAST);
+			attributesToAdd.put(DATA_EMBEDDED, TRUE);
+			attributesToAdd.put(TITLE, podcastTitle);
             eventWriter.writeStartTag(ANCHOR_TAG, attributesToAdd);
             eventWriter.writeEndTag(ANCHOR_TAG);
         }

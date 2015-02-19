@@ -168,6 +168,15 @@ Feature: Body processing
     | before               | after                |
     | <p>Blah<br/>Blah</p> | <p>Blah<br/>Blah</p> |
 
+  Scenario Outline: Subhead should become a h3 with the class attribute equal to ft-subhead
+    Given I have body text in Methode XML like <before>
+    When I transform it into our Content Store format
+    Then the body should be like <after>
+
+  Examples:
+    | before                     | after                               |
+    | <subhead>Duchess</subhead> | <h3 class="ft-subhead">Duchess</h3> |
+
   @Technical
   Scenario Outline: Empty Paragraphs
     Given I have body text in Methode XML like <before>
@@ -368,18 +377,20 @@ Scenario Outline: Internal links are transformed
     | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html?siteedition=uk&amp;siteedition=uk" title="ft.com">Text</a></p> 			 		| <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 	|
     # International link is no longer international, target is dropped:
     | <p><a href="http://www.ft.com/intl/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text" target="_blank">Link with intl and suffix</a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with intl and suffix</a></p> |
-    # Slideshow link is converted into a regular link with slide0 added, and title attribute is dropped:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
-    # Slideshow link is converted into a regular link with slide0 added, and alt attribute is dropped:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
+    # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and title attribute is preserved:
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0" title="Title text"/></p> |
+    # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and alt attribute is dropped:
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
     # Slideshow-like link without type="slideshow" is treated like a regular link:
     | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" title="Title text" dtxInsert="slideshow" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with just suffix</a></p> |
-    # Slideshow link is converted into a regular link with #slide0 added, and query parameter is preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value"/></p> |
-    # Slideshow link is converted into a regular link with #slide0 added, and query parameters are preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value&amp;kartik=patel" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value&amp;kartik=patel"/></p> |
+    # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameter is preserved:
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value" title="Title text"/></p> |
+    # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameters are preserved:
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value&amp;kartik=patel" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value&amp;kartik=patel" title="Title text"/></p> |
     # International link is no longer international, and query parameter is removed:
     | <p>An ft.com page: <a href="http://www.ft.com/intl/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html?hello" title="Title" target="_blank">Link with intl and param</a></p> | <p>An ft.com page: <a href="http://www.ft.com/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html" title="Title">Link with intl and param</a></p> |
+    # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and empty title attribute is removed:
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
 
 Scenario Outline: Inline image links are transformed
   Given I have an "inline image link" in a Methode article body like <before>

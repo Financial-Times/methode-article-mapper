@@ -61,10 +61,13 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "pull-quote-text",
                 "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
-                "web-background-news-header", "web-background-news-text",
+                "web-background-news-header", "web-background-news-text", "web-inline-picture",
                 "web-picture", "web-pull-quote-source", "web-pull-quote-text",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );
+
+		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
+		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("ft-timeline"), "timeline");
 
         registerStartAndEndElementEventHandler(new InlineImageXmlEventHandler(),"web-inline-picture");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");

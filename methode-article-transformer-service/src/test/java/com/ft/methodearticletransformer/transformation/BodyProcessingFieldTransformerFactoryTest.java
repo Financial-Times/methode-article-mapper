@@ -142,7 +142,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Test
     public void encodedNbspShouldBeReplacedWithSpace() {
         checkTransformation("<body>This is a sentence .</body>",
-                String.format("<body>This is a sentence%s.</body>", String.valueOf('\u00A0')));
+				String.format("<body>This is a sentence%s.</body>", String.valueOf('\u00A0')));
     }
 
     @Test
@@ -295,93 +295,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }
 
-    @Test
-    public void promoBoxWithPromoLinkIsNotBigNumber() {
-        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
-                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
-                "</promo-headline>\n" +
-                "<promo-link>http://www.test.com</promo-link>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
-                "</promo-intro>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "</table>\n" +
-                "</promo-box></body>";
+	@Test
+	public void promoBoxWithoutClassNumbersComponentIsNotBigNumber() {
+		String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"not-numbers-component\" align=\"right\">" +
+				"<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
+				"</promo-headline>\n" +
+				"<promo-link></promo-link>\n" +
+				"</td>\n" +
+				"</tr>\n" +
+				"<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+				"</promo-intro>\n" +
+				"</td>\n" +
+				"</tr>\n" +
+				"</table>\n" +
+				"</promo-box></body>";
 
-        String processedBigNumber = "<body><p>patelka</p></body>";
+		String processedBigNumber = "<body><p>patelka</p></body>";
 
-        checkTransformation(bigNumberFromMethode, processedBigNumber);
-    }
-
-    @Test
-    public void promoBoxWithEmptyPromoLinkIsBigNumber() {
-        String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"numbers-component\" align=\"right\">" +
-                "<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
-                "</promo-headline>\n" +
-                "<promo-link></promo-link>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
-                "</promo-intro>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "</table>\n" +
-                "</promo-box></body>";
-
-        String processedBigNumber = "<body><p>patelka</p><big-number>" +
-                "<big-number-headline>£350m</big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
-                "</big-number></body>";
-
-        checkTransformation(bigNumberFromMethode, processedBigNumber);
-    }
-
-    @Test
-    public void promoBoxWithPromoImageIsNotBigNumber() {
-        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td>" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-headline><p>HEADLINE TEXT</p>\n" +
-                "</promo-headline>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-image fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/Copy%20of%20Copy%20of%20secondaryimageccd1.jpg?uuid=220972be-972b-11e4-be20-002128161462\" tmx=\"167 96 167 96\"/>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-intro><p>PROMOBOX BODY</p>\n" +
-                "</promo-intro>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "</table>&gt;</promo-box></p></body>";
-
-        String processedBigNumber = "<body><p>patelka</p></body>";
-
-        checkTransformation(bigNumberFromMethode, processedBigNumber);
-    }
-
-    @Test
-    public void promoBoxWithPromoTitleIsNotBigNumber() {
-        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title><p>PROMOBOX INDEPTH</p>\n" +
-                "</promo-title>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-headline><p>HEADLINE TEXT</p>\n" +
-                "</promo-headline>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "<tr><td><promo-intro><p>PROMOBOX BODY</p>\n" +
-                "</promo-intro>\n" +
-                "</td>\n" +
-                "</tr>\n" +
-                "</table>&gt;</promo-box></p></body>";
-
-        String processedBigNumber = "<body><p>patelka</p></body>";
-
-        checkTransformation(bigNumberFromMethode, processedBigNumber);
-    }
-
+		checkTransformation(bigNumberFromMethode, processedBigNumber);
+	}
 
     @Test
     public void shouldNotBarfOnTwoPromoBoxes() {
@@ -553,7 +485,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void promoBoxWithPromoTitleThatIsEmptyIsBigNumber() {
-        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title>" +
+        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box class=\"numbers-component\" align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title>" +
                 "</promo-title>\n" +
                 "</td>\n" +
                 "</tr>\n" +
@@ -651,7 +583,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
         
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-        		"<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+        		"<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
         
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -663,7 +595,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy/></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -677,8 +609,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
-                "<p><a href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
                 "</body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
@@ -699,7 +631,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         		"</timeline></body>";
         
         String processedTimeline = "<body><p>Intro text</p>" +
-                "<timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
                 "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
                 "<timeline-sources>FT Research</timeline-sources>\r\n" +
                 "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
@@ -707,7 +639,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
                 "<timeline-title>1997</timeline-title>\r\n" +
                 "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
-                "</timeline></body>";
+                "</ft-timeline></body>";
         
         checkTransformation(timelineFromMethode, processedTimeline);
     }
@@ -717,7 +649,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
                 "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
                 "</script></body>";
-        String processedPodcast = "<body><a href=\"http://podcast.ft.com/p/2463\"></a></body>";
+        String processedPodcast = "<body><a data-asset-type=\"podcast\" data-embedded=\"true\" href=\"http://podcast.ft.com/p/2463\" title=\"Golden Flannel of the year award\"></a></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
@@ -726,9 +658,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
                 "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n</script>" +
                 "<script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
-                "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
+                "</script><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){embedLink('podcast.ft.com','2463','18','lucy060115.mp3','Golden Flannel of the year award 2','Under Tim Cook’s leadership, Apple succumbed to drivel, says Lucy Kellaway','ep_2463','share_2463');}/* ]]> */\n" +
                 "</script></body>";
-        String processedPodcast = "<body><a href=\"http://podcast.ft.com/p/2463\"></a><a href=\"http://podcast.ft.com/p/2463\"></a></body>";
+        String processedPodcast = "<body><a data-asset-type=\"podcast\" data-embedded=\"true\" href=\"http://podcast.ft.com/p/2463\" title=\"Golden Flannel of the year award\"></a>" +
+				"<a data-asset-type=\"podcast\" data-embedded=\"true\" href=\"http://podcast.ft.com/p/2463\" title=\"Golden Flannel of the year award 2\"></a></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
@@ -828,6 +761,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<p>This should not be removed <br/></p></body>");
         checkTransformation("<body><p>This one is not empty</p><p>This should not be removed <br/></p><p><br/></p><p> <br/> </p></body>",expectedSentence);
     }
+
+	@Test
+	public void shouldTransformSubheadIntoH3ClassFtSubhead() {
+		String subheadFromMethode = "<body><p>his is some normal text.</p><p>More text</p><subhead>This is a subhead.</subhead><p>This is some more normal text.</p><subhead>This is another subhead.</subhead></body>";
+		String processedSubhead = "<body><p>his is some normal text.</p><p>More text</p><h3 class=\"ft-subhead\">This is a subhead.</h3><p>This is some more normal text.</p><h3 class=\"ft-subhead\">This is another subhead.</h3></body>";
+		checkTransformation(subheadFromMethode, processedSubhead);
+	}
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);

@@ -17,11 +17,12 @@ import java.util.List;
 
 public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements XmlParser<SlideshowData> {
 
-    private static final String DEFAULT_ELEMENT_NAME = "a";
+	private static final String DEFAULT_ELEMENT_NAME = "a";
     private static final QName HREF_QNAME = QName.valueOf("href");
     private static final String UUID_KEY = "uuid";
+	private static final QName TITLE_QNAME = QName.valueOf("title");
 
-    public SlideshowXMLParser() {
+	public SlideshowXMLParser() {
         super(DEFAULT_ELEMENT_NAME);
     }
 
@@ -54,6 +55,11 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
                 }
             }
         }
+
+		Attribute titleElement = nextStartElement.getAttributeByName(TITLE_QNAME);
+		if(titleElement != null){
+			dataBean.setTitle(titleElement.getValue());
+		}
     }
 
     private List<String> exceptForUuid(String[] attributes) {

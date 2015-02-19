@@ -7,7 +7,6 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import java.util.Collections;
 import java.util.Map;
