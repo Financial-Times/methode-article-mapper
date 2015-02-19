@@ -766,6 +766,20 @@ public class BodyProcessingFieldTransformerFactoryTest {
 		checkTransformation(subheadFromMethode, processedSubhead);
 	}
 
+    @Test
+    public void shouldRemoveStrikeoutsFromParagraphElement() {
+        String contentWithStrikeout = "<body><p channel=\"!strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+        String transformedContent = "<body><p>Text inside normal p tag should remain</p></body>";
+        checkTransformation(contentWithStrikeout, transformedContent);
+    }
+
+    @Test
+    public void shouldRemoveStrikeoutsFromAllContent() {
+        String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+        String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
+        checkTransformation(contentWithStrikeout, transformedContent);
+    }
+
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
 

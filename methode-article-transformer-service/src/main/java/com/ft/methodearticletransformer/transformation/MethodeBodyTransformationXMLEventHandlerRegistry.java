@@ -76,11 +76,6 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "h1", "h2", "h3", "h4", "h5", "h6",
                 "ol", "ul", "li"
         );
-        
-        // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
-        // For these elements if the attribute is missing use the fallback handler 
-//        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new RetainWithoutAttributesXMLEventHandler(), attributeNameMatcher("channel")), "p");
-        registerStartAndEndElementEventHandler(new RemoveElementEventHandler(new StripXMLEventHandler(), attributeNameMatcher("channel")), "span");
 
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
