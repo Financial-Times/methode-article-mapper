@@ -103,7 +103,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>";
 
         //Does include some strange extra spaces in the output file
-        final String expectedTransformedBody = "<body>\n<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
+        final String expectedTransformedBody = "<body><p><content id=\"7784185e-a888-11e2-8e5d-00144feabdc0\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\n</p>\n" +
+                "<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
                 "alongside Picasso, “before death overtakes him”. Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n" +
                 "<p>Did she protest too much? Tate’s poster image for the retrospective <em>Saloua Raouda Choucair</em> is a classic post-cubist self-portrait. " +
                 "The artist has simplified her features into a mask-like countenance; her clothes – white turban, green sweater, " +
