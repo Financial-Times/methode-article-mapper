@@ -33,6 +33,10 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
     private static final String TARGETED_CLASS_ATTRIBUTE = "ft.com";
     private static final String SECONDARY_ELEMENT_NAME = "iframe";
     private static final String SECONDARY_ELEMENT_ATTRIBUTE_NAME = "src";
+    private static final String DATA_EMBEDDED = "data-embedded";
+    private static final String DATA_EMBEDDED_VALUE = "true";
+    private static final String DATA_ASSET_TYPE = "data-asset-type";
+    private static final String DATA_ASSET_TYPE_VALUE = "video";
     private static final String SECONDARY_ELEMENT_ATTRIBUTE_VALUE_YOUTUBE = "http://www.youtube.com/embed/OQzJR3BqS7o";
     private static final String SECONDARY_ELEMENT_ATTRIBUTE_VALUE_VIMEO = "http://player.vimeo.com/video/40234826";
     private static final String SECONDARY_ELEMENT_ATTRIBUTE_VALUE_DAILYMOTION = "http://www.dailymotion.com/video/x2gsis0_the-best-of-the-2015-grammys_lifestyle";
@@ -82,6 +86,8 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         secondAttributes.put(SECONDARY_ELEMENT_ATTRIBUTE_NAME, SECONDARY_ELEMENT_ATTRIBUTE_VALUE_VIMEO);
         Map<String, String> finalAttributes = new HashMap<>();
         finalAttributes.put(HREF_ATTRIBUTE, SECONDARY_ELEMENT_ATTRIBUTE_VALUE_VIMEO);
+        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+        finalAttributes.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
         StartElement firstElement = getStartElementWithAttributes(NEW_ELEMENT, firstAttributes);
         StartElement secondaryElement = getStartElementWithAttributes(SECONDARY_ELEMENT_NAME, secondAttributes);
@@ -105,6 +111,8 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         secondAttributes.put(SECONDARY_ELEMENT_ATTRIBUTE_NAME, SECONDARY_ELEMENT_ATTRIBUTE_VALUE_YOUTUBE);
         Map<String, String> finalAttributes = new HashMap<>();
         finalAttributes.put(HREF_ATTRIBUTE, SECONDARY_ELEMENT_ATTRIBUTE_VALUE_YOUTUBE);
+        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+        finalAttributes.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
         StartElement firstElement = getStartElementWithAttributes(NEW_ELEMENT, firstAttributes);
         StartElement secondaryElement = getStartElementWithAttributes(SECONDARY_ELEMENT_NAME, secondAttributes);

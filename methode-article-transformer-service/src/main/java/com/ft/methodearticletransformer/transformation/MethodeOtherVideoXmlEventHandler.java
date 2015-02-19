@@ -23,6 +23,10 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String PARAGRAPH_TAG = "p";
     private static final String NEW_ELEMENT = "a";
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
+    private static final String DATA_EMBEDDED = "data-embedded";
+    private static final String DATA_EMBEDDED_VALUE = "true";
+    private static final String DATA_ASSET_TYPE = "data-asset-type";
+    private static final String DATA_ASSET_TYPE_VALUE = "video";
     private final String targetedHtmlClass;
     private final XMLEventHandler fallbackHandler;
     private List<String> validRegexes; //because all 3rd party content is put into iframes we need to know which ones we want to keep.
@@ -53,6 +57,8 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
             String videoLink =  srcAttribute.getValue();
             Map<String, String> attributesToAdd = new HashMap<String, String>();
             attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoLink);
+            attributesToAdd.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+            attributesToAdd.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
             eventWriter.writeStartTag(PARAGRAPH_TAG, null);
             eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);

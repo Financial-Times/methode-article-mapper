@@ -669,7 +669,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer>" +
                 "</body>";
-        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\"></a></body>";
+        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\" data-embedded=\"true\" data-asset-type=\"video\"></a></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -694,7 +694,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessVimeoTagCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
-        String processedVideoText = "<body><p><a href=\"http://player.vimeo.com/video/77761436\"></a></p></body>";
+        String processedVideoText = "<body><p><a href=\"http://player.vimeo.com/video/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -702,7 +702,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessVimeoTagWithNoProtocolCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"//player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
-        String processedVideoText = "<body><p><a href=\"//player.vimeo.com/video/77761436\"></a></p></body>";
+        String processedVideoText = "<body><p><a href=\"//player.vimeo.com/video/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -710,7 +710,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessYouTubeVideoCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
-        String processedVideoText = "<body><p><a href=\"http://www.youtube.com/embed/77761436\"></a></p></body>";
+        String processedVideoText = "<body><p><a href=\"http://www.youtube.com/embed/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -718,7 +718,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
-        String processedVideoText = "<body><p><a href=\"https://www.youtube.com/embed/77761436\"></a></p></body>";
+        String processedVideoText = "<body><p><a href=\"https://www.youtube.com/embed/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
