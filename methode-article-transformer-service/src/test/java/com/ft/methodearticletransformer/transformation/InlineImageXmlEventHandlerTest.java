@@ -56,6 +56,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         Map<String, String> expectedAttributes = new HashMap<>();
         expectedAttributes.put("id", ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString());
         expectedAttributes.put("type", IMAGE_SET_TYPE);
+        expectedAttributes.put("data-embedded", "true");
         verify(mockEventWriter).writeStartTag(CONTENT_TAG, expectedAttributes);
         verify(mockEventWriter).writeEndTag(CONTENT_TAG);
     }
@@ -112,7 +113,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
                 "arbitrary text</web-inline-picture>", UUID);
         final String actual = processor.process(inputXml, null);
 
-        String expectedXml = String.format("<content id=\"%s\" type=\"%s\"></content>",
+        String expectedXml = String.format("<content id=\"%s\" type=\"%s\" data-embedded=\"true\"></content>",
                 ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString(), IMAGE_SET_TYPE);
         assertEquals(expectedXml, actual);
     }

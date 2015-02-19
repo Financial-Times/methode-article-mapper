@@ -387,6 +387,6 @@ Scenario Outline: Inline image links are transformed
   Then the body should be like <after>
 
   Examples:
-    | before                                                                                                                                                                                                               | after                                                                                                          |
+    | before                                                                                                                                                                                                               | after                                                                                                                               |
     # Link to an image set that exists in the content store should be converted into a <content>[...]</content> link and all the attributes and any text between the <web-inline-picture> opening and closing tags should be dropped:
-    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"/></p> |
+    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content data-embedded="true" id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"/></p> |
