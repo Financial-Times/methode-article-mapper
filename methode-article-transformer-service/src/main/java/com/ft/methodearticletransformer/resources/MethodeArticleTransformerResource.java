@@ -12,16 +12,18 @@ import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
+import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodeapi.model.EomFile;
+import com.ft.methodearticletransformer.methode.MethodeApiUnavailableException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -60,6 +62,10 @@ public class MethodeArticleTransformerResource {
         try {
         	EomFile eomFile = methodeFileService.fileByUuid(uuid, transactionId);
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
+        } catch (MethodeApiUnavailableException e) {
+			throw ServerError.status(503)
+                    .reason(ErrorMessage.METHODE_API_UNAVAILABLE)
+                    .exception(e);
         } catch (MethodeFileNotFoundException e) {
 			throw ClientError.status(404)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
@@ -82,6 +88,10 @@ public class MethodeArticleTransformerResource {
 			.context(uuid)
 			.error(e.getMessage())
 			.exception(e);
+        } catch (SemanticReaderUnavailableException e) {
+            throw ServerError.status(503)
+                  .reason(ErrorMessage.SEMANTIC_READER_API_UNAVAILABLE)
+                  .exception(e);
         }
 		
     }
@@ -91,7 +101,9 @@ public class MethodeArticleTransformerResource {
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
 		NOT_WEB_CHANNEL("This is not a web channel story"),
-		METHODE_FIELD_MISSING("Required methode field [%s] is missing");
+		METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
+        METHODE_API_UNAVAILABLE("Methode api was unavailable"),
+		SEMANTIC_READER_API_UNAVAILABLE("Semantic reader api was unavailable");
 
 	    private final String text;
 
