@@ -69,6 +69,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
 		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("ft-timeline"), "timeline");
 
+        registerStartAndEndElementEventHandler(new InlineImageXmlEventHandler(),"web-inline-picture");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),

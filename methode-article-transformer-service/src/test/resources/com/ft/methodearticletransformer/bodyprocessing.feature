@@ -111,7 +111,6 @@ Feature: Body processing
     | web-background-news        |
     | web-background-news-header |
     | web-background-news-text   |
-    | web-inline-picture         |
     | web-picture                |
     | web-pull-quote             |
     | web-pull-quote-source      |
@@ -393,3 +392,12 @@ Scenario Outline: Internal links are transformed
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and empty title attribute is removed:
     | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
 
+Scenario Outline: Inline image links are transformed
+  Given I have an "inline image link" in a Methode article body like <before>
+  When I transform it into our Content Store format
+  Then the body should be like <after>
+
+  Examples:
+    | before                                                                                                                                                                                                               | after                                                                                                                               |
+    # Link to an image set that exists in the content store should be converted into a <content>[...]</content> link and all the attributes and any text between the <web-inline-picture> opening and closing tags should be dropped:
+    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content data-embedded="true" id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"/></p> |

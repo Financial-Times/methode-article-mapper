@@ -29,5 +29,4 @@ public class BylineProcessingFieldTransformerFactory implements FieldTransformer
         return new StAXTransformingBodyProcessor(new MethodeBylineTransformationXMLEventHandlerRegistry());
     }
 
-
 }
