@@ -14,8 +14,8 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
     private static final String FTCOM_STRIKEOUT = "FTcom";
 
     public StrikeoutEventHandlerRegistry() {
-        //default is to check all
-        registerDefaultEventHandler(new RemoveElementEventHandler(new RetainXMLEventHandler(), attributeNameAndValueMatcher("channel")));
+        //default is to check all tags for channel attribute
+        registerDefaultEventHandler(new RemoveElementEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel")));
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
@@ -26,7 +26,7 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
         // For these elements if the attribute is missing use the fallback handler
     }
 
-    public static StartElementMatcher attributeNameAndValueMatcher(final String attributeName) {
+/*    public static StartElementMatcher attributeNameAndValueMatcher(final String attributeName) {
         return new StartElementMatcher() {
             @Override
             public boolean matches(final StartElement element) {
@@ -36,6 +36,19 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
                     if (value.startsWith("!") || value.equals(FINANCIAL_TIMES_STRIKEOUT) || value.equals(FTCOM_STRIKEOUT) || value.isEmpty()) {
                         return (channel == null) ? false : true;
                     }
+                }
+                return false;
+            }
+        };
+    }*/
+
+    public static StartElementMatcher attributeNameMatcher(final String attributeName) {
+        return new StartElementMatcher() {
+            @Override
+            public boolean matches(final StartElement element) {
+                final Attribute channel = element.getAttributeByName(new QName(attributeName));
+                if (channel != null) {
+                    return (channel == null) ? false : true;
                 }
                 return false;
             }

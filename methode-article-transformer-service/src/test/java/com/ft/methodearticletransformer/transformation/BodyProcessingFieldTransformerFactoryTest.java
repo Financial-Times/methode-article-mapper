@@ -171,7 +171,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesShouldReturnEmptySrcIfDummySource() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -198,7 +198,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotBarfOnTwoPullQuotes() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -215,7 +215,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "\t</table>&gt;\n" +
                 "</web-pull-quote>" +
                 "<p>" +
-                "<web-pull-quote align=\"left\" channel=\"FTcom\">" +
+                "<web-pull-quote align=\"left\">" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -548,7 +548,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesWithNoSourceShouldBeWritten() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -664,9 +664,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldProcessVideoTagCorrectly() {
-        String videoTextfromMethode = "<body>" +
-                "<videoPlayer videoID=\"3920663836001\">" +
-                "<web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
+        String videoTextfromMethode = "<body><videoPlayer videoID=\"3920663836001\"><web-inline-picture id=\"U2113113643377jlC\" width=\"150\"" +
+                " fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer>" +
                 "</body>";
         String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\"></a></body>";
