@@ -1,24 +1,57 @@
 @BodyProcessing
 Feature: Body processing
 
-  Scenario Outline: Strip tag and retain contents
-    Given I have body text in Methode XML format containing <tagname>
-    When I transform it into our Content Store format
-    Then the start tag <tagname> should have been removed
-    And the end tag <tagname> should have been removed
-    But the text inside should not have been removed
+  This shows how particular tags are processed.
+
+  For details of how tags will look before and after for particular processing rules, see bodyprocessingrule.feature.
+
+  Scenario Outline:
+    Given a replacement tag <replacement> and the Methode body contains <tagname> the transformer will TRANSFORM THE TAG
 
   Examples:
+    | tagname | replacement |
+    | b       | strong      |
+    | i       | em          |
+
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO TABLE
+
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
     | tagname |
+    | table   |
 
-  Scenario Outline: Strip tag and contents
-    Given I have body text in Methode XML format containing <tagname>
-    When I transform it into our Content Store format
-    Then the start tag <tagname> should have been removed
-    And the end tag <tagname> should have been removed
-    And the text inside should have been removed
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will STRIP PODCAST ELEMENT
 
-  Examples:
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+    | tagname |
+    | script  |
+
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will TRANSFORM TAG IF BIG NUMBER
+
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+    | tagname   |
+    | promo-box |
+
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO VIDEO
+
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+    | tagname     |
+    | videoPlayer |
+
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO PULL QUOTE
+
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+    | tagname        |
+    | web-pull-quote |
+
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will STRIP ELEMENT AND CONTENTS
+
+  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
     | tagname                    |
     | applet                     |
     | audio                      |
@@ -61,12 +94,12 @@ Feature: Body processing
     | rt                         |
     | ruby                       |
     | s                          |
-    | script                     |
+   # | script                     |
     | select                     |
     | source                     |
     | strike                     |
     | style                      |
-    | table                      |
+    #| table                      |
     | tbody                      |
     | td                         |
     | textarea                   |
@@ -89,14 +122,14 @@ Feature: Body processing
     | photo-caption              |
     | photo-group                |
     | plainHtml                  |
-    | promo-box                  |
+    #| promo-box                  |
     | promo-headline             |
     | promo-image                |
     | promo-intro                |
     | promo-link                 |
     | promo-title                |
     | promobox-body              |
-    | pull-quote                 |
+    #| pull-quote                 |
     | pull-quote-header          |
     | pull-quote-text            |
     | readthrough                |
@@ -106,13 +139,13 @@ Feature: Body processing
     | story                      |
     | strap                      |
     | videoObject                |
-    | videoPlayer                |
+    #| videoPlayer                |
     | web-alt-picture            |
     | web-background-news        |
     | web-background-news-header |
     | web-background-news-text   |
     | web-picture                |
-    | web-pull-quote             |
+    #| web-pull-quote             |
     | web-pull-quote-source      |
     | web-pull-quote-text        |
     | web-skybox-picture         |
@@ -121,14 +154,10 @@ Feature: Body processing
     | xref                       |
     | xrefs                      |
 
-  Scenario Outline: Retain tag and contents
-    Given I have body text in Methode XML format containing <tagname>
-    When I transform it into our Content Store format
-    Then the start tag <tagname> should be present
-    And the end tag <tagname> should be present
-    And the text inside should not have been removed
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will RETAIN ELEMENT AND REMOVE ATTRIBUTES
 
-  Examples:
+  Examples: Tidy up tags to remove attributes that probably relate to formatting
     | tagname |
     | strong  |
     | em      |
@@ -140,23 +169,26 @@ Feature: Body processing
     | h4      |
     | h5      |
     | h6      |
-    | p       |
+    #| p       |
     | ol      |
     | ul      |
     | li      |
 
-  Scenario Outline: Some tag names are transformed to their valid HTML 5 equivalents
-    Given I have body text in Methode XML format containing <tagname>
-    When I transform it into our Content Store format
-    Then the start tag <tagname> should have been replaced by <replacement>
-    And the end tag <tagname> should have been replaced by <replacement>
-    And the text inside should not have been removed
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will TRANSFORM OTHER VIDEO TYPES
 
-  Examples:
-    | tagname | replacement |
-    | b       | strong      |
-    | i       | em          |
+  Examples: Tidy up tags to remove attributes that probably relate to formatting
+    | tagname |
+    | p       |
 
+  Scenario Outline:
+    Given the Methode body contains <tagname> the transformer will STRIP ELEMENT AND LEAVE CONTENT BY DEFAULT
+
+  Examples: Remove tag but leave any content - these are just some examples, by default anything not specified separately will be treated like this
+    | tagname   | html                                           |
+    | img       | <img src="abc.jpg"/>                           |
+    | !--       | <!-- comments -->                              |
+    | weird     | <weird>text surrounded by unknown tags</weird> |
 
   @Technical
   Scenario Outline: Line Breaks
@@ -312,15 +344,15 @@ Feature: Body processing
     Then the hyperlink should be like <after>
 
   Examples:
-    | before                                                                        | after                               |
-    | <p><a name="top">1. google.com</a></p>                                        | <p>1. google.com</p>                |
-    | <p><a name="top" type="boo">3. example.com</a></p>                            | <p>3. example.com</p>               |
-    | <p><a name="top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p> | <p>Foo</p>                          |
-    | <p><a name="top">5. example.com</a><a name="foo">Foo</a></p>                  | <p>5. example.comFoo</p>            |
-    | <p><a id="top">1. google.com</a></p>                                          | <p>1. google.com</p>                |
-    | <p><a id="top" type="boo">2. example.com</a></p>                              | <p>2. example.com</p>               |
-    | <p><a id="top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p>   | <p>Foo</p>                          |
-    | <p><a id="top">5. example.com</a><a name="foo">Foo</a></p>                    | <p>5. example.comFoo</p>            |
+    | before                                                                        | after                    |
+    | <p><a name="top">1. google.com</a></p>                                        | <p>1. google.com</p>     |
+    | <p><a name="top" type="boo">3. example.com</a></p>                            | <p>3. example.com</p>    |
+    | <p><a name="top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p> | <p>Foo</p>               |
+    | <p><a name="top">5. example.com</a><a name="foo">Foo</a></p>                  | <p>5. example.comFoo</p> |
+    | <p><a id="top">1. google.com</a></p>                                          | <p>1. google.com</p>     |
+    | <p><a id="top" type="boo">2. example.com</a></p>                              | <p>2. example.com</p>    |
+    | <p><a id="top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p>   | <p>Foo</p>               |
+    | <p><a id="top">5. example.com</a><a name="foo">Foo</a></p>                    | <p>5. example.comFoo</p> |
 
 
   @Technical
@@ -330,12 +362,12 @@ Feature: Body processing
     Then the hyperlink should be like <after>
 
   Examples:
-    | before                                                                         | after                               |
-    | <p><a href="#top">1. google.com</a></p>                                        | <p>1. google.com</p>                |
-    | <p><a href="#top" type="boo">2. example.com</a></p>                            | <p>2. example.com</p>               |
-    | <p><a href="#top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p> | <p>Foo</p>                          |
-    | <p><a href="#top">5. example.com</a><a name="foo">Foo</a></p>                  | <p>5. example.comFoo</p>            |
-    | <p><a href="" name="anchorname"/>Text</p>                                      | <p>Text</p>                         |
+    | before                                                                         | after                                                        |
+    | <p><a href="#top">1. google.com</a></p>                                        | <p>1. google.com</p>                                         |
+    | <p><a href="#top" type="boo">2. example.com</a></p>                            | <p>2. example.com</p>                                        |
+    | <p><a href="#top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p> | <p>Foo</p>                                                   |
+    | <p><a href="#top">5. example.com</a><a name="foo">Foo</a></p>                  | <p>5. example.comFoo</p>                                     |
+    | <p><a href="" name="anchorname"/>Text</p>                                      | <p>Text</p>                                                  |
     | <p><a href="http://www.bbc.co.uk//article#menu">link</a></p>                   | <p><a href="http://www.bbc.co.uk//article#menu">link</a></p> |
 
   @Technical
@@ -354,43 +386,43 @@ Scenario Outline: Internal links are transformed
     Then the body should be like <after>
 
   Examples:
-    | before                                                                                            							| after                  																														    |
+    | before                                                                                            							                                                                                                                                                                             | after                  																														                                                |
     # Bizarre pre-compound story link to even more bizarre content that does not exist in the content store should be preserved:
-    | <p><a href="/FT/Production/Some Story.xml;uuid=446ae908-adf7-4809-a42e-d19a31af8c5d">Text</a></p> 							| <p><a href="/FT/Production/Some Story.xml;uuid=446ae908-adf7-4809-a42e-d19a31af8c5d">Text</a></p> 											    |
+    | <p><a href="/FT/Production/Some Story.xml;uuid=446ae908-adf7-4809-a42e-d19a31af8c5d">Text</a></p> 							                                                                                                                                                                             | <p><a href="/FT/Production/Some Story.xml;uuid=446ae908-adf7-4809-a42e-d19a31af8c5d">Text</a></p> 											                                                |
     # Bizarre link to content that exists in the content store should be converted into a <content>[...]</content> link:
-    | <p><a href="/FT/Production/EOM::CompoundStory.xml;uuid=fbbee07f-5054-4a42-b596-64e0625d19a6">Text</a></p> 					| <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/Article">Text</content></p> 					    |
+    | <p><a href="/FT/Production/EOM::CompoundStory.xml;uuid=fbbee07f-5054-4a42-b596-64e0625d19a6">Text</a></p> 					                                                                                                                                                                             | <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/Article">Text</content></p> 					                                                |
     # Bizarre link to content that exists in the content store should be converted into a <content>[...]</content> link, title preserved:
-    | <p><a href="/FT/Production/EOM::CompoundStory.xml;uuid=fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com">Text</a></p> 		| <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com" type="http://www.ft.com/ontology/content/Article">Text</content></p> 	    |
+    | <p><a href="/FT/Production/EOM::CompoundStory.xml;uuid=fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com">Text</a></p> 		                                                                                                                                                                             | <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com" type="http://www.ft.com/ontology/content/Article">Text</content></p> 	                                                |
     # Link to content that exists in the content store should be converted into a <content>[...]</content> link:
-    | <p><a href="http://www.ft.com/cms/s/2/fbbee07f-5054-4a42-b596-64e0625d19a6.html" title="ft.com" >Text</a></p> 			 	| <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com" type="http://www.ft.com/ontology/content/Article">Text</content></p> 	    |
+    | <p><a href="http://www.ft.com/cms/s/2/fbbee07f-5054-4a42-b596-64e0625d19a6.html" title="ft.com" >Text</a></p> 			 	                                                                                                                                                                             | <p><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" title="ft.com" type="http://www.ft.com/ontology/content/Article">Text</content></p> 	                                                |
     # Bizarre pre-compound story link to FT content not in the content store should be converted into an FT.com link:
-    | <p><a href="/FT/Production/EOM::Story.xml;uuid=2d5f0ee9-09b3-4b09-af1b-e340276c7d6b" title="ft.com">Text</a></p> 				| <p><a href="http://www.ft.com/cms/s/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									    |
+    | <p><a href="/FT/Production/EOM::Story.xml;uuid=2d5f0ee9-09b3-4b09-af1b-e340276c7d6b" title="ft.com">Text</a></p> 				                                                                                                                                                                             | <p><a href="http://www.ft.com/cms/s/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									                                                |
     # Link to FT content not in the content store is preserved:
-    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 			 		| <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									    |
+    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 			 		                                                                                                                                                                             | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									                                            |
     # The anchor part of an FT link is removed:
-    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html#slide0" title="ft.com">Text</a></p> 			 		| <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									    |
+    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html#slide0" title="ft.com">Text</a></p> 			                                                                                                                                                                             | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									                                            |
     # International link is no longer international, and the anchor part of it is removed:
-    | <p><a href="http://www.ft.com/intl/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html#slide0" title="ft.com">Text</a></p> 			 		| <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									    |
+    | <p><a href="http://www.ft.com/intl/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html#slide0" title="ft.com">Text</a></p> 			 		                                                                                                                                                                 | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 									                                            |
     # International link to a PDF is no longer international, title is preserved, target is dropped:
-    | <p><a href="http://www.ft.com/intl/cms/5e231aca-a42b-11e1-a701-00144feabdc0.pdf" title="Open Report" target="_blank">Gartner Report</a></p>  | <p><a href="http://www.ft.com/cms/5e231aca-a42b-11e1-a701-00144feabdc0.pdf" title="Open Report">Gartner Report</a></p> 		    |
+    | <p><a href="http://www.ft.com/intl/cms/5e231aca-a42b-11e1-a701-00144feabdc0.pdf" title="Open Report" target="_blank">Gartner Report</a></p>                                                                                                                                                                | <p><a href="http://www.ft.com/cms/5e231aca-a42b-11e1-a701-00144feabdc0.pdf" title="Open Report">Gartner Report</a></p>                                                                       |
     # Query parameters are dropped:
-    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html?siteedition=uk&amp;siteedition=uk" title="ft.com">Text</a></p> 			 		| <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p> 	|
+    | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html?siteedition=uk&amp;siteedition=uk" title="ft.com">Text</a></p> 			 		                                                                                                                                         | <p><a href="http://www.ft.com/cms/s/2/2d5f0ee9-09b3-4b09-af1b-e340276c7d6b.html" title="ft.com">Text</a></p>                                                                                 |
     # International link is no longer international, target is dropped:
-    | <p><a href="http://www.ft.com/intl/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text" target="_blank">Link with intl and suffix</a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with intl and suffix</a></p> |
+    | <p><a href="http://www.ft.com/intl/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text" target="_blank">Link with intl and suffix</a></p>                                                                                                                                                   | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with intl and suffix</a></p>                                                          |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and title attribute is preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0" title="Title text"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p>                                  | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0" title="Title text"/></p>                              |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and alt attribute is dropped:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p>                                      | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p>                                                 |
     # Slideshow-like link without type="slideshow" is treated like a regular link:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" title="Title text" dtxInsert="slideshow" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with just suffix</a></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" title="Title text" dtxInsert="slideshow" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p>                                                   | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with just suffix</a></p>                                                              |
     # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameter is preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value" title="Title text"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p>                  | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value" title="Title text"/></p>                  |
     # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameters are preserved:
     | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value&amp;kartik=patel" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value&amp;kartik=patel" title="Title text"/></p> |
     # International link is no longer international, and query parameter is removed:
-    | <p>An ft.com page: <a href="http://www.ft.com/intl/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html?hello" title="Title" target="_blank">Link with intl and param</a></p> | <p>An ft.com page: <a href="http://www.ft.com/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html" title="Title">Link with intl and param</a></p> |
+    | <p>An ft.com page: <a href="http://www.ft.com/intl/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html?hello" title="Title" target="_blank">Link with intl and param</a></p>                                                                                                                                     | <p>An ft.com page: <a href="http://www.ft.com/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html" title="Title">Link with intl and param</a></p>                                                  |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and empty title attribute is removed:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p>                                            | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p>                                                 |
 
 Scenario Outline: Inline image links are transformed
   Given I have an "inline image link" in a Methode article body like <before>
