@@ -32,15 +32,17 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 	}
 
 	@Override
-	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader) throws UnexpectedElementStructureException {
+	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader,
+							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
 		if (isElementNamed(nextStartElement.getName(), START_ELEMENT_NAME)) {
-			dataTableData.setBody(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement));
+			dataTableData.setBody(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement)), bodyProcessingContext));
 		}
 	}
 
 	@Override
 	public void transformFieldContentToStructuredFormat(DataTableData dataTableData, BodyProcessingContext bodyProcessingContext) {
-		dataTableData.setBody(transformRawContentToStructuredFormat(dataTableData.getBody(), bodyProcessingContext));
+		//TODO method to be removed as it is now deprecated.
+		throw new IllegalStateException("This method should no longer be used.");
 	}
 
 	@Override

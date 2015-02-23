@@ -28,8 +28,8 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 
 	@Override
 	public void transformFieldContentToStructuredFormat(PullQuoteData pullQuoteData, BodyProcessingContext bodyProcessingContext) {
-		pullQuoteData.setQuoteText(transformRawContentToStructuredFormat(pullQuoteData.getQuoteText(), bodyProcessingContext));
-		pullQuoteData.setQuoteSource(transformRawContentToStructuredFormat(pullQuoteData.getQuoteSource(), bodyProcessingContext));
+		// TODO Remove this method.
+		throw new IllegalStateException("This method should no longer be called.");
 	}
 
 	@Override
@@ -46,13 +46,13 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 
 	@Override
 	protected void populateBean(PullQuoteData pullQuoteData, StartElement nextStartElement,
-								XMLEventReader xmlEventReader) {
+								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either web-pull-quote-text or web-pull-quote-source
 		if (isElementNamed(nextStartElement.getName(), QUOTE_TEXT)) {
-			pullQuoteData.setQuoteText(getValueOrDefault(getValueOrDefault(parseRawContent(QUOTE_TEXT, xmlEventReader))));
+			pullQuoteData.setQuoteText(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(QUOTE_TEXT, xmlEventReader)), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), QUOTE_SOURCE)) {
-			pullQuoteData.setQuoteSource(getValueOrDefault(parseRawContent(QUOTE_SOURCE, xmlEventReader)));
+			pullQuoteData.setQuoteSource(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(QUOTE_SOURCE, xmlEventReader)), bodyProcessingContext));
 		}
 	}
 

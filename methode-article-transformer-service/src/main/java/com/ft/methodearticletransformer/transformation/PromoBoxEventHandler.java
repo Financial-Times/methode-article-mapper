@@ -36,21 +36,13 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		if (isPromoBox(startElement)) {
 
 			// Parse the xml needed to create a bean
-			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader);
+			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (promoBoxIsValidBigNumber(startElement, dataBean)) {
-				// We assume this promo box is a valid big number.
-
-				// process raw data and add any assets to the context
-				transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
-
-				// ensure that the mutated bean data is still valid for processing after the transform field content processing
-				if(dataBean.isValidBigNumberData()) {
-					eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-                    writeBigNumberElement(eventWriter, dataBean);
-					eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
-				}
+				eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
+				writeBigNumberElement(eventWriter, dataBean);
+				eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
 			}
 
 		} else {
@@ -65,11 +57,11 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
 	private void writeBigNumberElement(BodyWriter eventWriter, PromoBoxData dataBean) {
 		eventWriter.writeStartTag(BIG_NUMBER_HEADLINE, noAttributes());
-		eventWriter.write(dataBean.getHeadline());
+		eventWriter.writeRaw(dataBean.getHeadline());
 		eventWriter.writeEndTag(BIG_NUMBER_HEADLINE);
 
 		eventWriter.writeStartTag(BIG_NUMBER_INTRO, noAttributes());
-		eventWriter.write(dataBean.getIntro());
+		eventWriter.writeRaw(dataBean.getIntro());
 		eventWriter.writeEndTag(BIG_NUMBER_INTRO);
 	}
 
@@ -81,12 +73,9 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 		return event.getName().getLocalPart().toLowerCase().equals(PROMO_BOX);
 	}
 
-	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
-		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader);
-	}
-
-	private void transformFieldContentToStructuredFormat(PromoBoxData dataBean, BodyProcessingContext bodyProcessingContext) {
-		promoBoxXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
+	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
+										  BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 	}
 
 	private boolean isNumbersComponent(Attribute classAttribute) {

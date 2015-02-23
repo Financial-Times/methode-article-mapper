@@ -31,19 +31,11 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 		if (isElementOfCorrectType(startElement)) {
 
 			// Parse the xml needed to create a bean
-			PullQuoteData dataBean = parseElementData(startElement, xmlEventReader);
+			PullQuoteData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
-				// process raw data and add any assets to the context
-				transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
-
-				// ensure that the mutated bean data is still valid for processing after the transform field content processing
-				if(dataBean.isAllRequiredDataPresent()) {
-					eventWriter.writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
-					writePullQuoteElement(eventWriter, dataBean);
-					eventWriter.writeEndTag(PULL_QUOTE_ELEMENT);
-				}
+				writePullQuoteElement(eventWriter, dataBean);
 			}
 
 		} else {
@@ -52,13 +44,17 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	}
 
 	private void writePullQuoteElement(BodyWriter eventWriter, PullQuoteData dataBean) {
+		eventWriter.writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
+
 		eventWriter.writeStartTag(PULL_QUOTE_TEXT, noAttributes());
-		eventWriter.write(dataBean.getQuoteText());
+		eventWriter.writeRaw(dataBean.getQuoteText());
 		eventWriter.writeEndTag(PULL_QUOTE_TEXT);
 
 		eventWriter.writeStartTag(PULL_QUOTE_SOURCE, noAttributes());
-		eventWriter.write(dataBean.getQuoteSource());
+		eventWriter.writeRaw(dataBean.getQuoteSource());
 		eventWriter.writeEndTag(PULL_QUOTE_SOURCE);
+
+		eventWriter.writeEndTag(PULL_QUOTE_ELEMENT);
 	}
 
 	private Map<String, String> noAttributes() {
@@ -69,11 +65,8 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 		return event.getName().getLocalPart().toLowerCase().equals("web-pull-quote");
 	}
 
-	private PullQuoteData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
-		return pullQuoteXMLParser.parseElementData(startElement, xmlEventReader);
-	}
-
-	private void transformFieldContentToStructuredFormat(PullQuoteData dataBean, BodyProcessingContext bodyProcessingContext) {
-		pullQuoteXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
+	private PullQuoteData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
+										   BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+		return pullQuoteXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 	}
 }
