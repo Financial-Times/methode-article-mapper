@@ -75,7 +75,7 @@ public class MethodeLinksBodyProcessorTest {
         when(builder.get(ClientResponse.class)).thenThrow(clientHandlerException);
         when(clientHandlerException.getCause()).thenReturn(new IOException());
 
-        String body = "<body>anything</body>";
+        String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
         bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
     }
 
