@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE doc SYSTEM "/SysConfig/Rules/ftpsi.dtd">
+<doc>
+    <lead>
+        <lead-headline>
+            <headline>
+                <ln>And sacked chimney-sweep pumps boss full of mayonnaise.</ln>
+            </headline>
+        </lead-headline>
+    </lead>
+    <story>
+        <text>
+            <body>
+                <p>random text for now</p>
+            </body>
+        </text>
+    </story>
+</doc>

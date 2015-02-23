@@ -36,10 +36,12 @@ import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishExcep
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import com.google.common.base.Optional;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -55,8 +57,11 @@ public class EomFileProcessorForContentStore {
 
 	private static final Logger log = LoggerFactory.getLogger(EomFileProcessorForContentStore.class);
 	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
+    private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
+    private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
+    private static final String NO_PICTURE_FLAG = "No picture";
 
-	private final FieldTransformer bodyTransformer;
+    private final FieldTransformer bodyTransformer;
 	private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
 
@@ -111,7 +116,9 @@ public class EomFileProcessorForContentStore {
 
 		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
 
-        final String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument),
+        Optional<String> preProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, eomFileDocument, mainImage);
+
+        String transformedBody = transformField(preProcessedBody.isPresent() ? preProcessedBody.get() : retrieveField(xpath, "/doc/story/text/body", eomFileDocument),
 				bodyTransformer, transactionId);
         final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", eomFileDocument),
 				bylineTransformer, transactionId); //byline is optional
@@ -128,7 +135,28 @@ public class EomFileProcessorForContentStore {
                 .build();
 	}
 
-	private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
+    private Optional<String> putMainImageReferenceInBodyXml(XPath xpath, Document attributesDocument, Document eomFileDocument, String mainImage) throws XPathExpressionException, TransformerException {
+        if (mainImage != null) {
+            final String flag = xpath
+                    .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomArticleImage", attributesDocument);
+            if (!NO_PICTURE_FLAG.equalsIgnoreCase(flag)) {
+                final Node node = (Node) xpath.evaluate("/doc/story/text/body", eomFileDocument, XPathConstants.NODE);
+                return Optional.fromNullable(putMainImageReferenceInBodyNode(node, mainImage));
+            }
+        }
+        return Optional.absent();
+    }
+
+    private String putMainImageReferenceInBodyNode(Node bodyNode, String mainImage) throws TransformerException {
+        Element newElement = bodyNode.getOwnerDocument().createElement("content");
+        newElement.setAttribute("id", mainImage);
+        newElement.setAttribute("type", IMAGE_SET_TYPE);
+        newElement.setAttribute(DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED, "true");
+        bodyNode.insertBefore(newElement, bodyNode.getFirstChild());
+        return getNodeAsString(bodyNode);
+    }
+
+    private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
 		final String imageUuid = StringUtils.substringAfter(xpath.evaluate("/doc/lead/lead-images/web-master/@fileref", eomFileDocument), "uuid=");
 		if (!Strings.isNullOrEmpty(imageUuid)) {
 			return ImageSetUuidGenerator.fromImageUuid(UUID.fromString(imageUuid)).toString();

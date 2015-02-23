@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ObjectMetadata SYSTEM "/SysConfig/Classify/FTStories/classify.dtd">
+<ObjectMetadata>
+    <OutputChannels>
+        <DIFTcom>
+            <DIFTcomLastPublication>%s</DIFTcomLastPublication>
+            <DIFTcomMarkDeleted>%s</DIFTcomMarkDeleted>
+            <DIFTcomArticleImage>%s</DIFTcomArticleImage>
+        </DIFTcom>
+    </OutputChannels>
+    <EditorialNotes>
+        <EmbargoDate>%s</EmbargoDate>
+        <Sources>
+            <Source>
+                <SourceCode>%s</SourceCode>
+            </Source>
+        </Sources>
+    </EditorialNotes>
+</ObjectMetadata>
