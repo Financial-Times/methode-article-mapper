@@ -30,7 +30,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
 
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler("channel", new RetainWithoutAttributesXMLEventHandler()), "p");
+        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new StripElementAndContentsXMLEventHandler()), "iframe");
         registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
 
         //timelines
@@ -46,7 +46,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
                 "applet", "audio", "base", "basefont", "button", "canvas", "caption", "col",
                 "colgroup", "command", "datalist", "del", "dir", "embed", "fieldset", "form",
-                "frame", "frameset", "head", "iframe", "input", "keygen", "label", "legend",
+                "frame", "frameset", "head", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
                 "s", "select", "source", "strike", "style", "tbody",
@@ -74,7 +74,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),
                 "strong", "em", "sub", "sup", "br",
                 "h1", "h2", "h3", "h4", "h5", "h6",
-                "ol", "ul", "li"
+                "ol", "ul", "li", "p"
         );
         
         // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
