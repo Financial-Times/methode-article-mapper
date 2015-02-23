@@ -16,35 +16,35 @@ Feature: Body processing
   Scenario Outline:
     Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO TABLE
 
-  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname |
     | table   |
 
   Scenario Outline:
-    Given the Methode body contains <tagname> the transformer will STRIP PODCAST ELEMENT
+    Given the Methode body contains <tagname> the transformer will TRANSFORM PODCAST ELEMENT
 
-  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname |
     | script  |
 
   Scenario Outline:
     Given the Methode body contains <tagname> the transformer will TRANSFORM TAG IF BIG NUMBER
 
-  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname   |
     | promo-box |
 
   Scenario Outline:
     Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO VIDEO
 
-  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname     |
     | videoPlayer |
 
   Scenario Outline:
     Given the Methode body contains <tagname> the transformer will TRANSFORM THE TAG TO PULL QUOTE
 
-  Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname        |
     | web-pull-quote |
 
@@ -94,12 +94,10 @@ Feature: Body processing
     | rt                         |
     | ruby                       |
     | s                          |
-   # | script                     |
     | select                     |
     | source                     |
     | strike                     |
     | style                      |
-    #| table                      |
     | tbody                      |
     | td                         |
     | textarea                   |
@@ -122,14 +120,12 @@ Feature: Body processing
     | photo-caption              |
     | photo-group                |
     | plainHtml                  |
-    #| promo-box                  |
     | promo-headline             |
     | promo-image                |
     | promo-intro                |
     | promo-link                 |
     | promo-title                |
     | promobox-body              |
-    #| pull-quote                 |
     | pull-quote-header          |
     | pull-quote-text            |
     | readthrough                |
@@ -139,13 +135,11 @@ Feature: Body processing
     | story                      |
     | strap                      |
     | videoObject                |
-    #| videoPlayer                |
     | web-alt-picture            |
     | web-background-news        |
     | web-background-news-header |
     | web-background-news-text   |
     | web-picture                |
-    #| web-pull-quote             |
     | web-pull-quote-source      |
     | web-pull-quote-text        |
     | web-skybox-picture         |
@@ -169,7 +163,6 @@ Feature: Body processing
     | h4      |
     | h5      |
     | h6      |
-    #| p       |
     | ol      |
     | ul      |
     | li      |

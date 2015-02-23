@@ -91,7 +91,7 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "TRANSFORM THE TAG TO PULL QUOTE", "PullQuoteEventHandler");
         rulesAndHandlers.put( "TRANSFORM TAG IF BIG NUMBER", "PromoBoxEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO TABLE", "DataTableXMLEventHandler");
-        rulesAndHandlers.put( "STRIP PODCAST ELEMENT", "PodcastXMLEventHandler");
+        rulesAndHandlers.put( "TRANSFORM PODCAST ELEMENT", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeBrightcoveVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
 
@@ -273,7 +273,7 @@ public class BodyProcessingStepDefs {
         assertTagIsRegistered(name, rule);
     }
 
-    @Then("^it is transformed, (.+) becomes (.+)$")
+    @When("^it is transformed, (.+) becomes (.+)$")
     public void the_before_becomes_after(String before, String after) throws Throwable {
         transformedBodyText = bodyTransformer.transform(wrapped(before), TRANSACTION_ID);
         assertThat("before and after do not match", transformedBodyText, equalTo(wrapped(after)));
