@@ -144,7 +144,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesShouldBeReplacedWithAppopriateTags() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -548,7 +548,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesWithNoSourceShouldBeWritten() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" >&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -701,7 +701,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessVimeoTagWithNoProtocolCorrectly() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"//player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
                 "</p></body>";
-        String processedVideoText = "<body><p><a href=\"//player.vimeo.com/video/77761436\"></a></p></body>";
+        String processedVideoText = "<body><p><iframe></iframe></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -724,9 +724,9 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotProcessOtherIframes() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body/>";
+        String videoTextfromMethode = "<body><span align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" " +
+                "width=\"600\"></iframe></span></body>";
+        String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -766,14 +766,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
     @Test
-    public void shouldRemoveStrikeoutsFromParagraphElement() {
-        String contentWithStrikeout = "<body><p channel=\"!strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
-        String transformedContent = "<body><p>Text inside normal p tag should remain</p></body>";
-        checkTransformation(contentWithStrikeout, transformedContent);
-    }
-
-    @Test
-    public void shouldRemoveStrikeoutsFromAllContent() {
+    public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
         String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
         String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
         checkTransformation(contentWithStrikeout, transformedContent);
