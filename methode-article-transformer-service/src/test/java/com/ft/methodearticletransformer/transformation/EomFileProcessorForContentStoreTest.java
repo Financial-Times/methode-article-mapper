@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
 
 public class EomFileProcessorForContentStoreTest {
 
-	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
+	public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
