@@ -29,7 +29,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(new OnlyRetainCharacters()))), "promo-box");
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
 
-        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoID", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
         registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new StripElementAndContentsXMLEventHandler()), "iframe");
         registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
 

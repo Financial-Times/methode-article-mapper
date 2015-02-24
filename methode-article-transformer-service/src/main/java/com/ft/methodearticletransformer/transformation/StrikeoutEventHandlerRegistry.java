@@ -15,13 +15,13 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
         // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
         // For these elements if the attribute is missing use the fallback handler
 
-        registerDefaultEventHandler(new RemoveElementEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel")));
+        registerDefaultEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "iframe"));
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
 
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
 
-
+        //registerStartAndEndElementEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "iframe"), "");
 
     }
 

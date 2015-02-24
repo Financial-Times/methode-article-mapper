@@ -778,7 +778,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
-        String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+        String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
         String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
         checkTransformation(contentWithStrikeout, transformedContent);
     }
