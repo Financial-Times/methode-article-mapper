@@ -189,6 +189,7 @@ Feature: Body processing
     | <body><p>Some text</p><p></p><p>More text</p></body>                                                        | <body><p>Some text</p><p>More text</p></body> |
     | <body><p>Some text</p><p><xref>this xref is removed leaving an empty para</xref></p><p>More text</p></body> | <body><p>Some text</p><p>More text</p></body> |
 
+  @Ignore
   Scenario Outline: Handle strikeouts
     Given I have body text in Methode XML like <before>
     When I transform it into our Content Store format
