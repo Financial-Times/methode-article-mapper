@@ -9,7 +9,6 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements XmlParser<PromoBoxData> {
@@ -53,20 +52,20 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 		// look for either promo-headline or promo-intro
 		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
 			promoBoxData.setHeadline(transformRawContentToStructuredFormat(
-					getValueOrDefault(parseRawContent(PROMO_HEADLINE, xmlEventReader)), bodyProcessingContext));
+                    parseRawContent(PROMO_HEADLINE, xmlEventReader), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_INTRO)) {
 			promoBoxData.setIntro(transformRawContentToStructuredFormat(
-					getValueOrDefault(parseRawContent(PROMO_INTRO, xmlEventReader)), bodyProcessingContext));
+                    parseRawContent(PROMO_INTRO, xmlEventReader), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_LINK)) {
-			promoBoxData.setLink(getValueOrDefault(parseRawContent(PROMO_LINK, xmlEventReader)));
+			promoBoxData.setLink(parseRawContent(PROMO_LINK, xmlEventReader));
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_IMAGE)) {
 			promoBoxData.setImagePresent(true);
 		}
 		if (isElementNamed(nextStartElement.getName(), PROMO_TITLE)) {
-			promoBoxData.setTitle(getValueOrDefault(parseRawContent(PROMO_TITLE, xmlEventReader)));
+			promoBoxData.setTitle(parseRawContent(PROMO_TITLE, xmlEventReader));
 		}
 	}
 
@@ -75,11 +74,4 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 		return false;
 	}
 
-    //TODO This is currently duplicated across Parsers
-    private String getValueOrDefault(String value){
-        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
-            return "";
-        }
-        return value;
-    }
 }

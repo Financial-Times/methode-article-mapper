@@ -9,7 +9,6 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements XmlParser<PullQuoteData> {
@@ -49,10 +48,10 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either web-pull-quote-text or web-pull-quote-source
 		if (isElementNamed(nextStartElement.getName(), QUOTE_TEXT)) {
-			pullQuoteData.setQuoteText(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(QUOTE_TEXT, xmlEventReader)), bodyProcessingContext));
+			pullQuoteData.setQuoteText(transformRawContentToStructuredFormat(parseRawContent(QUOTE_TEXT, xmlEventReader), bodyProcessingContext));
 		}
 		if (isElementNamed(nextStartElement.getName(), QUOTE_SOURCE)) {
-			pullQuoteData.setQuoteSource(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(QUOTE_SOURCE, xmlEventReader)), bodyProcessingContext));
+			pullQuoteData.setQuoteSource(transformRawContentToStructuredFormat(parseRawContent(QUOTE_SOURCE, xmlEventReader), bodyProcessingContext));
 		}
 	}
 
@@ -61,11 +60,4 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 		return false;
 	}
 
-    //TODO This is currently duplicated across Parsers
-    private String getValueOrDefault(String value){
-        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
-            return "";
-        }
-        return value;
-    }
 }

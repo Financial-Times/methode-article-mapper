@@ -10,7 +10,6 @@ import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements XmlParser<DataTableData> {
@@ -35,7 +34,7 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader,
 							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
 		if (isElementNamed(nextStartElement.getName(), START_ELEMENT_NAME)) {
-			dataTableData.setBody(transformRawContentToStructuredFormat(getValueOrDefault(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement)), bodyProcessingContext));
+			dataTableData.setBody(transformRawContentToStructuredFormat(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement), bodyProcessingContext));
 		}
 	}
 
@@ -57,11 +56,4 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 		return "";
 	}
 
-    //TODO This is currently duplicated across Parsers
-    private String getValueOrDefault(String value){
-        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
-            return "";
-        }
-        return value;
-    }
 }
