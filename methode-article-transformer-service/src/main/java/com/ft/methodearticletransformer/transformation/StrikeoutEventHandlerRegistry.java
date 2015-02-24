@@ -1,12 +1,12 @@
 package com.ft.methodearticletransformer.transformation;
 
-import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
+
+import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 
 public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
 
@@ -20,8 +20,6 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
 
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
-
-        //registerStartAndEndElementEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "iframe"), "");
 
     }
 
