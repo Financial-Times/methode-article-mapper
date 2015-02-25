@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.BodyProcessorChain;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.regex.RegexRemoverBodyProcessor;
 import com.ft.bodyprocessing.regex.RegexReplacerBodyProcessor;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
@@ -36,6 +37,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
+                new Html5SelfClosingTagBodyProcessor(),
                 new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient)
         );
     }
