@@ -10,7 +10,6 @@ import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
-import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements XmlParser<DataTableData> {
@@ -32,15 +31,17 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 	}
 
 	@Override
-	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader) throws UnexpectedElementStructureException {
+	public void populateBean(DataTableData dataTableData, StartElement nextStartElement, XMLEventReader xmlEventReader,
+							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
 		if (isElementNamed(nextStartElement.getName(), START_ELEMENT_NAME)) {
-			dataTableData.setBody(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement));
+			dataTableData.setBody(transformRawContentToStructuredFormat(parseRawContent(START_ELEMENT_NAME, xmlEventReader, nextStartElement), bodyProcessingContext));
 		}
 	}
 
 	@Override
 	public void transformFieldContentToStructuredFormat(DataTableData dataTableData, BodyProcessingContext bodyProcessingContext) {
-		dataTableData.setBody(transformRawContentToStructuredFormat(dataTableData.getBody(), bodyProcessingContext));
+		//TODO method to be removed as it is now deprecated.
+		throw new IllegalStateException("This method should no longer be used.");
 	}
 
 	@Override
@@ -55,11 +56,4 @@ public class DataTableXMLParser extends BaseXMLParser<DataTableData> implements 
 		return "";
 	}
 
-    //TODO This is currently duplicated across Parsers
-    private String getValueOrDefault(String value){
-        if(!Strings.isNullOrEmpty(value) && value.contains(DUMMY_SOURCE_TEXT)){
-            return "";
-        }
-        return value;
-    }
 }

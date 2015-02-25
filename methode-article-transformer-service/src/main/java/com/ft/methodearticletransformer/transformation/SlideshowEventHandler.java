@@ -51,7 +51,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
             fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
         } else {
             
-            SlideshowData dataBean = parseElementData(event, xmlEventReader);
+            SlideshowData dataBean = parseElementData(event, xmlEventReader, bodyProcessingContext);
             
             if (dataBean.isAllRequiredDataPresent()) {
                 transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
@@ -64,8 +64,9 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
         slideshowXMLParser.transformFieldContentToStructuredFormat(dataBean, bodyProcessingContext);
     }
 
-    private SlideshowData parseElementData(StartElement startElement, XMLEventReader xmlEventReader) throws XMLStreamException {
-        return slideshowXMLParser.parseElementData(startElement, xmlEventReader);
+    private SlideshowData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
+										   BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
+        return slideshowXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
     }
     
     private void writeSlideshowElement(BodyWriter eventWriter, SlideshowData dataBean) {

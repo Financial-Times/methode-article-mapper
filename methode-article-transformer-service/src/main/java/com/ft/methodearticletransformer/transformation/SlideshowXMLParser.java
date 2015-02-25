@@ -32,7 +32,8 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
     }
 
     @Override
-    public void populateBean(SlideshowData dataBean, StartElement nextStartElement, XMLEventReader xmlEventReader) throws UnexpectedElementStructureException {
+    public void populateBean(SlideshowData dataBean, StartElement nextStartElement, XMLEventReader xmlEventReader,
+							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
         Attribute hrefElement = nextStartElement.getAttributeByName(HREF_QNAME);
         // Ensure the element contains an HREF attribute
         if(hrefElement != null) {

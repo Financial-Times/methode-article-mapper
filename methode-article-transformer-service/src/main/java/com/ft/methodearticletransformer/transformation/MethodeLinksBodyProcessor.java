@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.parsers.DocumentBuilder;
@@ -32,8 +31,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import com.ft.api.jaxrs.client.exceptions.ApiNetworkingException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodeapi.model.EomAssetType;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
+import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
+import com.google.common.base.Optional;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import org.w3c.dom.Document;
@@ -43,14 +49,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.google.common.base.Optional;
 
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
@@ -177,7 +175,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		} catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
 			if(cause instanceof IOException) {
-				throw new ApiNetworkingException(contentUrl,"GET",che);
+				throw new SemanticReaderUnavailableException(che);
 			}
 			throw che;
 		}

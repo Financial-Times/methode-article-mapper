@@ -1,7 +1,5 @@
 package com.ft.methodearticletransformer.methode;
 
-import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
-
 /**
  * MethodeApiUnavailableException
  *
@@ -10,8 +8,12 @@ import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
 public class MethodeApiUnavailableException extends RuntimeException {
 	private static final long serialVersionUID = 8803441501377423575L;
 
-	public MethodeApiUnavailableException(RemoteApiException cause) {
+	public MethodeApiUnavailableException(Throwable cause) {
         super(cause.getMessage(),cause);
+    }
+
+    public MethodeApiUnavailableException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 
 }

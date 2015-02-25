@@ -1,8 +1,5 @@
 package com.ft.methodearticletransformer.methode.rest;
 
-import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -13,14 +10,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.ft.api.jaxrs.client.exceptions.ApiNetworkingException;
 import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.util.transactionid.TransactionIdUtils;
@@ -38,6 +30,10 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RestMethodeFileService implements MethodeFileService {
 
@@ -97,7 +93,7 @@ public class RestMethodeFileService implements MethodeFileService {
 		} catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
 			if(cause instanceof IOException) {
-				throw new ApiNetworkingException(fileByUuidUri,"GET",che);
+				throw new MethodeApiUnavailableException(cause);
 			}
 			throw che;
 		}
@@ -152,7 +148,7 @@ public class RestMethodeFileService implements MethodeFileService {
 				Throwable cause = e.getCause();
 				if(cause instanceof ClientHandlerException) {
 					if (cause.getCause() instanceof IOException) {
-						throw new ApiNetworkingException(assetTypeUri,"POST", cause);
+						throw new MethodeApiUnavailableException(assetTypeUri.toString(), e);
 					}
 					throw (ClientHandlerException) cause;
 				}

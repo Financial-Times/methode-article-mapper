@@ -62,7 +62,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
         StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
         when(mockElementMatcher.matches(startElement)).thenReturn(true);
-        when(mockXmlParser.parseElementData(startElement, mockXMLEventReader)).thenReturn(mockSlideshowData);
+        when(mockXmlParser.parseElementData(startElement, mockXMLEventReader, mockBodyProcessingContext)).thenReturn(mockSlideshowData);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(false);
 
         eventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -81,7 +81,7 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
         StartElement startElement = getStartElementWithAttributes(START_ELEMENT_TAG, attributes);
 
         when(mockElementMatcher.matches(startElement)).thenReturn(true);
-        when(mockXmlParser.parseElementData(startElement, mockXMLEventReader)).thenReturn(mockSlideshowData);
+        when(mockXmlParser.parseElementData(startElement, mockXMLEventReader, mockBodyProcessingContext)).thenReturn(mockSlideshowData);
 		when(mockSlideshowData.getTitle()).thenReturn(TITLE_STRING);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(true);
 
