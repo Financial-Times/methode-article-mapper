@@ -18,11 +18,10 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
 public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
-    private static final String PARAGRAPH_TAG = "p";
     private static final String NEW_ELEMENT = "a";
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String DATA_EMBEDDED_VALUE = "true";
+    private static final String DATA_EMBEDDED_TRUE = "true";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
     private static final String DATA_ASSET_TYPE_VALUE = "video";
     private final XMLEventHandler fallbackHandler;
@@ -62,7 +61,7 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
         String videoLink =  srcAttribute.getValue();
         Map<String, String> attributesToAdd = new HashMap<String, String>();
         attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoLink);
-        attributesToAdd.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+        attributesToAdd.put(DATA_EMBEDDED, DATA_EMBEDDED_TRUE);
         attributesToAdd.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
         eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);

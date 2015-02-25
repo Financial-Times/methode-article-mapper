@@ -28,7 +28,7 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
     private static final String STARTING_ELEMENT_NAME = "iframe";
     private static final String ELEMENT_ATTRIBUTE_NAME = "src";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String DATA_EMBEDDED_VALUE = "true";
+    private static final String DATA_EMBEDDED_TRUE = "true";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
     private static final String DATA_ASSET_TYPE_VALUE = "video";
     private static final String YOUTUBE = "http://www.youtube.com/embed/OQzJR3BqS7o";
@@ -67,7 +67,7 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
 
         Map<String, String> finalAttributes = new HashMap<>();
         finalAttributes.put(HREF_ATTRIBUTE, VIMEO);
-        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_TRUE);
         finalAttributes.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
         StartElement firstElement = getStartElementWithAttributes(STARTING_ELEMENT_NAME, firstAttributes);
@@ -85,7 +85,7 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
 
         Map<String, String> finalAttributes = new HashMap<>();
         finalAttributes.put(HREF_ATTRIBUTE, YOUTUBE);
-        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
+        finalAttributes.put(DATA_EMBEDDED, DATA_EMBEDDED_TRUE);
         finalAttributes.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
 
         StartElement firstElement = getStartElementWithAttributes(STARTING_ELEMENT_NAME, firstAttributes);

@@ -36,7 +36,7 @@ public class StrikeoutXMLEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        eventHandler = new StrikeoutXMLEventHandler(fallbackEventHandler, attributeNameMatcher("channel"), "iframe");
+        eventHandler = new StrikeoutXMLEventHandler(fallbackEventHandler, attributeNameMatcher("channel"), "p", "iframe");
     }
 
     @Test

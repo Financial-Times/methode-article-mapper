@@ -6,7 +6,6 @@ import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
-import javax.management.Attribute;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
@@ -24,16 +23,16 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
 
     private final XMLEventHandler fallbackEventHandler;
     private final StartElementMatcher matcher;
-    private final String excludeFromStrikeoutElement;
+    private final String excludeFromStrikeoutPrimaryElement;
+    private final String excludeFromStrikeoutSecondaryElement;
 
-    private static final String PARAGRAPH_TAG = "p";
-
-    protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher, String excludeFromStrikeoutElement) {
+    protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher, String excludeFromStrikeoutPrimaryElement, String excludeFromStrikeoutSecondaryElement) {
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
         this.fallbackEventHandler = fallbackEventHandler;
         this.matcher = matcher;
-        this.excludeFromStrikeoutElement = excludeFromStrikeoutElement;
+        this.excludeFromStrikeoutPrimaryElement = excludeFromStrikeoutPrimaryElement;
+        this.excludeFromStrikeoutSecondaryElement = excludeFromStrikeoutSecondaryElement;
     }
 
     @Override
@@ -44,11 +43,11 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
             return;
         }
         final String nameToMatch = event.getName().getLocalPart();
-        if(!(PARAGRAPH_TAG.equals(nameToMatch))) {
+        if(!(excludeFromStrikeoutPrimaryElement.equals(nameToMatch))) {
             skipUntilMatchingEndTag(nameToMatch, xmlEventReader);
             return;
         }
-        List<XMLEvent> eventList = makeListOfXMLEventsAndSkip(event, xmlEventReader, event.getName().toString(), excludeFromStrikeoutElement);
+        List<XMLEvent> eventList = makeListOfXMLEventsAndSkip(event, xmlEventReader, event.getName().toString(), excludeFromStrikeoutSecondaryElement);
         if (eventList != null) {
             try {
                 writeSavedEventList(eventList, eventWriter);

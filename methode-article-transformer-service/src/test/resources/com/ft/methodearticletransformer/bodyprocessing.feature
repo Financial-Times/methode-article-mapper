@@ -189,6 +189,17 @@ Feature: Body processing
     | <body><p>Some text</p><p></p><p>More text</p></body>                                                        | <body><p>Some text</p><p>More text</p></body> |
     | <body><p>Some text</p><p><xref>this xref is removed leaving an empty para</xref></p><p>More text</p></body> | <body><p>Some text</p><p>More text</p></body> |
 
+  Scenario Outline: Handle videos
+    Given I have body text in Methode XML like <before>
+    When I transform it into our Content Store format
+    Then the body should be like <after>
+
+  Examples:
+    | before                                                                                                                                                                                                                                    | after                                                                                                                   |
+    | <videoPlayer videoID="3920663836001"><web-inline-picture id="U2113113643377jlC" width="150" fileref="/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0" tmx="150 100 150 100"/></videoPlayer>  | <a data-asset-type="video" data-embedded="true" href="http://video.ft.com/3920663836001"/>                              |
+    | <p align="left" channel="FTcom">Youtube Video<iframe height="245" frameborder="0" allowfullscreen="" src="http://www.youtube.com/embed/YoB8t0B4jx4" width="600"></iframe></p>                                                             | <p>Youtube Video<a data-asset-type="video" data-embedded="true" href="http://www.youtube.com/embed/YoB8t0B4jx4"/></p>   |
+    | <p align="left" channel="FTcom">Vimeo Video<iframe height="245" frameborder="0" src="http://player.vimeo.com/video/77761436" width="600"></iframe></p>                                                                                    | <p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="http://player.vimeo.com/video/77761436"/></p>       |
+
   Scenario Outline: Handle strikeouts
     Given I have body text in Methode XML like <before>
     When I transform it into our Content Store format
