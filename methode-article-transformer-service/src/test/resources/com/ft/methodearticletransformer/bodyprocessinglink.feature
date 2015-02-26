@@ -19,7 +19,6 @@ Feature: Body processing links
     # Alt attribute is preserved:
     | <a href="http://www.google.com" alt="Google">google.com</a>    | <a href="http://www.google.com" alt="Google">google.com</a>   |
 
-  @Technical
   Scenario Outline: Relative hyperlinks are processed
     Given I have a "relative hyperlink" in a Methode article body like <before>
     When I transform it into our Content Store format
@@ -32,7 +31,6 @@ Feature: Body processing links
     | <a href="../home/uk" target="_blank">google.com</a> | <a href="../home/uk">google.com</a>                |
     | <a href="../home/uk" alt="Google">google.com</a>    | <a href="../home/uk" alt="Google">google.com</a>   |
 
-  @Technical
   Scenario Outline: Mailto hyperlinks are processed
     Given I have a "mailto hyperlink" in a Methode article body like <before>
     When I transform it into our Content Store format
@@ -46,7 +44,6 @@ Feature: Body processing links
     | <a href="mailto:lionel.barber@ft.com" alt="Google">google.com</a>    | <a href="mailto:lionel.barber@ft.com" alt="Google">google.com</a>   |
 
 
-  @Technical
   Scenario Outline: Anchors are removed
     Given I have an "anchor" in a Methode article body like <before>
     When I transform it into our Content Store format
@@ -64,7 +61,6 @@ Feature: Body processing links
     | <p><a id="top">5. example.com</a><a name="foo">Foo</a></p>                    | <p>5. example.comFoo</p> |
 
 
-  @Technical
   Scenario Outline: Links to anchors only are removed
     Given I have an "link to an anchor" in a Methode article body like <before>
     When I transform it into our Content Store format

@@ -183,7 +183,6 @@ Feature: Body processing
     | !--       | <!-- comments -->                              |
     | weird     | <weird>text surrounded by unknown tags</weird> |
 
-  @Technical
   Scenario Outline: Entity translation to unicode
     Given an entity reference <entity>
     When I transform it into our Content Store format
