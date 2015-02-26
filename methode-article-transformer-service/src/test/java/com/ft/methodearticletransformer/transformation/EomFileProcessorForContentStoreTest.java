@@ -1,7 +1,9 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
