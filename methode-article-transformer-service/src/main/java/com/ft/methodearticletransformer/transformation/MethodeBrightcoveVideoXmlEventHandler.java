@@ -20,9 +20,9 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
     private static final String VIDEO_URL = "http://video.ft.com/%s";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String DATA_EMBEDDED_VALUE = "true";
+    private static final String TRUE = "true";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
-    private static final String DATA_ASSET_TYPE_VALUE = "video";
+    private static final String VIDEO = "video";
     private final XMLEventHandler fallbackHandler;
     private String videoIdAttributeName;
     private Map<String, String> attributesToAdd;
@@ -41,10 +41,10 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
             return;
         }
         String videoUrl = String.format(VIDEO_URL, id);
-        attributesToAdd = new HashMap<String, String>();
+        attributesToAdd = new HashMap<>();
         attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
-        attributesToAdd.put(DATA_EMBEDDED, DATA_EMBEDDED_VALUE);
-        attributesToAdd.put(DATA_ASSET_TYPE, DATA_ASSET_TYPE_VALUE);
+        attributesToAdd.put(DATA_EMBEDDED, TRUE);
+        attributesToAdd.put(DATA_ASSET_TYPE, VIDEO);
         skipUntilMatchingEndTag(event.getName().toString(), xmlEventReader);
         eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
         eventWriter.writeEndTag(NEW_ELEMENT);

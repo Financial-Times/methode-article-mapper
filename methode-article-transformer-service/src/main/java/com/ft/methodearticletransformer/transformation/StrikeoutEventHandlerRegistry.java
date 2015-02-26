@@ -11,9 +11,9 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
 
     public StrikeoutEventHandlerRegistry() {
-        //default is to check all tags for channel attribute
-        // Handle strikeouts, i.e. where have <p channel="!"> or <span channel="!">
-        // For these elements if the attribute is missing use the fallback handler
+        // Default is to check all tags for channel attribute as these are considered strikeouts and remove them
+        // Fallback handler retains all tags with no channel attribute
+        // <p channel="?"><iframe></iframe></p> will also be retained as this scenario represents a video which will be processed separately
 
         registerDefaultEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "p", "iframe"));
         registerCharactersEventHandler(new RetainXMLEventHandler());
