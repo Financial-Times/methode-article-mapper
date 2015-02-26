@@ -1,17 +1,17 @@
 package com.ft.methodearticletransformer.transformation;
 
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.writer.BodyWriter;
-import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-
+import java.util.Collections;
+import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
-import java.util.Collections;
-import java.util.Map;
+
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.writer.BodyWriter;
+import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 
 public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
