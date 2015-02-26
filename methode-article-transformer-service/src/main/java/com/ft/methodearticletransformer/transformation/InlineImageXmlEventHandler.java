@@ -24,6 +24,7 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String UUID_REGEX = ".*uuid=([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
+    private static final String DEFAULT_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
 
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
@@ -34,6 +35,7 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
         HashMap<String, String> attributes = new HashMap<>();
         attributes.put("id", imageSetUuid);
         attributes.put("type", IMAGE_SET_TYPE);
+        attributes.put(DEFAULT_ATTRIBUTE_DATA_EMBEDDED, "true");
 
         eventWriter.writeStartTag(CONTENT_TAG, attributes);
         skipUntilMatchingEndTag(event.getName().getLocalPart(), xmlEventReader);

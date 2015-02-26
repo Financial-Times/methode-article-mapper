@@ -104,7 +104,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>";
 
         //Does include some strange extra spaces in the output file
-        final String expectedTransformedBody = String.format("<body><p><content id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\n</p>\n" +
+        final String expectedTransformedBody = String.format("<body><p><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\n</p>\n" +
                 "<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
                 "alongside Picasso, “before death overtakes him”. Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n" +
                 "<p>Did she protest too much? Tate’s poster image for the retrospective <em>Saloua Raouda Choucair</em> is a classic post-cubist self-portrait. " +
@@ -165,12 +165,39 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
+
+	@Test
+	public void markupInsidePullQuotesShouldBeTransformed() {
+		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+				"\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+				"\t\t<tr>\n" +
+				"\t\t\t<td>\n" +
+				"\t\t\t\t<web-pull-quote-text>\n" +
+				"\t\t\t\t\t<p>It suits the extremists to encourage <b>healthy</b> eating.</p>\n" +
+				"\t\t\t\t</web-pull-quote-text>\n" +
+				"\t\t\t</td>\n" +
+				"\t\t</tr>\n" +
+				"\t\t<tr>\n" +
+				"\t\t\t<td>\n" +
+				"\t\t\t\t<web-pull-quote-source><b>source1</b></web-pull-quote-source>\n" +
+				"\t\t\t</td>\n" +
+				"\t\t</tr>\n" +
+				"\t</table>&gt;\n" +
+				"</web-pull-quote></body>";
+
+		String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+				"<pull-quote-text><p>It suits the extremists to encourage <strong>healthy</strong> eating.</p></pull-quote-text>" +
+				"<pull-quote-source><strong>source1</strong></pull-quote-source>" +
+				"</pull-quote></body>";
+
+		checkTransformation(pullQuoteFromMethode, processedPullQuote);
+	}
 
     @Test
     public void pullQuotesShouldReturnEmptySrcIfDummySource() {
@@ -192,7 +219,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</web-pull-quote></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote></body>";
 
@@ -237,12 +264,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</p></body>";
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
-                "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote>" +
                 "<p>" +
                 "<pull-quote>" +
-                "<pull-quote-text>It suits the people to encourage drinking.</pull-quote-text>" +
+                "<pull-quote-text><p>It suits the people to encourage drinking.</p></pull-quote-text>" +
                 "<pull-quote-source>source2</pull-quote-source>" +
                 "</pull-quote>" +
                 "</p>" +
@@ -258,7 +285,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-headline>\n" +
                 "</td>\n" +
                 "</tr>\n" +
-                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about <b>£350m</b> a year — although some anticipate inflation of up to 70%</p>\n" +
                 "</promo-intro>\n" +
                 "</td>\n" +
                 "</tr>\n" +
@@ -266,8 +293,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-box></body>";
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
-                "<big-number-headline>£350m</big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-headline><p>£350m</p></big-number-headline>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about <strong>£350m</strong> a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
@@ -289,7 +316,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
                 "<big-number-headline></big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
@@ -345,13 +372,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</body>";
 
         String processedBigNumber = "<body><p>A big number!</p>\n" +
-                "<p><big-number><big-number-headline>£350M</big-number-headline>" +
-                "<big-number-intro>The cost of eating at Leon and Tossed every single day.</big-number-intro>" +
+                "<p><big-number><big-number-headline><p>£350M</p></big-number-headline>" +
+                "<big-number-intro><p>The cost of eating at Leon and Tossed every single day.</p></big-number-intro>" +
                 "</big-number></p>\n" +
                 "<p>A big number right aligned.</p>\n" +
                 "<p><big-number>" +
-                "<big-number-headline>52p</big-number-headline>" +
-                "<big-number-intro>The weekly saving made by making your own lunch.</big-number-intro>" +
+                "<big-number-headline><p>52p</p></big-number-headline>" +
+                "<big-number-intro><p>The weekly saving made by making your own lunch.</p></big-number-intro>" +
                 "</big-number>\n" +
                 "</p>\n" +
                 "</body>";
@@ -365,13 +392,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String dataTableFromMethode = "<body><div><web-table><table class=\"data-table\" width=\"100%\"><caption>Table (Falcon Style)</caption>\n" +
                 "<thead><tr><th>Column A</th>\n" +
                 "<th>Column B</th>\n" +
-                "<th>Column C</th>\n" +
+                "<th><b>Column C</b></th>\n" +
                 "<th>Column D</th>\n" +
                 "</tr>\n" +
                 "</thead>\n" +
                 "<tbody><tr><td>0</td>\n" +
                 "<td>1</td>\n" +
-                "<td>2</td>\n" +
+                "<td><b>2</b></td>\n" +
                 "<td>3</td>\n" +
                 "</tr>\n" +
                 "<tr><td>4</td>\n" +
@@ -387,13 +414,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String processedDataTable = "<body><table class=\"data-table\"><caption>Table (Falcon Style)</caption>\n" +
                 "<thead><tr><th>Column A</th>\n" +
                 "<th>Column B</th>\n" +
-                "<th>Column C</th>\n" +
+                "<th><strong>Column C</strong></th>\n" +
                 "<th>Column D</th>\n" +
                 "</tr>\n" +
                 "</thead>\n" +
                 "<tbody><tr><td>0</td>\n" +
                 "<td>1</td>\n" +
-                "<td>2</td>\n" +
+                "<td><strong>2</strong></td>\n" +
                 "<td>3</td>\n" +
                 "</tr>\n" +
                 "<tr><td>4</td>\n" +
@@ -500,8 +527,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</table>&gt;</promo-box></p></body>";
 
         String processedBigNumber = "<body><p>patelka</p><p><big-number>" +
-                "<big-number-headline>£350m</big-number-headline>" +
-                "<big-number-intro>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</big-number-intro>" +
+                "<big-number-headline><p>£350m</p></big-number-headline>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></p></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
