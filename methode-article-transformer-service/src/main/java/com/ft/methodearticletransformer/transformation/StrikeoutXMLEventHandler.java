@@ -1,22 +1,16 @@
 package com.ft.methodearticletransformer.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Characters;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -24,37 +18,33 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
 
     private final XMLEventHandler fallbackEventHandler;
     private final StartElementMatcher matcher;
-    private final String excludeFromStrikeoutPrimaryElement;
-    private final String excludeFromStrikeoutSecondaryElement;
+    private static final String FTCOM = "FTcom";
+    private static final String NOT_FINANCIAL_TIMES = "!Financial Times";
 
-    protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher, String excludeFromStrikeoutPrimaryElement, String excludeFromStrikeoutSecondaryElement) {
+    protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher) {
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
         this.fallbackEventHandler = fallbackEventHandler;
         this.matcher = matcher;
-        this.excludeFromStrikeoutPrimaryElement = excludeFromStrikeoutPrimaryElement;
-        this.excludeFromStrikeoutSecondaryElement = excludeFromStrikeoutSecondaryElement;
     }
 
     @Override
     public void handleStartElementEvent(final StartElement event, final XMLEventReader xmlEventReader, final BodyWriter eventWriter,
                                         final BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        if(!matcher.matches(event)) {
+        if (!matcher.matches(event)) {
             fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         }
+
+        Attribute channelAttribute = event.asStartElement().getAttributeByName(QName.valueOf("channel"));
+        String channelAttributeString = channelAttribute.getValue();
         final String nameToMatch = event.getName().getLocalPart();
-        if(!(excludeFromStrikeoutPrimaryElement.equals(nameToMatch))) {
-            skipUntilMatchingEndTag(nameToMatch, xmlEventReader);
+
+        if ((FTCOM.equals(channelAttributeString)) || (NOT_FINANCIAL_TIMES.equals(channelAttributeString))) {
+            fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
-        }
-        List<XMLEvent> eventList = makeListOfXMLEventsAndSkip(event, xmlEventReader, event.getName().toString(), excludeFromStrikeoutSecondaryElement);
-        if (eventList != null) {
-            try {
-                writeSavedEventList(eventList, eventWriter);
-            } catch (IOException e) {
-                throw new TransformationException(e);
-            }
+        } else {
+            skipUntilMatchingEndTag(nameToMatch, xmlEventReader);
         }
     }
 
@@ -62,53 +52,6 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
     public void handleEndElementEvent(final EndElement event, final XMLEventReader xmlEventReader, final BodyWriter eventWriter) throws XMLStreamException {
         fallbackEventHandler.handleEndElementEvent(event, xmlEventReader, eventWriter);
     }
-
-    private List<XMLEvent> makeListOfXMLEventsAndSkip(StartElement event, XMLEventReader xmlEventReader, String primaryElementName, String secondaryElementName) throws XMLStreamException {
-        List<XMLEvent> xmlEventList = new ArrayList<>();
-        boolean containsSecondaryElement = false;
-        int primaryOpenElementNameCount = 1;
-        xmlEventList.add(event);
-        while(xmlEventReader.hasNext()) {
-            XMLEvent nextEvent = xmlEventReader.nextEvent();
-            if(nextEvent.isStartElement()) {
-                StartElement newStartElement = nextEvent.asStartElement();
-                xmlEventList.add(newStartElement);
-                if ((primaryElementName).equals(newStartElement.getName().getLocalPart())) {
-                    primaryOpenElementNameCount++;
-                }
-                if ((secondaryElementName).equals(newStartElement.getName().getLocalPart())) {
-                    containsSecondaryElement = true;
-                }
-            }
-            if(nextEvent.isCharacters()) {
-                Characters chars = nextEvent.asCharacters();
-                xmlEventList.add(chars);
-            }
-            if(nextEvent.isEndElement()) {
-                EndElement newEndElement = nextEvent.asEndElement();
-                xmlEventList.add(newEndElement);
-                if((primaryElementName).equals(newEndElement.getName().getLocalPart())) {
-                    if(primaryOpenElementNameCount == 1) {
-                        if(containsSecondaryElement) {
-                            return xmlEventList;
-                        }
-                        return null;
-                    }
-                    primaryOpenElementNameCount--;
-                }
-            }
-        }
-        throw new BodyProcessingException("Reached end without encountering closing primary tag: " + primaryElementName);
-    }
-
-    private void writeSavedEventList(List<XMLEvent> eventList, BodyWriter eventWriter) throws XMLStreamException, IOException{
-        Writer writer = new StringWriter();
-        for (XMLEvent event : eventList) {
-            event.writeAsEncodedUnicode(writer);
-        }
-        eventWriter.writeRaw(writer.toString());
-    }
-
 
 }
 

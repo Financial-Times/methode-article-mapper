@@ -11,11 +11,11 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
 
     public StrikeoutEventHandlerRegistry() {
-        // Default is to check all tags for channel attribute as these are considered strikeouts and remove them
-        // Fallback handler retains all tags with no channel attribute
-        // <p channel="?"><iframe></iframe></p> will also be retained as this scenario represents a video which will be processed separately
+        // Default is to check all tags for channel attribute if there is no channel the element is retained
+        // If the channel value is either FTcom or !Financial Times the elements are retained
+        // If the value is something else the element is removed.
 
-        registerDefaultEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "p", "iframe"));
+        registerDefaultEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel")));
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
 
