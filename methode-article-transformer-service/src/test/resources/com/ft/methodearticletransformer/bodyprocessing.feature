@@ -207,15 +207,19 @@ Feature: Body processing
     Then the body should be like <after>
 
   Examples:
-    | before                                                                                                 | after                                          |
-    | <body><p>Para with no strikeout</p><p channel="!">Para with strikeout</p></body>                       | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="!">a strikeout and </span>other text</p></body>                | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="Financial Times">Para with strikeout</p></body>         | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="Financial Times">a strikeout and </span>other text</p></body>  | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="!FTcom">Para with strikeout</p></body>                  | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="!FTcom">a strikeout and </span>other text</p></body>           | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="">Para with strikeout</p></body>                        | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="">a strikeout and </span>other text</p></body>                 | <body><p>Para containing other text</p></body> |
+    | before                                                                                                 | after                                                                        |
+    | <body><p>Para with no strikeout</p><p channel="!">Para with strikeout</p></body>                       | <body><p>Para with no strikeout</p></body>                                   |
+    | <body><p>Para containing <span channel="!">a strikeout and </span>other text</p></body>                | <body><p>Para containing other text</p></body>                               |
+    | <body><p>Para with no strikeout</p><p channel="Financial Times">Para with strikeout</p></body>         | <body><p>Para with no strikeout</p></body>                                   |
+    | <body><p>Para containing <span channel="Financial Times">a strikeout and </span>other text</p></body>  | <body><p>Para containing other text</p></body>                               |
+    | <body><p>Para with no strikeout</p><p channel="!Financial Times">Para with strikeout</p></body>        | <body><p>Para with no strikeout</p><p>Para with strikeout</p></body>         |
+    | <body><p>Para containing <span channel="!Financial Times">a strikeout and </span>other text</p></body> | <body><p>Para containing a strikeout and other text</p></body>  |
+    | <body><p>Para with no strikeout</p><p channel="FTcom">Para with strikeout</p></body>                   | <body><p>Para with no strikeout</p><p>Para with strikeout</p></body>         |
+    | <body><p>Para containing <span channel="FTcom">a strikeout and </span>other text</p></body>            | <body><p>Para containing a strikeout and other text</p></body>  |
+    | <body><p>Para with no strikeout</p><p channel="!FTcom">Para with strikeout</p></body>                  | <body><p>Para with no strikeout</p></body>                                   |
+    | <body><p>Para containing <span channel="!FTcom">a strikeout and </span>other text</p></body>           | <body><p>Para containing other text</p></body>                               |
+    | <body><p>Para with no strikeout</p><p channel="">Para with strikeout</p></body>                        | <body><p>Para with no strikeout</p></body>                                   |
+    | <body><p>Para containing <span channel="">a strikeout and </span>other text</p></body>                 | <body><p>Para containing other text</p></body>                               |
 
   Scenario Outline: Handle non-strikeouts
     Given I have body text in Methode XML like <before>

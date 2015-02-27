@@ -146,8 +146,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesShouldBeReplacedWithAppopriateTags() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+    public void pullQuotesShouldBeReplacedWithAppropriateTags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -174,7 +174,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void markupInsidePullQuotesShouldBeTransformed() {
-		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
 				"\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
 				"\t\t<tr>\n" +
 				"\t\t\t<td>\n" +
@@ -201,7 +201,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesShouldReturnEmptySrcIfDummySource() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -228,7 +228,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotBarfOnTwoPullQuotes() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -245,7 +245,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "\t</table>&gt;\n" +
                 "</web-pull-quote>" +
                 "<p>" +
-                "<web-pull-quote align=\"left\">" +
+                "<web-pull-quote align=\"left\" channel=\"FTcom\">" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -578,7 +578,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesWithNoSourceShouldBeWritten() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" >&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
