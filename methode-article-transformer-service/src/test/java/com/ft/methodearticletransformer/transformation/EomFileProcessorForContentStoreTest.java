@@ -1,6 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.nullValue;
@@ -41,7 +42,6 @@ import org.junit.rules.ExpectedException;
 
 public class EomFileProcessorForContentStoreTest {
 
-	public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
