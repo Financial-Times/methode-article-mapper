@@ -19,7 +19,7 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
     private final XMLEventHandler fallbackEventHandler;
     private final StartElementMatcher matcher;
     private static final String FTCOM = "FTcom";
-    private static final String NOT_FINANCIAL_TIMES = "!Financial Times";
+    private static final String NOT_NEWSPAPER = "!Financial Times";
 
     protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher) {
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
@@ -40,7 +40,7 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
         String channelAttributeString = channelAttribute.getValue();
         final String nameToMatch = event.getName().getLocalPart();
 
-        if ((FTCOM.equals(channelAttributeString)) || (NOT_FINANCIAL_TIMES.equals(channelAttributeString))) {
+        if ((FTCOM.equals(channelAttributeString)) || (NOT_NEWSPAPER.equals(channelAttributeString))) {
             fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         } else {

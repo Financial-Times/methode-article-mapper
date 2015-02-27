@@ -808,16 +808,16 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
          public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
-        String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+        String contentWithStrikeouts = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
         String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
-        checkTransformation(contentWithStrikeout, transformedContent);
+        checkTransformation(contentWithStrikeouts, transformedContent);
     }
 
     @Test
     public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
-        String contentWithNoStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
         String transformedContent = "<body><p>Random Text<a href=\"http://www.youtube.com/embed/77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
-        checkTransformation(contentWithNoStrikeouts, transformedContent);
+        checkTransformation(contentWithStrikeouts, transformedContent);
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
