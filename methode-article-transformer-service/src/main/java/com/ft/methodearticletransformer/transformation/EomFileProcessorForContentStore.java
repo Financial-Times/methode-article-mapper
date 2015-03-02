@@ -54,7 +54,7 @@ public class EomFileProcessorForContentStore {
 	private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
 	private static final Logger log = LoggerFactory.getLogger(EomFileProcessorForContentStore.class);
-	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
+	public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
 
 	private final FieldTransformer bodyTransformer;
 	private final FieldTransformer bylineTransformer;
