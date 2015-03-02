@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessorChain;
+import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 
 public class BylineProcessingFieldTransformer implements FieldTransformer {
 

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 
+import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
