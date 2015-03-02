@@ -17,12 +17,12 @@ public class BylineProcessingFieldTransformerFactoryTest {
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private FieldTransformer bodyTransformer;
+    private FieldTransformer bylineTransformer;
 	private static final String TRANSACTION_ID = "tid_test";
 
 	@Before
     public void setup() {
-        bodyTransformer = new BylineProcessingFieldTransformerFactory().newInstance();
+        bylineTransformer = new BylineProcessingFieldTransformerFactory().newInstance();
     }
      
     @Test
@@ -87,9 +87,9 @@ public class BylineProcessingFieldTransformerFactoryTest {
         checkTransformation("Standard &amp; Poor &lt; Yahoo", "Standard & Poor < Yahoo");
     }
 
-    private void checkTransformation(String originalBody, String expectedTransformedBody) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
-        assertThat(actualTransformedBody, is(equalTo(expectedTransformedBody)));
+    private void checkTransformation(String originalByline, String expectedTransformedByline) {
+        String actualTransformedByline = bylineTransformer.transform(originalByline, TRANSACTION_ID);
+        assertThat(actualTransformedByline, is(equalTo(expectedTransformedByline)));
     }
 
 }
