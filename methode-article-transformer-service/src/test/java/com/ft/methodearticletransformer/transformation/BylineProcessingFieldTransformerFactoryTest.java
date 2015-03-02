@@ -17,12 +17,12 @@ public class BylineProcessingFieldTransformerFactoryTest {
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    private FieldTransformer bodyTransformer;
+    private FieldTransformer bylineTransformer;
 	private static final String TRANSACTION_ID = "tid_test";
 
 	@Before
     public void setup() {
-        bodyTransformer = new BylineProcessingFieldTransformerFactory().newInstance();
+        bylineTransformer = new BylineProcessingFieldTransformerFactory().newInstance();
     }
      
     @Test
@@ -52,6 +52,36 @@ public class BylineProcessingFieldTransformerFactoryTest {
     public void partlyEditedDefaultBylineShouldBeReturnedAsEmptyByline() {
     	checkTransformation("<byline>By <author-name></author-name></byline>", "");
     }
+
+	@Test
+	public void shouldRemoveFinancialTimesChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"Financial Times\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveNotFtComChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!FTcom\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveNotAnythingChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveEmptyChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldKeepNotFinancialTimesChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!Financial Times\">Rodders</b> Roddam</author-name>", "By Martin Rodders Roddam");
+	}
+
+	@Test
+	public void shouldKeepFtComChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"FTcom\">Rodders</b> Roddam</author-name>", "By Martin Rodders Roddam");
+	}
     
     @Test
     public void emptyBylineShouldBeReturnedAsEmptyByline() {
@@ -87,9 +117,9 @@ public class BylineProcessingFieldTransformerFactoryTest {
         checkTransformation("Standard &amp; Poor &lt; Yahoo", "Standard & Poor < Yahoo");
     }
 
-    private void checkTransformation(String originalBody, String expectedTransformedBody) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
-        assertThat(actualTransformedBody, is(equalTo(expectedTransformedBody)));
+    private void checkTransformation(String originalByline, String expectedTransformedByline) {
+        String actualTransformedByline = bylineTransformer.transform(originalByline, TRANSACTION_ID);
+        assertThat(actualTransformedByline, is(equalTo(expectedTransformedByline)));
     }
 
 }
