@@ -52,6 +52,36 @@ public class BylineProcessingFieldTransformerFactoryTest {
     public void partlyEditedDefaultBylineShouldBeReturnedAsEmptyByline() {
     	checkTransformation("<byline>By <author-name></author-name></byline>", "");
     }
+
+	@Test
+	public void shouldRemoveFinancialTimesChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"Financial Times\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveNotFtComChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!FTcom\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveNotAnythingChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldRemoveEmptyChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!\">Rodders</b> Roddam</author-name>", "By Martin  Roddam");
+	}
+
+	@Test
+	public void shouldKeepNotFinancialTimesChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"!Financial Times\">Rodders</b> Roddam</author-name>", "By Martin Rodders Roddam");
+	}
+
+	@Test
+	public void shouldKeepFtComChannelText() {
+		checkTransformation("By <author-name>Martin <b channel=\"FTcom\">Rodders</b> Roddam</author-name>", "By Martin Rodders Roddam");
+	}
     
     @Test
     public void emptyBylineShouldBeReturnedAsEmptyByline() {
