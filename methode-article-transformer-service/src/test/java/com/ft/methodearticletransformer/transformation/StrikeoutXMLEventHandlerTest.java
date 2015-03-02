@@ -1,10 +1,8 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.transformation.StrikeoutEventHandlerRegistry.attributeNameMatcher;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
 import javax.xml.stream.events.EndElement;
@@ -14,7 +12,6 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
-import com.google.common.collect.ImmutableMap;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,13 +33,12 @@ public class StrikeoutXMLEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        eventHandler = new StrikeoutXMLEventHandler(fallbackEventHandler, attributeNameMatcher("channel"), "p", "iframe");
+        eventHandler = new StrikeoutXMLEventHandler(fallbackEventHandler, attributeNameMatcher("channel"));
     }
 
     @Test
     public void shouldUseFallbackHandlerForStartTagIfAttributesDoNotMatch() throws Exception {
-        ImmutableMap<String,String> attributesMap = ImmutableMap.of("title", "!");
-        StartElement startElement = getStartElementWithAttributes("p", attributesMap);
+        StartElement startElement = getCompactStartElement("<p class=\"\"></p>", "p");
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
         verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
     }
@@ -62,56 +58,39 @@ public class StrikeoutXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldRemoveStartTagAndContentsUpToMatchingEndTagIfStrikeoutAttributePresent() throws Exception {
-        ImmutableMap<String,String> attributesMap = ImmutableMap.of("channel", "!");
-        StartElement startElement = getStartElementWithAttributes("span", attributesMap);
-        when(mockXmlEventReader.hasNext()).thenReturn(true, true, true, true, true, true, true);
-        //"<span channel="!">Some text in <i>italics</i> and some not</span>"
-        when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Some text in "),
-                getStartElement("i"), getCharacters("italics"), getEndElement("i"),
-                getCharacters(" and some not"), getEndElement("span"));
-        when(mockXmlEventReader.peek()).thenReturn(getCharacters("Some text in "),
-                getStartElement("i"), getCharacters("italics"), getEndElement("i"),
-                getCharacters(" and some not"), getEndElement("span"));
+    public void shouldIgnoreStartTagAndContentsUpToMatchingEndTagIfChannelAttributesAreEmpty() throws Exception {
+        StartElement startElement = getCompactStartElement("<span channel=\"\">Some text in <i>italics</i> and some not</span>", "span");
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(fallbackEventHandler);
         verifyZeroInteractions(eventWriter);
     }
 
     @Test
-    public void shouldRemoveStartTagAndContentsUpToMatchingEndTagIfPTagWithChannelAttibuteButNoNestedIFrameElementPresent() throws Exception {
-        ImmutableMap<String, String> attributesMap = ImmutableMap.of("channel", "!");
-        StartElement startElement = getStartElementWithAttributes("p", attributesMap);
-        when(mockXmlEventReader.hasNext()).thenReturn(true, true, true);
-        //"<p channel="!">Look here for content</p>"
-        when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Look here for content"), getEndElement("p"));
-        when(mockXmlEventReader.peek()).thenReturn(getCharacters("Look here for content"), getEndElement("p"));
+    public void shouldIgnoreStartTagAndContentsUpToMatchingEndTagIfChannelAttributesDoNotMatchRetainableValues() throws Exception {
+        StartElement startElement = getCompactStartElement("<span channel=\"!\">Some text in <i>italics</i> and some not</span>", "span");
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(fallbackEventHandler);
         verifyZeroInteractions(eventWriter);
     }
 
     @Test
-    public void shouldRemoveStartTagAndContentsUpToMatchingEndTagIfChannelAttributeAndNestedIFrameElementPresentButHasNoOuterPTag() throws Exception {
-        ImmutableMap<String, String> attributesMap = ImmutableMap.of("channel", "!");
-        StartElement startElement = getStartElementWithAttributes("span", attributesMap);
-        when(mockXmlEventReader.hasNext()).thenReturn(true, true, true);
-        //"<span channel="!">Look here <iframe></iframe> for content</span>"
-        when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Look here "), getStartElement("iframe"), getEndElement("iframe"),getCharacters(" for content"), getEndElement("span"));
-        when(mockXmlEventReader.peek()).thenReturn(getCharacters("Look here "), getStartElement("iframe"), getEndElement("iframe"),getCharacters(" for content"), getEndElement("span"));
+     public void shouldRetainStartTagAndContentsUpToMatchingEndTagIfChannelAttributesIsFTcom() throws Exception {
+        StartElement startElement = getCompactStartElement("<b channel=\"FTcom\">Some text in <i>italics</i> and some not</b>", "b");
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
-        verifyZeroInteractions(eventWriter);
+        verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
     }
 
     @Test
-    public void shouldRetainStartTagAndContentsUpToMatchingEndTagIfPTagWithChannelAttributeAndNestedIFrameElementPresent() throws Exception {
-            when(mockXmlEventReader.hasNext()).thenReturn(true, true, true, true, true);
-            StartElement pStartElement = getCompactStartElement("<p channel=\"FTCom\">", "p");
-            StartElement iFrameStartElement = getCompactStartElement("<iframe src=\"www.youtube.com\">", "iframe");
-            when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Look here "), iFrameStartElement,
-                    getEndElement("iframe"), getCharacters(" for content"), getEndElement("p"));
-            eventHandler.handleStartElementEvent(pStartElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
-            verify(eventWriter, times(1)).writeRaw("<p channel=\"FTCom\">Look here <iframe src=\"www.youtube.com\"></iframe> for content</p>");
+    public void shouldRetainStartTagAndContentsUpToMatchingEndTagIfChannelAttributesIsNotFinancialTimes() throws Exception {
+        StartElement startElement = getCompactStartElement("<table channel=\"!Financial Times\"><tr><td></td></tr></table>", "table");
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+        verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+    }
 
-        }
-
-
+    @Test
+    public void shouldRetainStartTagAndContentsUpToMatchingEndTagIfContentIsVideo() throws Exception {
+        StartElement startElement = getCompactStartElement("<p channel=\"FTcom\"><iframe src=\"http://www.youtube.com/watch?v=wDcAQrgn50o\"></iframe></p>\"", "p");
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+        verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
+    }
 }

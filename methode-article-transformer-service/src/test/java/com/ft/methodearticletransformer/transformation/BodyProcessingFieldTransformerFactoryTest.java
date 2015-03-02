@@ -146,8 +146,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesShouldBeReplacedWithAppopriateTags() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+    public void pullQuotesShouldBeReplacedWithAppropriateTags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -174,7 +174,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void markupInsidePullQuotesShouldBeTransformed() {
-		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
 				"\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
 				"\t\t<tr>\n" +
 				"\t\t\t<td>\n" +
@@ -201,7 +201,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesShouldReturnEmptySrcIfDummySource() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -228,7 +228,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotBarfOnTwoPullQuotes() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\">&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -245,7 +245,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "\t</table>&gt;\n" +
                 "</web-pull-quote>" +
                 "<p>" +
-                "<web-pull-quote align=\"left\">" +
+                "<web-pull-quote align=\"left\" channel=\"FTcom\">" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -578,7 +578,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void pullQuotesWithNoSourceShouldBeWritten() {
-        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" >&lt;\n" +
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
                 "\t\t\t<td>\n" +
@@ -807,10 +807,17 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
     @Test
-    public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
-        String contentWithStrikeout = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+         public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
+        String contentWithStrikeouts = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
         String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
-        checkTransformation(contentWithStrikeout, transformedContent);
+        checkTransformation(contentWithStrikeouts, transformedContent);
+    }
+
+    @Test
+    public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String transformedContent = "<body><p>Random Text<a href=\"http://www.youtube.com/embed/77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
+        checkTransformation(contentWithStrikeouts, transformedContent);
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {

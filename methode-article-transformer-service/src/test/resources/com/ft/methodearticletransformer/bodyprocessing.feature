@@ -206,20 +206,23 @@ Feature: Body processing
     When I transform it into our Content Store format
     Then the body should be like <after>
 
-  Examples:
-    | before                                                                                                 | after                                          |
-    | <body><p>Para with no strikeout</p><p channel="!">Para with strikeout</p></body>                       | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="!">a strikeout and </span>other text</p></body>                | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="Financial Times">Para with strikeout</p></body>         | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="Financial Times">a strikeout and </span>other text</p></body>  | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="!Financial Times">Para with strikeout</p></body>        | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="!Financial Times">a strikeout and </span>other text</p></body> | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="FTcom">Para with strikeout</p></body>                   | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="FTcom">a strikeout and </span>other text</p></body>            | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="!FTcom">Para with strikeout</p></body>                  | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="!FTcom">a strikeout and </span>other text</p></body>           | <body><p>Para containing other text</p></body> |
-    | <body><p>Para with no strikeout</p><p channel="">Para with strikeout</p></body>                        | <body><p>Para with no strikeout</p></body>     |
-    | <body><p>Para containing <span channel="">a strikeout and </span>other text</p></body>                 | <body><p>Para containing other text</p></body> |
+  Examples: Strikeout channels that should exclude the content from the API
+    | before                                                                                                                        | after                                            |
+    | <body><p channel="!">Para with strikeout channel that should be removed </p></body>                                           | <body/>                                          |
+    | <body><p>Para containing <span channel="!">a strikeout that should be removed and </span>other text</p></body>                | <body><p>Para containing other text</p></body>   |
+    | <body><p channel="Financial Times">Para with strikeout channel that should be removed </p></body>                             | <body/>                                          |
+    | <body><p>Para containing <span channel="Financial Times">a strikeout that should be removed and </span>other text</p></body>  | <body><p>Para containing other text</p></body>   |
+    | <body><p channel="!FTcom">Para with strikeout channel that should be removed </p></body>                                       | <body/>                                          |
+    | <body><p>Para containing <span channel="!FTcom">a strikeout that should be removed and </span>other text</p></body>           | <body><p>Para containing other text</p></body>   |
+    | <body><p channel="">Para with strikeout channel that should be removed </p></body>                                            | <body/>                                          |
+    | <body><p>Para containing <span channel="">a strikeout that should be removed and </span>other text</p></body>                 | <body><p>Para containing other text</p></body>   |
+
+  Examples: Strikeout channels that should be included in the content from the API
+    | before                                                                                                                          | after                                                                                    |
+    | <body><p channel="!Financial Times">Para with strikeout channel that should be retained</p></body>                              | <body><p>Para with strikeout channel that should be retained</p></body>                  |
+    | <body><p>Para containing <span channel="!Financial Times">a strikeout that should be retained</span> and other text</p></body>  | <body><p>Para containing a strikeout that should be retained and other text</p></body>   |
+    | <body><p channel="FTcom">Para with strikeout channel that should be retained</p></body>                                        | <body><p>Para with strikeout channel that should be retained</p></body>                  |
+    | <body><p>Para containing <span channel="FTcom">a strikeout that should be retained </span>and other text</p></body>             | <body><p>Para containing a strikeout that should be retained and other text</p></body>   |
 
   Scenario Outline: Handle non-strikeouts
     Given I have body text in Methode XML like <before>
