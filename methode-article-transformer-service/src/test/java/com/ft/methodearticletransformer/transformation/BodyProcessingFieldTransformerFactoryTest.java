@@ -715,7 +715,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void brightcove_shouldFallbackWhenVideoTagErrors2() {
         String videoTextfromMethode = "<body><videoPlayer videoID=\"\"><web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer></body>";
-        String processedVideoText = "<body/>";
+        String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -759,7 +759,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Test
     public void shouldNotProcessOtherIframes() {
         String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body/>";
+        String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -775,14 +775,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldNotProcessOtherScriptTags() {
         String podcastFromMethode = "<body><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){alert('Something!')}/* ]]> */\n" +
                 "\"</script></body>";
-        String processedPodcast = "<body/>";
+        String processedPodcast = "<body></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
     @Test
     public void shouldNotProcessOtherScriptTags2() {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://someStyleSheet\"></script></body>";
-        String processedPodcast = "<body/>";
+        String processedPodcast = "<body></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 

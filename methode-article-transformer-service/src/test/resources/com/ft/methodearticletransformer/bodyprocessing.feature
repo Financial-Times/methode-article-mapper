@@ -194,11 +194,11 @@ Feature: Body processing
     Then the body should be like <after>
 
   Examples:
-    | before                                                                                                                                                                                                                                    | after                                                                                                                   |
-    | <videoPlayer videoID="3920663836001"><web-inline-picture id="U2113113643377jlC" width="150" fileref="/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0" tmx="150 100 150 100"/></videoPlayer>  | <a data-asset-type="video" data-embedded="true" href="http://video.ft.com/3920663836001"/>                              |
-    | <p align="left" channel="FTcom">Youtube Video<iframe height="245" frameborder="0" allowfullscreen="" src="http://www.youtube.com/embed/YoB8t0B4jx4" width="600"></iframe></p>                                                             | <p>Youtube Video<a data-asset-type="video" data-embedded="true" href="http://www.youtube.com/embed/YoB8t0B4jx4"/></p>   |
-    | <p align="left" channel="FTcom">Vimeo Video<iframe height="245" frameborder="0" src="http://player.vimeo.com/video/77761436" width="600"></iframe></p>                                                                                    | <p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="http://player.vimeo.com/video/77761436"/></p>       |
-    | <p>Vimeo Video<iframe height="245" frameborder="0" src="http://player.vimeo.com/video/77761436" width="600"></iframe></p>                                                                                                                 | <p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="http://player.vimeo.com/video/77761436"/></p>       |
+    | before                                                                                                                                                                                                                                    | after                                                                                                                      |
+    | <videoPlayer videoID="3920663836001"><web-inline-picture id="U2113113643377jlC" width="150" fileref="/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0" tmx="150 100 150 100"/></videoPlayer>  | <a data-asset-type="video" data-embedded="true" href="http://video.ft.com/3920663836001"></a>                              |
+    | <p align="left" channel="FTcom">Youtube Video<iframe height="245" frameborder="0" allowfullscreen="" src="http://www.youtube.com/embed/YoB8t0B4jx4" width="600"></iframe></p>                                                             | <p>Youtube Video<a data-asset-type="video" data-embedded="true" href="http://www.youtube.com/embed/YoB8t0B4jx4"></a></p>   |
+    | <p align="left" channel="FTcom">Vimeo Video<iframe height="245" frameborder="0" src="http://player.vimeo.com/video/77761436" width="600"></iframe></p>                                                                                    | <p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="http://player.vimeo.com/video/77761436"></a></p>       |
+    | <p>Vimeo Video<iframe height="245" frameborder="0" src="http://player.vimeo.com/video/77761436" width="600"></iframe></p>                                                                                                                 | <p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="http://player.vimeo.com/video/77761436"></a></p>       |
     | <p channel="FTcom">Vimeo Video<iframe height="245" frameborder="0" src="http://player.bbc.com/video/77761436" width="600"></iframe></p>                                                                                                   | <p>Vimeo Video</p>       |
 
   Scenario Outline: Handle strikeouts
@@ -208,13 +208,13 @@ Feature: Body processing
 
   Examples: Strikeout channels that should exclude the content from the API
     | before                                                                                                                        | after                                            |
-    | <body><p channel="!">Para with strikeout channel that should be removed </p></body>                                           | <body/>                                          |
+    | <body><p channel="!">Para with strikeout channel that should be removed </p></body>                                           | <body></body>                                    |
     | <body><p>Para containing <span channel="!">a strikeout that should be removed and </span>other text</p></body>                | <body><p>Para containing other text</p></body>   |
-    | <body><p channel="Financial Times">Para with strikeout channel that should be removed </p></body>                             | <body/>                                          |
+    | <body><p channel="Financial Times">Para with strikeout channel that should be removed </p></body>                             | <body></body>                                    |
     | <body><p>Para containing <span channel="Financial Times">a strikeout that should be removed and </span>other text</p></body>  | <body><p>Para containing other text</p></body>   |
-    | <body><p channel="!FTcom">Para with strikeout channel that should be removed </p></body>                                       | <body/>                                          |
+    | <body><p channel="!FTcom">Para with strikeout channel that should be removed </p></body>                                      | <body></body>                                    |
     | <body><p>Para containing <span channel="!FTcom">a strikeout that should be removed and </span>other text</p></body>           | <body><p>Para containing other text</p></body>   |
-    | <body><p channel="">Para with strikeout channel that should be removed </p></body>                                            | <body/>                                          |
+    | <body><p channel="">Para with strikeout channel that should be removed </p></body>                                            | <body></body>                                    |
     | <body><p>Para containing <span channel="">a strikeout that should be removed and </span>other text</p></body>                 | <body><p>Para containing other text</p></body>   |
 
   Examples: Strikeout channels that should be included in the content from the API
@@ -251,9 +251,9 @@ Feature: Body processing
     Then the body should be like <after>
 
   Examples:
-    | before        | after   |
-    |               |         |
-    | <body></body> | <body/> |
+    | before        | after         |
+    |               |               |
+    | <body></body> | <body></body> |
 
   @Technical
   Scenario Outline: Entity translation to unicode
@@ -394,19 +394,19 @@ Scenario Outline: Internal links are transformed
     # International link is no longer international, target is dropped:
     | <p><a href="http://www.ft.com/intl/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text" target="_blank">Link with intl and suffix</a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with intl and suffix</a></p> |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and title attribute is preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0" title="Title text"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0" title="Title text"></a></p> |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and alt attribute is dropped:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" alt="Alt text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"></a></p> |
     # Slideshow-like link without type="slideshow" is treated like a regular link:
     | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" title="Title text" dtxInsert="slideshow" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html" title="Title text">Link with just suffix</a></p> |
     # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameter is preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value" title="Title text"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value" title="Title text"></a></p> |
     # Slideshow link is converted into a regular link with #slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and query parameters are preserved:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value&amp;kartik=patel" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value&amp;kartik=patel" title="Title text"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0&amp;query=value&amp;kartik=patel" type="slideshow" dtxInsert="slideshow" title="Title text" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0?query=value&amp;kartik=patel" title="Title text"></a></p> |
     # International link is no longer international, and query parameter is removed:
     | <p>An ft.com page: <a href="http://www.ft.com/intl/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html?hello" title="Title" target="_blank">Link with intl and param</a></p> | <p>An ft.com page: <a href="http://www.ft.com/cms/ee08dbdc-cd25-11de-a748-00144feabdc0.html" title="Title">Link with intl and param</a></p> |
     # Slideshow link is converted into a regular link with slide0 added, data-asset-type attribute is added, data-embedded attribute is added, and empty title attribute is removed:
-    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"/></p> |
+    | <p><a href="/FT/Content/Companies/Stories/Live/Copy%20of%20PlainSlideshow.gallery.xml?uuid=5e231aca-a42b-11e1-a701-00144feabdc0" type="slideshow" dtxInsert="slideshow" title="" target="_blank"><DIHeadlineCopy>Link with just suffix</DIHeadlineCopy></a></p> | <p><a data-asset-type="slideshow" data-embedded="true" href="http://www.ft.com/cms/s/5e231aca-a42b-11e1-a701-00144feabdc0.html#slide0"></a></p> |
 
 Scenario Outline: Inline image links are transformed
   Given I have an "inline image link" in a Methode article body like <before>
@@ -416,4 +416,4 @@ Scenario Outline: Inline image links are transformed
   Examples:
     | before                                                                                                                                                                                                               | after                                                                                                                               |
     # Link to an image set that exists in the content store should be converted into a <content>[...]</content> link and all the attributes and any text between the <web-inline-picture> opening and closing tags should be dropped:
-    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content data-embedded="true" id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"/></p> |
+    | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content data-embedded="true" id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content></p> |
