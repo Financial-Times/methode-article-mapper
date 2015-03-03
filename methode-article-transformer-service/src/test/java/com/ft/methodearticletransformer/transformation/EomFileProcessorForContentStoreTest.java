@@ -1,16 +1,13 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -175,10 +172,7 @@ public class EomFileProcessorForContentStoreTest {
 
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
 
-        String expectedTransformedBody = "<body>\r\n" +
-                "                <p>random text for now</p>\r\n" +
-                "            </body>";
-        verify(bodyTransformer).transform(expectedTransformedBody, TRANSACTION_ID);
+        verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -242,8 +236,8 @@ public class EomFileProcessorForContentStoreTest {
 
     @Test
     public void testMainImageReferenceIsPutInBodyWhenPresentAndPrimarySizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\r\n" +
-                "                <p>random text for now</p>\r\n" +
+        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>" +
+                "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Primary size",
                 expectedTransformedBody);
@@ -251,8 +245,8 @@ public class EomFileProcessorForContentStoreTest {
 
     @Test
     public void testMainImageReferenceIsPutInBodyWhenPresentAndArticleSizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\r\n" +
-                "                <p>random text for now</p>\r\n" +
+        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>" +
+                "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Article size",
                 expectedTransformedBody);
@@ -260,8 +254,8 @@ public class EomFileProcessorForContentStoreTest {
 
     @Test
     public void testMainImageReferenceIsNotPutInBodyWhenPresentButNoPictureFlag() throws Exception {
-        String expectedTransformedBody = "<body>\r\n" +
-                "                <p>random text for now</p>\r\n" +
+        String expectedTransformedBody = "<body>" +
+                "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("No picture", expectedTransformedBody);
     }
@@ -273,11 +267,11 @@ public class EomFileProcessorForContentStoreTest {
 
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
 
-        String expectedBody = "<body>\r\n" +
-                "                <p>random text for now</p>\r\n" +
+        String expectedBody = "<body>" +
+                "                <p>random text for now</p>" +
                 "            </body>";
         assertThat(content.getMainImage(), nullValue());
-        assertThat(content.getBody(), equalTo(expectedBody));
+        assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
@@ -288,7 +282,7 @@ public class EomFileProcessorForContentStoreTest {
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
 
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);
-        assertThat(content.getBody(), equalTo(expectedBody));
+        assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
