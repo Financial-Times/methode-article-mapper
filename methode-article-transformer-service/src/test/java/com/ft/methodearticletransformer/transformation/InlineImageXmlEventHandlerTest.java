@@ -1,5 +1,14 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
@@ -14,15 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(value = MockitoJUnitRunner.class)
 public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
