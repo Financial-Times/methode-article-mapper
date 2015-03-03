@@ -72,7 +72,6 @@ Feature: Body processing
     | frame                      |
     | frameset                   |
     | head                       |
-    | iframe                     |
     | input                      |
     | keygen                     |
     | label                      |
@@ -148,12 +147,14 @@ Feature: Body processing
     | xref                       |
     | xrefs                      |
 
+
+
   Scenario Outline:Transform and tidy up other video types
     Given the Methode body has <tagname> the transformer will TRANSFORM OTHER VIDEO TYPES
 
   Examples: Tidy up tags to remove attributes that probably relate to formatting
     | tagname |
-    | p       |
+    | iframe  |
 
   Scenario Outline: Retain element and remove attributes
     Given the Methode body has <tagname> the transformer will RETAIN ELEMENT AND REMOVE ATTRIBUTES
