@@ -146,7 +146,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesShouldBeReplacedWithAppopriateTags() {
+    public void pullQuotesShouldBeReplacedWithAppropriateTags() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -693,18 +693,18 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void shouldProcessVideoTagCorrectly() {
+    public void brightcove_shouldProcessVideoTagCorrectly() {
         String videoTextfromMethode = "<body>" +
                 "<videoPlayer videoID=\"3920663836001\">" +
                 "<web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer>" +
                 "</body>";
-        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\"></a></body>";
+        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\" data-embedded=\"true\" data-asset-type=\"video\"></a></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
-    public void shouldFallbackWhenVideoTagErrors() {
+    public void brightcove_shouldFallbackWhenVideoTagErrors() {
         String videoTextfromMethode = "<body><videoPlayer><web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer></body>";
         String processedVideoText = "<body></body>";
@@ -712,52 +712,62 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void shouldFallbackWhenVideoTagErrors2() {
+    public void brightcove_shouldFallbackWhenVideoTagErrors2() {
         String videoTextfromMethode = "<body><videoPlayer videoID=\"\"><web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer></body>";
-        String processedVideoText = "<body/>";
+        String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
 
     @Test
     public void shouldProcessVimeoTagCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body><p><a href=\"http://player.vimeo.com/video/77761436\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://player.vimeo.com/video/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Vimeo Video<a href=\"http://player.vimeo.com/video/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessVimeoTagWithNoProtocolCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"//player.vimeo.com/video/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body><p><a href=\"//player.vimeo.com/video/77761436\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Vimeo Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"//player.vimeo.com/video/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Vimeo Video<a href=\"//player.vimeo.com/video/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
-    public void shouldProcessYouTubeVideoCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body><p><a href=\"http://www.youtube.com/embed/77761436\"></a></p></body>";
+    public void shouldProcessYouTubeVideoCorrectly_withPChannel() {
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"http://www.youtube.com/embed/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+    @Test
+    public void shouldProcessYouTubeVideoCorrectly_withNoPChannel() {
+        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"http://www.youtube.com/embed/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body><p><a href=\"https://www.youtube.com/embed/77761436\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/embed/77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
 
     @Test
     public void shouldNotProcessOtherIframes() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe>\n" +
-                "</p></body>";
-        String processedVideoText = "<body/>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body></body>";
+        checkTransformation(videoTextfromMethode, processedVideoText);
+    }
+
+
+    @Test
+    public void shouldNotProcessOtherIframes_withTextInbetween() {
+        String videoTextfromMethode = "<body><p channel=\"FTcom\">Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.notyoutube.com/junk\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Video</p></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
@@ -765,14 +775,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldNotProcessOtherScriptTags() {
         String podcastFromMethode = "<body><script type=\"text/javascript\">/* <![CDATA[ */window.onload=function(){alert('Something!')}/* ]]> */\n" +
                 "\"</script></body>";
-        String processedPodcast = "<body/>";
+        String processedPodcast = "<body></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
     @Test
     public void shouldNotProcessOtherScriptTags2() {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://someStyleSheet\"></script></body>";
-        String processedPodcast = "<body/>";
+        String processedPodcast = "<body></body>";
         checkTransformation(podcastFromMethode, processedPodcast);
     }
 
@@ -795,6 +805,20 @@ public class BodyProcessingFieldTransformerFactoryTest {
 		String processedSubhead = "<body><p>his is some normal text.</p><p>More text</p><h3 class=\"ft-subhead\">This is a subhead.</h3><p>This is some more normal text.</p><h3 class=\"ft-subhead\">This is another subhead.</h3></body>";
 		checkTransformation(subheadFromMethode, processedSubhead);
 	}
+
+    @Test
+         public void shouldRemoveElementsAndContentWithChannelAttributeThatAreStrikeouts() {
+        String contentWithStrikeouts = "<body><b channel=\"Financial Times\">Should be removed</b><b>Should Stay</b><p channel=\"!Strikeout\">Should be removed</p><p>Text inside normal p tag should remain</p></body>";
+        String transformedContent = "<body><strong>Should Stay</strong><p>Text inside normal p tag should remain</p></body>";
+        checkTransformation(contentWithStrikeouts, transformedContent);
+    }
+
+    @Test
+    public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String transformedContent = "<body><p>Random Text<a href=\"http://www.youtube.com/embed/77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
+        checkTransformation(contentWithStrikeouts, transformedContent);
+    }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);

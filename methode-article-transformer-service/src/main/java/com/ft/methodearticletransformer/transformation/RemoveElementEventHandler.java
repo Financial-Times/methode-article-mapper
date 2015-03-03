@@ -14,8 +14,8 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
 public class RemoveElementEventHandler extends BaseXMLEventHandler {
 	private final XMLEventHandler fallbackEventHandler;
-	private final StartElementMatcher matcher;	
-	
+	private final StartElementMatcher matcher;
+
 	protected RemoveElementEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher) {
 		checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
 		checkArgument(matcher != null, "matcher cannot be null");
@@ -33,7 +33,7 @@ public class RemoveElementEventHandler extends BaseXMLEventHandler {
 			skipUntilMatchingEndTag(nameToMatch, xmlEventReader);
 		}
 	}
-	
+
 	@Override // Only called where the start tag used the fallback event handler
 	public void handleEndElementEvent(final EndElement event, final XMLEventReader xmlEventReader, final BodyWriter eventWriter) throws XMLStreamException {
 		fallbackEventHandler.handleEndElementEvent(event, xmlEventReader, eventWriter);

@@ -30,12 +30,12 @@ import com.google.common.collect.ImmutableMap;
 @RunWith(value=MockitoJUnitRunner.class)
 public class RemoveElementEventHandlerTest extends BaseXMLEventHandlerTest {
 	private BaseXMLEventHandler eventHandler;
-	
+
 	@Mock private XMLEventReader2 mockXmlEventReader;
 	@Mock private BodyWriter eventWriter;
 	@Mock private BodyProcessingContext mockBodyProcessingContext;
 	@Mock private XMLEventHandler fallbackEventHandler;
-	
+
 	@Before
 	public void setup() throws Exception {
 		eventHandler = new RemoveElementEventHandler(fallbackEventHandler, attributeNameMatcher("channel"));
@@ -43,7 +43,7 @@ public class RemoveElementEventHandlerTest extends BaseXMLEventHandlerTest {
 		when(mockXmlEventReader.peek()).thenReturn(text);
 		when(mockXmlEventReader.next()).thenReturn(text);
 	}
-	
+
 	@Test
 	public void testRemoveUnwantedSlideshow() throws Exception {
 		final XMLEventHandler fallback = new RetainXMLEventHandler();
@@ -56,7 +56,7 @@ public class RemoveElementEventHandlerTest extends BaseXMLEventHandlerTest {
 		final String actual = processor.process(xml, null);
 		assertEquals("<p/>",actual);
 	}
-	
+
 	@Test
 	public void testRetainWantedAnchor() throws Exception {
 		final XMLEventHandler fallback = new RetainXMLEventHandler();
@@ -70,23 +70,23 @@ public class RemoveElementEventHandlerTest extends BaseXMLEventHandlerTest {
 		final String actual = processor.process(xml, null);
 		assertEquals(xml,actual);
 	}
-	
+
 	@Test
 	public void shouldRemoveStartTagAndContentsUpToMatchingEndTagIfStrikeoutAttributePresent() throws Exception {
 		ImmutableMap<String,String> attributesMap = ImmutableMap.of("channel", "!");
 		StartElement startElement = getStartElementWithAttributes("p", attributesMap);
 		when(mockXmlEventReader.hasNext()).thenReturn(true, true, false);
 		//"<p channel="!">Some text in <i>italics</i> and some not</p>"
-		when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Some text in "), getStartElement("i"), 
-				getCharacters("italics"), getEndElement("i"), 
+		when(mockXmlEventReader.nextEvent()).thenReturn(getCharacters("Some text in "), getStartElement("i"),
+				getCharacters("italics"), getEndElement("i"),
 				getCharacters(" and some note"), getEndElement("p"));
-		when(mockXmlEventReader.peek()).thenReturn(getCharacters("Some text in "), getStartElement("i"), 
-				getCharacters("italics"), getEndElement("i"), 
+		when(mockXmlEventReader.peek()).thenReturn(getCharacters("Some text in "), getStartElement("i"),
+				getCharacters("italics"), getEndElement("i"),
 				getCharacters(" and some note"), getEndElement("p"));
 		eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
 		verifyZeroInteractions(eventWriter);
 	}
-	
+
 	@Test
 	public void shouldUseFallbackHandlerForStartTagIfNoStrikeoutAttribute() throws Exception {
 		ImmutableMap<String,String> attributesMap = ImmutableMap.of("title", "!");
@@ -94,14 +94,14 @@ public class RemoveElementEventHandlerTest extends BaseXMLEventHandlerTest {
 		eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
 		verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
 	}
-	
+
 	@Test
 	public void shouldUseFallbackHandlerForStartTagIfNoAttributes() throws Exception {
 		StartElement startElement = getStartElement("p");
 		eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
 		verify(fallbackEventHandler).handleStartElementEvent(startElement, mockXmlEventReader, eventWriter, mockBodyProcessingContext);
 	}
-	
+
 	@Test
 	public void shouldAlwaysUseFallBackHandlerForEndTag() throws Exception {
 		EndElement endElement = getEndElement("p");

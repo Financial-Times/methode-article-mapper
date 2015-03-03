@@ -11,27 +11,26 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 
 public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
-    private static final String PARAGRAPH_TAG = "p";
     private static final String NEW_ELEMENT = "a";
     private static final String NEW_ELEMENT_ATTRIBUTE = "href";
-    private final String targetedHtmlClass;
+    private static final String DATA_EMBEDDED = "data-embedded";
+    private static final String TRUE = "true";
+    private static final String DATA_ASSET_TYPE = "data-asset-type";
+    private static final String VIDEO = "video";
     private final XMLEventHandler fallbackHandler;
     private List<String> validRegexes; //because all 3rd party content is put into iframes we need to know which ones we want to keep.
 
 
-    public MethodeOtherVideoXmlEventHandler(String targetedHtmlClass, XMLEventHandler fallbackHandler) {
-        this.targetedHtmlClass = targetedHtmlClass;
+    public MethodeOtherVideoXmlEventHandler(XMLEventHandler fallbackHandler) {
         this.fallbackHandler = fallbackHandler;
-        validRegexes = new ArrayList<String>();
+        validRegexes = new ArrayList<>();
         validRegexes.add("^(https?:)?(\\/\\/)?player.vimeo.com/video/[\\S]+");
         validRegexes.add("^(https?:)?(\\/\\/)?www.youtube.com/embed/[\\S]+");
     }
@@ -40,71 +39,34 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
 
-        if (!isTargetedClass(event)) {
+        Attribute srcAttribute = event.asStartElement().getAttributeByName(QName.valueOf("src"));
+
+        if(srcAttribute == null){
             fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         }
 
-        XMLEvent found = getEventAndSkipBlock(xmlEventReader, event.getName().toString(), "iframe", "src", validRegexes);
-        if(found != null) {
-
-            Attribute srcAttribute = found.asStartElement().getAttributeByName(QName.valueOf("src"));
-
-            String videoLink =  srcAttribute.getValue();
-            Map<String, String> attributesToAdd = new HashMap<String, String>();
-            attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoLink);
-
-            eventWriter.writeStartTag(PARAGRAPH_TAG, null);
-            eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
-            eventWriter.writeEndTag(NEW_ELEMENT);
-            eventWriter.writeEndTag(PARAGRAPH_TAG);
-
-        }
-        // if this fails it has skipped the whole block by default anyway. If otherwise a secondary fallback is required for p + channel.
-        // It shouldn't go to fallback to the fallbackHandler because that is p with no channel
-
-    }
-
-    private XMLEvent getEventAndSkipBlock(XMLEventReader reader, String primaryElementName, String secondaryElementName,
-                                                     String secondaryElementAttributeName, List<String> secondaryElementAttributeValueRegex)
-                                                     throws XMLStreamException {
-        XMLEvent xmlEvent = null;
-        int primaryOpenElementNameCount = 1;
-        while (reader.hasNext()) {
-            XMLEvent nextEvent = reader.nextEvent();
-            if (nextEvent.isStartElement()) {
-                StartElement newStartElement = nextEvent.asStartElement();
-                if((primaryElementName).equals(newStartElement.getName().getLocalPart())) {
-                    primaryOpenElementNameCount++;
-                }
-
-                if ((secondaryElementName).equals(newStartElement.getName().getLocalPart())) {
-                    Attribute attribute = newStartElement.getAttributeByName(QName.valueOf(secondaryElementAttributeName));
-                    for (String regex :secondaryElementAttributeValueRegex){
-                        if (Pattern.matches(regex, attribute.getValue())) {
-                            xmlEvent = nextEvent;
-                        }
-                    }
-                }
-            }
-            if(nextEvent.isEndElement()){
-                EndElement newEndElement = nextEvent.asEndElement();
-                if ((primaryElementName).equals(newEndElement.getName().getLocalPart()) ) {
-                    if(primaryOpenElementNameCount ==1){
-                        return xmlEvent;
-                    }
-                    primaryOpenElementNameCount--;
-                }
-
+        boolean matches = false;
+        for (String regex : validRegexes){
+            if (Pattern.matches(regex, srcAttribute.getValue())) {
+                matches=true;
+                break;
             }
         }
-        throw new BodyProcessingException("Reached end without encountering closing primary tag : " + primaryElementName);
+        if(!matches){
+            fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
+            return;
+        }
 
-    }
+        String videoLink =  srcAttribute.getValue();
+        Map<String, String> attributesToAdd = new HashMap<String, String>();
+        attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoLink);
+        attributesToAdd.put(DATA_EMBEDDED, TRUE);
+        attributesToAdd.put(DATA_ASSET_TYPE, VIDEO);
 
-    private boolean isTargetedClass(StartElement event) {
-        Attribute classesAttr = event.getAttributeByName(QName.valueOf(targetedHtmlClass));
-        return  classesAttr!=null;
+        eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
+        eventWriter.writeEndTag(NEW_ELEMENT);
+
     }
 
     @Override

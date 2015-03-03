@@ -33,6 +33,10 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
     private static final String VIDEO_URL = "http://video.ft.com/%s";
     private static final String VIDEO_ID_ATTRIBUTE_NAME = "videoID";
     private static final String VIDEO_ID = "3920663836001";
+    private static final String DATA_EMBEDDED = "data-embedded";
+    private static final String TRUE = "true";
+    private static final String DATA_ASSET_TYPE = "data-asset-type";
+    private static final String VIDEO = "video";
 
     @Before
     public void setup() throws Exception  {
@@ -63,6 +67,8 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
         wpAttributes.put(VIDEO_ID_ATTRIBUTE_NAME, VIDEO_ID);
         Map<String, String> transformedAttributes = new HashMap<>();
         transformedAttributes.put(HREF_ATTRIBUTE, videoUrl);
+        transformedAttributes.put(DATA_EMBEDDED, TRUE);
+        transformedAttributes.put(DATA_ASSET_TYPE, VIDEO);
         StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT, wpAttributes);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, transformedAttributes);
