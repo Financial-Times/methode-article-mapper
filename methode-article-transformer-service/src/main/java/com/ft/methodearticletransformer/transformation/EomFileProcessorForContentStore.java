@@ -56,7 +56,7 @@ public class EomFileProcessorForContentStore {
 	private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
 	private static final Logger log = LoggerFactory.getLogger(EomFileProcessorForContentStore.class);
-	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
+	public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";	
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String NO_PICTURE_FLAG = "No picture";

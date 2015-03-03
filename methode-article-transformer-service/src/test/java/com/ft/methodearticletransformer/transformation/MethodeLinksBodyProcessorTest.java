@@ -11,14 +11,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.ws.rs.core.MediaType;
 
+import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodeapi.model.EomAssetType;
+import com.ft.methodearticletransformer.methode.MethodeFileService;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
+import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
@@ -28,11 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
-
-import javax.ws.rs.core.MediaType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MethodeLinksBodyProcessorTest {
@@ -48,6 +50,8 @@ public class MethodeLinksBodyProcessorTest {
 	private MessageBodyWorkers workers;
 	@Mock
 	private WebResource.Builder builder;
+    @Mock
+    private ClientHandlerException clientHandlerException;
 
 	private InputStream entity;
 
@@ -65,6 +69,16 @@ public class MethodeLinksBodyProcessorTest {
 	
 	private String uuid = UUID.randomUUID().toString();
 	private static final String TRANSACTION_ID = "tid_test";
+
+    @Test(expected = SemanticReaderUnavailableException.class)
+    public void shouldThrowSemanticReaderNotAvailable(){
+        bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+        when(builder.get(ClientResponse.class)).thenThrow(clientHandlerException);
+        when(clientHandlerException.getCause()).thenReturn(new IOException());
+
+        String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
+        bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+    }
 
 	@Test
 	public void shouldReplaceNodeWhenItsALinkThatWillBeInTheContentStoreWhenAvailableInMethode(){

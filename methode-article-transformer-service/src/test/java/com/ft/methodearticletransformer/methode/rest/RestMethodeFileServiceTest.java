@@ -17,9 +17,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
 
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -31,18 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.http.conn.ConnectTimeoutException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
-
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ft.api.jaxrs.client.exceptions.ApiNetworkingException;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.methodeapi.model.EomAssetType;
@@ -66,6 +53,17 @@ import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Matchers;
 
 public class RestMethodeFileServiceTest {
 
@@ -86,11 +84,11 @@ public class RestMethodeFileServiceTest {
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
-	
+
 	private ObjectMapper objectMapper;
 	private MethodeApiEndpointConfiguration methodeApiEndpointConfiguration;
 	private Environment environment;
-	
+
 	private ClientHandler handler = mock(ClientHandler.class);
     private Client mockClient = new Client(handler);
     private ClientResponse clientResponse = mock(ClientResponse.class);
@@ -115,7 +113,7 @@ public class RestMethodeFileServiceTest {
 				Arrays.asList(String.format("%s:%d:%d", TEST_HOST, port, port + 1)),
 				Collections.<String>emptyList());
 
-		AssetTypeRequestConfiguration assetTypeRequestConfiguration = 
+		AssetTypeRequestConfiguration assetTypeRequestConfiguration =
 		        new AssetTypeRequestConfiguration(NUMBER_OF_ASSET_TYPE_IDS_PER_REQUEST, NUMBER_OF_PARALLEL_ASSET_TYPE_REQUESTS);
 
 		methodeApiEndpointConfiguration =
@@ -127,15 +125,15 @@ public class RestMethodeFileServiceTest {
 		Client client = ResilientClientBuilder.inTesting(endpoint).build();
 
 		restMethodeFileService = new RestMethodeFileService(environment, client, methodeApiEndpointConfiguration);
-		
+
 		//for cases where we want to control what the client does
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(Matchers.<GenericType<Map<String, EomAssetType>>>any())).thenReturn(new HashMap<String, EomAssetType>());
 		mockedClientRestMethodeFileService = new RestMethodeFileService(environment, mockClient, methodeApiEndpointConfiguration);
 	}
-	
 
-	
+
+
 	@Test
     public void shouldSuccessfullyGetAssetTypesInSingleRequest() throws Exception {
         Set<String> assetIds = Sets.newHashSet("test1", "test2");
@@ -144,11 +142,11 @@ public class RestMethodeFileServiceTest {
         assertNotNull(assetTypes);
         assertEquals(expectedAssetTypes, assetTypes);
     }
-    
+
     @Test
     public void shouldSuccessfullyGetAssetTypesSplitBetweenFewerRequestsThanNumberOfThreads() throws Exception {
         Set<String> assetIds = Sets.newHashSet("test1", "test2", "test3", "test4", "test5");
-        
+
         Map<String, EomAssetType> expectedAssetTypes = stubResponsesAndGetExpectedAssetTypes(assetIds);
         Map<String, EomAssetType> assetTypes = restMethodeFileService.assetTypes(assetIds, SAMPLE_TRANSACTION_ID);
         assertNotNull(assetTypes);
@@ -200,29 +198,29 @@ public class RestMethodeFileServiceTest {
         expectedException.expect(UnexpectedMethodeApiException.class);
         restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
-	
+
 	@Test
     public void shouldThrowDistinctExceptionForSocketTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new SocketTimeoutException()));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
     @Test
     public void shouldThrowDistinctExceptionForAnyOtherIssueWithTheTcpSocket() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new SocketException()));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
     @Test
     public void shouldThrowDistinctExceptionForConnectionTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new ConnectTimeoutException()));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
-	
+
 	@Test
     public void shouldThrowMethodeApiUnavailableExceptionWhen503FromMethodeApiRetrievingAssetTypes() throws Exception {
 	    Map<String, EomAssetType> expectedAssetTypes = getExpectedAssetTypesForSlice(Lists.newArrayList("test1"));
@@ -232,39 +230,39 @@ public class RestMethodeFileServiceTest {
 
         restMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
-	
-	//one of the requests fails with socket timeout, get ApiNetworkingException 
+
+	//one of the requests fails with socket timeout, get ApiNetworkingException
     @Test
 	public void shouldThrowApiNetworkingExceptionForGetAssetTypesWhenOneRequestFailsWithSocketTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new SocketTimeoutException("socket timeout")));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
-    
+
     //one of the requests fails with connect timeout, get ApiNetworkingException
     @Test
     public void shouldThrowDistinctExceptionForGetAssetTypesWhenOneRequestFailsWithConnectTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new ConnectTimeoutException("connect timeout")));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
-    
+
     //two requests fail with different exceptions, get ApiNetworkingException for one of the failures
     @Test
     public void shouldThrowDistinctExceptionForGetAssetTypesWhenTwoRequestsFail() {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new SocketTimeoutException("socket timeout")))
             .thenThrow( new ClientHandlerException(new ConnectTimeoutException("connect timeout")));
-        expectedException.expect(ApiNetworkingException.class);
+        expectedException.expect(MethodeApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
 
 	private UrlMatchingStrategy toFindEomFileUrl() {
 		return urlMatching("/eom-file/.*");
 	}
-	
+
 	private UrlMatchingStrategy toFindAssetTypesUrl() {
         return urlMatching("/asset-type");
     }
@@ -272,22 +270,22 @@ public class RestMethodeFileServiceTest {
 	private ResponseDefinitionBuilder anEomFileResponse(int code) {
 		return aResponse().withStatus(code).withHeader("Content-type", "application/json").withBody(JSON_EOM_FILE);
 	}
-	
+
     private Map<String, EomAssetType> stubResponsesAndGetExpectedAssetTypes(Set<String> assetIds) throws Exception {
         List<List<String>> partitionedAssetIdentifiers = Lists.partition(Lists.newArrayList(assetIds), NUMBER_OF_PARALLEL_ASSET_TYPE_REQUESTS);
-        
+
         Map<String, EomAssetType> expectedOutput = Maps.newHashMap();
-        
+
         for (List<String> slice: partitionedAssetIdentifiers) {
             Map<String, EomAssetType> expectedOutputForSlice = getExpectedAssetTypesForSlice(slice);
             expectedOutput.putAll(expectedOutputForSlice);
             stubFor(post(toFindAssetTypesUrl()).willReturn(anAssetTypeResponseForExpectedOutput(expectedOutput, 200)));
         }
-        
+
         return expectedOutput;
     }
-    
-    
+
+
     private ResponseDefinitionBuilder anAssetTypeResponseForExpectedOutput(Map<String, EomAssetType> expectedOutput, int statusCode) throws Exception {
         return aResponse().withStatus(statusCode).withHeader("Content-type", "application/json").withBody(objectMapper.writeValueAsString(expectedOutput));
     }

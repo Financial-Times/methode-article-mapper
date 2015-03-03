@@ -49,7 +49,8 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotTransformContentIfAllValidDataIsNotPresent() throws Exception {
         StartElement startElement = getStartElementWithAttributes(PULL_QUOTE_ELEMENT, noAttributes());
-        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPullQuoteData);
+        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader,
+				mockBodyProcessingContext)).thenReturn(mockPullQuoteData);
         when(mockPullQuoteData.isAllRequiredDataPresent()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
@@ -59,7 +60,8 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotWriteTransformedContentIfAllValidDataIsNotPresentAfterTransformation() throws Exception {
         StartElement startElement = getStartElementWithAttributes(PULL_QUOTE_ELEMENT, noAttributes());
-        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPullQuoteData);
+        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader,
+				mockBodyProcessingContext)).thenReturn(mockPullQuoteData);
         when(mockPullQuoteData.isAllRequiredDataPresent()).thenReturn(true).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
@@ -69,14 +71,15 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
         StartElement startElement = getStartElementWithAttributes(PULL_QUOTE_ELEMENT, noAttributes());
-        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader)).thenReturn(mockPullQuoteData);
+        when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader,
+				mockBodyProcessingContext)).thenReturn(mockPullQuoteData);
         when(mockPullQuoteData.isAllRequiredDataPresent()).thenReturn(true).thenReturn(true);
         when(mockPullQuoteData.getQuoteText()).thenReturn(PULL_QUOTE_TEXT);
         when(mockPullQuoteData.getQuoteSource()).thenReturn(PULL_QUOTE_SOURCE);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_PULL_QUOTE, noAttributes());
-        verify(mockBodyWriter).write(mockPullQuoteData.getQuoteText());
-        verify(mockBodyWriter).write(mockPullQuoteData.getQuoteSource());
+        verify(mockBodyWriter).writeRaw(mockPullQuoteData.getQuoteText());
+        verify(mockBodyWriter).writeRaw(mockPullQuoteData.getQuoteSource());
         verify(mockBodyWriter).writeEndTag(TRANSFORMED_PULL_QUOTE);
     }
 

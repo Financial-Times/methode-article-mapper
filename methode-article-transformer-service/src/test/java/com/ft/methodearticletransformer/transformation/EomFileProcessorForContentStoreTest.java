@@ -1,13 +1,20 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-import static org.hamcrest.Matchers.*;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -43,7 +50,6 @@ import org.junit.rules.ExpectedException;
 
 public class EomFileProcessorForContentStoreTest {
 
-	public static final String METHODE = "http://www.ft.com/ontology/origin/FTComMethode";
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
