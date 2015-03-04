@@ -22,7 +22,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
-        registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
+        registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body", "content");
         
         //rich content
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(this))), "web-pull-quote");
