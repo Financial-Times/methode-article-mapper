@@ -51,15 +51,6 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
     }
 
     @Test
-    public void shouldUseFallbackHandlerIfVideoObjectIsNull() throws Exception {
-        StartElement startElement = getCompactStartElement("<videoPlayer videoID=\"wrongvalue\"><web-inline-picture width=\"150\"" +
-                "fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\" id=\"U1110809505231ADB\"/>\n" +
-                "</videoPlayer>", "videoPlayer");
-        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(fallbackHandler).handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-    }
-
-    @Test
     public void shouldUseFallbackHandlerIfStartElementVideoIdAttributeValuesAreEmpty() throws Exception {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("", "");
