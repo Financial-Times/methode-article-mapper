@@ -132,4 +132,4 @@ Feature: Body processing links
   Scenario: Main image reference put on body is retained
     Given I have  "image content tag" in a Methode XML body like <body><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/ImageSet"/><p>Some random text</p></body>
     When I transform it into our Content Store format
-    Then the body should be like <body><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/ImageSet"/><p>Some random text</p></body>
+    Then the body should be like <body><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/ImageSet"></content><p>Some random text</p></body>
