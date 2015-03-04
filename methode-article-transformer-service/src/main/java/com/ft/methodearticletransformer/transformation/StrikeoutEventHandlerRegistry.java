@@ -15,7 +15,7 @@ public class StrikeoutEventHandlerRegistry extends XMLEventHandlerRegistry {
         // If the channel value is either FTcom or !Financial Times the elements are retained
         // If the value is something else the element is removed.
 
-        registerDefaultEventHandler(new StrikeoutXMLEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel")));
+        registerDefaultEventHandler(new FilterXMLByAttributeAndValuesEventHandler(new RetainXMLEventHandler(), attributeNameMatcher("channel"), "FTcom", "!Financial Times"));
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
 
