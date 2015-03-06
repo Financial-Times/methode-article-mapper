@@ -1,6 +1,8 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +10,9 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.richcontent.RichContentItem;
+import com.ft.bodyprocessing.richcontent.Video;
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import org.junit.Before;
@@ -20,6 +25,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
     private MethodeOtherVideoXmlEventHandler eventHandler;
+    private Video video;
 
     private static final String TRANSFORMED_ELEMENT = "a";
     private static final String HREF_ATTRIBUTE = "href";
@@ -37,13 +43,15 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
     private static final String DAILYMOTION = "http://www.dailymotion.com/video/x2gsis0_the-best-of-the-2015-grammys_lifestyle";
 
     @Mock private XMLEventHandler fallbackHandler;
+    @Mock private VideoMatcher videoMatcher;
     @Mock private XMLEventReader mockXmlEventReader;
     @Mock private BodyWriter mockBodyWriter;
     @Mock private BodyProcessingContext mockBodyProcessingContext;
 
     @Before
     public void setup() {
-        eventHandler = new MethodeOtherVideoXmlEventHandler(fallbackHandler);
+        eventHandler = new MethodeOtherVideoXmlEventHandler(fallbackHandler, videoMatcher);
+        video = new Video();
     }
 
     @Test
@@ -82,6 +90,11 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         finalAttributes.put(DATA_EMBEDDED, TRUE);
         finalAttributes.put(DATA_ASSET_TYPE, VIDEO);
 
+        video.setUrl(STANDARDIZED_VIMEO);
+        video.setEmbedded(true);
+        video.setTitle(null);
+
+        when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(video);
         StartElement firstElement = getStartElementWithAttributes(IFRAME, firstAttributes);
         eventHandler.handleStartElementEvent(firstElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, finalAttributes);
@@ -98,8 +111,12 @@ public class MethodeOtherVideoXmlEventHandlerTest extends BaseXMLEventHandlerTes
         finalAttributes.put(DATA_EMBEDDED, TRUE);
         finalAttributes.put(DATA_ASSET_TYPE, VIDEO);
 
-        StartElement firstElement = getStartElementWithAttributes(IFRAME, firstAttributes);
+        video.setUrl(STANDARDIZED_YOUTUBE);
+        video.setEmbedded(true);
+        video.setTitle(null);
 
+        when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(video);
+        StartElement firstElement = getStartElementWithAttributes(IFRAME, firstAttributes);
         eventHandler.handleStartElementEvent(firstElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(TRANSFORMED_ELEMENT, finalAttributes);
         verify(mockBodyWriter).writeEndTag(TRANSFORMED_ELEMENT);

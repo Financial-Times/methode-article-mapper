@@ -9,6 +9,7 @@ import com.ft.bodyprocessing.BodyProcessorChain;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.regex.RegexRemoverBodyProcessor;
 import com.ft.bodyprocessing.regex.RegexReplacerBodyProcessor;
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
@@ -17,10 +18,12 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     private final MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
+    private VideoMatcher videoMatcher;
 
-	public BodyProcessingFieldTransformerFactory(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient) {
+	public BodyProcessingFieldTransformerFactory(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, VideoMatcher videoMatcher) {
         this.methodeFileService = methodeFileService;
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
+        this.videoMatcher = videoMatcher;
 	}
 
     @Override
@@ -44,7 +47,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     }
 
     private BodyProcessor stAXTransformingBodyProcessor() {
-        return new StAXTransformingBodyProcessor(new MethodeBodyTransformationXMLEventHandlerRegistry());
+        return new StAXTransformingBodyProcessor(new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher));
     }
 
     private BodyProcessor strikeoutRemovingBodyProcessor() {

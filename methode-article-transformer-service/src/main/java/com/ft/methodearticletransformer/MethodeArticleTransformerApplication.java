@@ -7,6 +7,7 @@ import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
@@ -52,9 +53,11 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
     	Client clientForMethodeApiClient = getClientForMethodeApiClient(environment, methodeApiEndpointConfiguration);
     	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
 
+        VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
+
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
-        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, configuration.getFinancialTimesBrand())));
+        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, configuration.getFinancialTimesBrand(), videoMatcher)));
         
         environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
                 clientForMethodeApiClientOnAdminPort,
@@ -83,9 +86,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).usingAdminPorts().build();
 	}
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, Brand financialTimesBrand) {
+	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, Brand financialTimesBrand, VideoMatcher videoMatcher) {
 		return new EomFileProcessorForContentStore(
-				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance(),
+				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}

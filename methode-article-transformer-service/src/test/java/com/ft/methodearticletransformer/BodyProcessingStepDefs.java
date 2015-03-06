@@ -17,13 +17,17 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
 
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
+import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
@@ -59,6 +63,7 @@ public class BodyProcessingStepDefs {
 
     private MethodeFileService methodeFileService;
     private ResilientClient semanticStoreContentReaderClient;
+    private VideoMatcher videoMatcher;
 
     private InBoundHeaders headers;
     private MessageBodyWorkers workers;
@@ -70,6 +75,18 @@ public class BodyProcessingStepDefs {
     private static final String TRANSACTION_ID = randomChars(10);
     private Map<String, String> rulesAndHandlers;
 
+    private static final List<String> T = Collections.singletonList("t");
+    private static final List<String> NONE = Collections.emptyList();
+
+    public static List<VideoSiteConfiguration> DEFAULTS = Arrays.asList(
+            new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", null, true, T, true),
+            new VideoSiteConfiguration("https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false,T, true),
+            new VideoSiteConfiguration("https?://youtu.be/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, T, true),
+            new VideoSiteConfiguration("https?://vimeo.com/(?<id>[0-9]+)", null, false, NONE, true),
+            new VideoSiteConfiguration("//player.vimeo.com/video/(?<id>[0-9]+)", "https://www.vimeo.com/%s", true, NONE, true),
+            new VideoSiteConfiguration("https?://video.ft.com/?<id>[0-9]+/[\\s]?", null, false, NONE, true)
+    );
+
     private static String randomChars(int howMany) {
         return RandomStringUtils.randomAlphanumeric(howMany).toLowerCase();
     }
@@ -78,6 +95,7 @@ public class BodyProcessingStepDefs {
     public void setup() {
         methodeFileService = mock(MethodeFileService.class);
         semanticStoreContentReaderClient = mock(ResilientClient.class);
+        videoMatcher = new VideoMatcher(DEFAULTS);
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
@@ -85,8 +103,8 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance();
-        registry = new MethodeBodyTransformationXMLEventHandlerRegistry();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
+        registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher);
 
         rulesAndHandlers = new HashMap<>();
         rulesAndHandlers.put( "STRIP ELEMENT AND CONTENTS" , "StripElementAndContentsXMLEventHandler");
@@ -103,7 +121,6 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
 
         when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
-
 
         EomAssetType compoundStoryAsset = new EomAssetType.Builder()
                 .uuid("fbbee07f-5054-4a42-b596-64e0625d19a6")
@@ -141,8 +158,7 @@ public class BodyProcessingStepDefs {
         when(builder.header(anyString(), anyObject())).thenReturn(builder);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
 
-
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
     }
 
 
@@ -175,7 +191,6 @@ public class BodyProcessingStepDefs {
     public void i_transform_it_into_our_content_store_format() throws Throwable {
         transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID);
     }
-
 
     @When("^I transform it$")
     public void I_transform_it() throws Throwable {

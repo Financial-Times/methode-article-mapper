@@ -1,5 +1,41 @@
 financialTimesBrandId: <%=scope.function_hiera('financialTimesBrandId')%>
 
+videoSiteConfig:
+    - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
+      template: null
+      embedded: true
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)"
+      template: "https://www.youtube.com/watch?v=%s"
+      embedded: false
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"
+      template: "https://www.youtube.com/watch?v=%s"
+      embedded: false
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://vimeo.com/[0-9]+"
+      template: null
+      embedded: false
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "//player.vimeo.com/video/[0-9]+"
+      template: "https://www.vimeo.com/%s"
+      embedded: true
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://video.ft.com/[0-9]+/[\\s]?"
+      template: null
+      embedded: false
+      retainedParams: ["t"]
+
 semanticContentStoreReader:
     shortName: "semanticReader"
     path: content/
