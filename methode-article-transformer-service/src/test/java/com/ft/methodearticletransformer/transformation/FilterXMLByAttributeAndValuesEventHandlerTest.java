@@ -21,7 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(value=MockitoJUnitRunner.class)
-public class StrikeoutXMLEventHandlerTest extends BaseXMLEventHandlerTest {
+public class FilterXMLByAttributeAndValuesEventHandlerTest extends BaseXMLEventHandlerTest {
     private BaseXMLEventHandler eventHandler;
 
     @Mock private XMLEventReader2 mockXmlEventReader;
@@ -33,7 +33,7 @@ public class StrikeoutXMLEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        eventHandler = new StrikeoutXMLEventHandler(fallbackEventHandler, attributeNameMatcher("channel"));
+        eventHandler = new FilterXMLByAttributeAndValuesEventHandler(fallbackEventHandler, attributeNameMatcher("channel"), "FTcom", "!Financial Times");
     }
 
     @Test

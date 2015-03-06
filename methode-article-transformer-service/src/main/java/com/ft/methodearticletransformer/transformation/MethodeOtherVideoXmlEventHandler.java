@@ -1,10 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -13,6 +10,9 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.richcontent.RichContentItem;
+import com.ft.bodyprocessing.richcontent.Video;
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
@@ -24,15 +24,13 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String TRUE = "true";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
     private static final String VIDEO = "video";
+
     private final XMLEventHandler fallbackHandler;
-    private List<String> validRegexes; //because all 3rd party content is put into iframes we need to know which ones we want to keep.
+    private VideoMatcher videoMatcher;
 
-
-    public MethodeOtherVideoXmlEventHandler(XMLEventHandler fallbackHandler) {
+    public MethodeOtherVideoXmlEventHandler(XMLEventHandler fallbackHandler, VideoMatcher videoMatcher) {
         this.fallbackHandler = fallbackHandler;
-        validRegexes = new ArrayList<>();
-        validRegexes.add("^(https?:)?(\\/\\/)?player.vimeo.com/video/[\\S]+");
-        validRegexes.add("^(https?:)?(\\/\\/)?www.youtube.com/embed/[\\S]+");
+        this.videoMatcher = videoMatcher;
     }
 
     @Override
@@ -46,27 +44,27 @@ public class MethodeOtherVideoXmlEventHandler extends BaseXMLEventHandler {
             return;
         }
 
-        boolean matches = false;
-        for (String regex : validRegexes){
-            if (Pattern.matches(regex, srcAttribute.getValue())) {
-                matches=true;
-                break;
-            }
-        }
-        if(!matches){
+        Video video = convertToVideo(srcAttribute);
+
+        if(video==null) {
             fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         }
 
-        String videoLink =  srcAttribute.getValue();
-        Map<String, String> attributesToAdd = new HashMap<String, String>();
-        attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoLink);
+        Map<String, String> attributesToAdd = new HashMap<>();
+        attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, video.getUrl());
         attributesToAdd.put(DATA_EMBEDDED, TRUE);
         attributesToAdd.put(DATA_ASSET_TYPE, VIDEO);
 
         eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
         eventWriter.writeEndTag(NEW_ELEMENT);
+    }
 
+    public Video convertToVideo(Attribute srcAttribute) {
+        String videoLink =  srcAttribute.getValue();
+        RichContentItem attachment = new RichContentItem(videoLink, null);
+        Video video = videoMatcher.filterVideo(attachment);
+        return video;
     }
 
     @Override

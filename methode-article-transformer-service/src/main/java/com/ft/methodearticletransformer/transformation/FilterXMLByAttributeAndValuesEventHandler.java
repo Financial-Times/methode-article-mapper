@@ -14,18 +14,18 @@ import javax.xml.stream.events.StartElement;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
+public class FilterXMLByAttributeAndValuesEventHandler extends BaseXMLEventHandler {
 
     private final XMLEventHandler fallbackEventHandler;
     private final StartElementMatcher matcher;
-    private static final String FTCOM = "FTcom";
-    private static final String NOT_NEWSPAPER = "!Financial Times";
+    private final String[] attributesValuesList;
 
-    protected StrikeoutXMLEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher) {
+    protected FilterXMLByAttributeAndValuesEventHandler(final XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher, String... attributesValuesList) {
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
         this.fallbackEventHandler = fallbackEventHandler;
         this.matcher = matcher;
+        this.attributesValuesList = attributesValuesList;
     }
 
     @Override
@@ -40,12 +40,23 @@ public class StrikeoutXMLEventHandler extends BaseXMLEventHandler {
         String channelAttributeString = channelAttribute.getValue();
         final String nameToMatch = event.getName().getLocalPart();
 
-        if ((FTCOM.equals(channelAttributeString)) || (NOT_NEWSPAPER.equals(channelAttributeString))) {
-            fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
-            return;
-        } else {
+        boolean isStrikeout = isStrikeout(attributesValuesList, channelAttributeString);
+        if(isStrikeout) {
             skipUntilMatchingEndTag(nameToMatch, xmlEventReader);
+        } else {
+            fallbackEventHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
         }
+    }
+
+    public boolean isStrikeout(String[] attributesValuesList, String channelAttributeString) {
+        boolean channelValueIsStrikeout = true;
+        for(String channelValue : attributesValuesList) {
+            if(channelAttributeString.equals(channelValue)) {
+                channelValueIsStrikeout=false;
+                return channelValueIsStrikeout;
+            }
+        }
+        return channelValueIsStrikeout;
     }
 
     @Override // Only called where the start tag used the fallback event handler
