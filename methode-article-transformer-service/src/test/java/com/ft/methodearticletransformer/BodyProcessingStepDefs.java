@@ -84,7 +84,7 @@ public class BodyProcessingStepDefs {
             new VideoSiteConfiguration("https?://youtu.be/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, T, true),
             new VideoSiteConfiguration("https?://vimeo.com/(?<id>[0-9]+)", null, false, NONE, true),
             new VideoSiteConfiguration("//player.vimeo.com/video/(?<id>[0-9]+)", "https://www.vimeo.com/%s", true, NONE, true),
-            new VideoSiteConfiguration("https?://video.ft.com/(?<id>[0-9]+)/[\\s]?", null, false, NONE, true)
+            new VideoSiteConfiguration("https?://video.ft.com/(?<id>[0-9]+)/", null, false, NONE, true)
     );
 
     private static String randomChars(int howMany) {
