@@ -22,19 +22,16 @@ videoSiteConfig:
     - urlPattern: "https?://vimeo.com/(?<id>[0-9]+)"
       template: null
       embedded: false
-      retainedParams: ["t"]
       forceHTTPS: true
 
     - urlPattern: "//player.vimeo.com/video/(?<id>[0-9]+)"
       template: "https://www.vimeo.com/%s"
       embedded: true
-      retainedParams: ["t"]
       forceHTTPS: true
 
-    - urlPattern: "https?://video.ft.com/(?<id>[0-9]+)/[\s]?"
+    - urlPattern: "https?://video.ft.com/(?<id>[0-9]+)/"
       template: null
       embedded: false
-      retainedParams: ["t"]
 
 server:
 
