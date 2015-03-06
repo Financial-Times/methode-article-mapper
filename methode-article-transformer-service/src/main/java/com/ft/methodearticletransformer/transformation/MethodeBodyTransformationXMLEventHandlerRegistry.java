@@ -5,14 +5,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
-import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainWithoutAttributesXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.StripXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
+import com.ft.bodyprocessing.xml.eventhandlers.*;
 
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
