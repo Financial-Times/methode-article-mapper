@@ -180,7 +180,6 @@ Feature: Body processing
 
   Examples: Remove tag but leave any content - these are just some examples, by default anything not specified separately will be treated like this
     | tagname   | html                                           |
-    | img       | <img src="abc.jpg"/>                           |
     | !--       | <!-- comments -->                              |
     | weird     | <weird>text surrounded by unknown tags</weird> |
 

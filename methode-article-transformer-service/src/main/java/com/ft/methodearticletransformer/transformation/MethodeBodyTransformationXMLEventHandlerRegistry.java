@@ -32,6 +32,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
         registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new StripElementAndContentsXMLEventHandler()), "iframe");
         registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
+        registerStartAndEndElementEventHandler(new RetainWithSpecificAttributesXMLEventHandler("src", "alt", "width", "height"), "img");
 
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
@@ -61,7 +62,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "pull-quote-text",
                 "readthrough", "short-body", "skybox-body", "stories",
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
-                "web-background-news-header", "web-background-news-text", "web-inline-picture",
+                "web-background-news-header", "web-background-news-text",
                 "web-picture", "web-pull-quote-source", "web-pull-quote-text",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );

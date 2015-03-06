@@ -90,7 +90,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "tmx=\"600 445 600 445\"/>\n</p>\n<p id=\"U1060483110029GKD\">In Paris in the late 1940s, a publicity-hungry gallerist " +
                 "invited a young, beautiful, unknown Lebanese artist to pose for a photograph alongside Picasso, “before death overtakes him”. " +
                 "Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n\n\n" +
-                "<p><br/></p><p><img src=\"something.jpg\"/><br/> </p><p>Did she protest too much? " +
+                "<p><br/></p><p><br/> </p><p>Did she protest too much? " +
                 "Tate’s poster image for the retrospective <i>Saloua Raouda Choucair</i> is a classic post-cubist self-portrait. The artist " +
                 "has simplified her features into a mask-like countenance; her clothes – white turban, green sweater, ochre jacket – are " +
                 "composed of angular, geometric elements; a background of interlocking jagged shapes underlines the formality of the endeavour. " +
@@ -818,6 +818,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
         String transformedContent = "<body><p>Random Text<a href=\"http://www.youtube.com/embed/77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
         checkTransformation(contentWithStrikeouts, transformedContent);
+    }
+
+    @Test
+    public void testShouldRetainImgTagAndValidAttributes() throws Exception {
+        String contentExternalImage = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\" align=\"left\"/></body>";
+        String transformedContent = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\"/></body>";
+        checkTransformation(contentExternalImage, transformedContent);
+
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
