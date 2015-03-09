@@ -49,7 +49,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldNotTransformContentIfAllValidDataIsNotPresent() throws Exception {
+    public void shouldNotTransformContentIfBigNumberAndAllValidDataIsNotPresent() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
         when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(false);
@@ -59,7 +59,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldWriteTransformedElementsToWriter() throws Exception {
+    public void shouldWriteTransformedBigNumberElementsToWriter() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
 		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
