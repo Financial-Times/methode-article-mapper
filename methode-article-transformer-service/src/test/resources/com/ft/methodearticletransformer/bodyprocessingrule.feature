@@ -151,11 +151,11 @@ Feature: Body processing rules
     | before                                       | after       |
     | <p v:vs="\|1\|" v:n="15" v:idx="11">Text</p> | <p>Text</p> |
 
-  Scenario Outline: Images are removed
+  Scenario Outline: Images are retained with valid attributes
     Given I have an "img" in a Methode article body like <before>
     When I transform it into our Content Store format
     Then the body should be like <after>
 
   Examples:
     | before                                                                                                                                                                                   | after                  |
-    | <p>Embedded image.<img height="445" alt="Saloua Raouda Choucair's ‘Composition'" width="600" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img"/></p> | <p>Embedded image.</p> |
+    | <p>Embedded image.<img height="445" alt="Saloua Raouda Choucair's ‘Composition'" width="600" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" align="left"/></p> | <p>Embedded image.<img alt="Saloua Raouda Choucair's ‘Composition'" height="445" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" width="600"/></p> |
