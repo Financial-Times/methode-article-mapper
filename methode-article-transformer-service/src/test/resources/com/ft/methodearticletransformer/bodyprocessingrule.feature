@@ -89,7 +89,6 @@ Feature: Body processing rules
     | <body><p>Vimeo Video<iframe height="245" frameborder="0" src="//player.vimeo.com/video/77761436" width="600"></iframe></p></body>                                                                                                                      | <body><p>Vimeo Video<a data-asset-type="video" data-embedded="true" href="https://www.vimeo.com/77761436"></a></p></body>                   |
     | <body><p channel="FTcom">Vimeo Video<iframe height="245" frameborder="0" src="http://player.bbc.com/video/77761436" width="600"></iframe></p></body>                                                                                                   | <body><p>Vimeo Video</p></body>                                                                                                            |
 
-
   Scenario Outline: Handle strikeouts
     Given I have a "strikeout element" in a Methode XML body like <before>
     When I transform it into our Content Store format
@@ -113,7 +112,6 @@ Feature: Body processing rules
     | <body><p channel="FTcom">Para with strikeout channel that should be retained</p></body>                                         | <body><p>Para with strikeout channel that should be retained</p></body>                  |
     | <body><p>Para containing <span channel="FTcom">a strikeout that should be retained </span>and other text</p></body>             | <body><p>Para containing a strikeout that should be retained and other text</p></body>   |
 
-
   Scenario Outline: Handle non-strikeouts
     Given I have a "non-strikeout element" in a Methode XML body like <before>
     When I transform it into our Content Store format
@@ -123,6 +121,18 @@ Feature: Body processing rules
     | before                                                                          | after                                      |
     | <body><p>Para 1</p><p title="not a strikeout">Para 2</p></body>                 | <body><p>Para 1</p><p>Para 2</p></body>    |
     | <body><p>Part 1 <span title="not a strikeout">containing</span> text</p></body> | <body><p>Part 1 containing text</p></body> |
+
+  Scenario Outline: Remove notes
+    Given I have a "note" in a Methode XML body like <before>
+    When I transform it into our Content Store format
+    Then the body should be like <after>
+
+  Examples:
+    | before                                                                                                                   | after                                                 |
+    | <body><p class="@notes">This text shall be stripped</p><span>This text shall remain</span></body>                        | <body>This text shall remain</body>                   |
+    | <body><p><span channel="FTcom" class="@notes">This text shall be stripped</span>This text shall remain</p></body>        | <body><p>This text shall remain</p></body>            |
+    | <body><span class="@notes">This text shall be stripped<p channel="FTcom">This text shall be stripped</p></span></body>   | <body></body>                                         |
+    | <body><b channel="FTcom">This text shall remain<p class="@notes">This text shall be stripped</p></b></body>              | <body><strong>This text shall remain</strong></body>  |
 
   Scenario Outline: Remove comments
     Given I have a "comment" in a Methode XML body like <before>

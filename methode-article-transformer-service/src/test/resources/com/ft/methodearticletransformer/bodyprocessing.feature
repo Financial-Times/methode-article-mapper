@@ -53,6 +53,7 @@ Feature: Body processing
 
   Examples: Remove tags completely, including content, for html5 tags that we cannot support currently
     | tagname                    |
+    | annotation                 |
     | applet                     |
     | audio                      |
     | base                       |

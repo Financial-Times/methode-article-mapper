@@ -845,7 +845,20 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String contentExternalImage = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\" align=\"left\"/></body>";
         String transformedContent = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\"/></body>";
         checkTransformation(contentExternalImage, transformedContent);
+    }
 
+    @Test
+    public void shouldStripAllAnnotationTagsFromContent() throws Exception {
+        String contentWithAnnotation = "<body><p>This is <annotation c=\"roddamm\" cd=\"20150224170716\">A new annotation </annotation>annotated</p></body>";
+        String transformedContent = "<body><p>This is annotated</p></body>";
+        checkTransformation(contentWithAnnotation, transformedContent);
+    }
+
+    @Test
+    public void shouldStripAllNotesFromContent() throws Exception {
+        String contentWithNotes = "<body><p><span class=\"@notes\">Test notes</span>This text should remain</p></body>";
+        String transformedContent = "<body><p>This text should remain</p></body>";
+        checkTransformation(contentWithNotes, transformedContent);
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {

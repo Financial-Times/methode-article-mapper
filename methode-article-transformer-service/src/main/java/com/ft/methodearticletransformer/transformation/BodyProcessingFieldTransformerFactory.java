@@ -51,6 +51,6 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     }
 
     private BodyProcessor strikeoutRemovingBodyProcessor() {
-        return new StAXTransformingBodyProcessor(new StrikeoutEventHandlerRegistry());
+        return new StAXTransformingBodyProcessor(new StripByAttributesAndValuesEventHandlerRegistry());
     }
 }

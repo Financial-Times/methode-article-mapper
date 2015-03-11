@@ -31,7 +31,7 @@ public class BylineProcessingFieldTransformerFactory implements FieldTransformer
     }
 
 	private BodyProcessor strikeoutRemovingBodyProcessor() {
-		return new StAXTransformingBodyProcessor(new StrikeoutEventHandlerRegistry());
+		return new StAXTransformingBodyProcessor(new StripByAttributesAndValuesEventHandlerRegistry());
 	}
 
 }
