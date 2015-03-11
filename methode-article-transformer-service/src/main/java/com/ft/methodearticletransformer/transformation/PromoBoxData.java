@@ -8,8 +8,7 @@ public class PromoBoxData {
 	private String intro;
 	private String link;
 	private String title;
-
-	private boolean imagePresent;
+	private String imageHtml;
 
 	public String getHeadline() {
 		return headline;
@@ -17,6 +16,14 @@ public class PromoBoxData {
 
 	public String getIntro() {
 		return intro;
+	}
+
+	public String getLink() {
+		return link;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 	public void setHeadline(String headline) {
@@ -41,7 +48,16 @@ public class PromoBoxData {
 		return !StringUtils.isBlank(data);
 	}
 
-	public void setImagePresent(boolean imagePresent) {
-		this.imagePresent = imagePresent;
+	public boolean isValidPromoBoxData() {
+		return containsValidData(this.intro) || containsValidData(this.link) || containsValidData(this.headline)
+				|| containsValidData(this.headline) || containsValidData(this.imageHtml);
+	}
+
+	public void setImageHtml(String imageHtml) {
+		this.imageHtml = imageHtml;
+	}
+
+	public String getImageHtml() {
+		return imageHtml;
 	}
 }
