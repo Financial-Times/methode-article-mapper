@@ -234,14 +234,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
 
     @Test
-    public void pullQuotesShouldReturnNoTxtTagsWithEmptyRow() {
+    public void pullQuotesShouldOmitNonExistentTxtTagsifWithEmptyRow() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -260,7 +259,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesShouldReturnNoSrcTags() {
+    public void pullQuotesShouldOmitNonExistentSrcTags() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -636,7 +635,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesWithNoSourceShouldBeWritten() {
+    public void pullQuotesWithNoSourceShouldNotBeWritten() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -655,7 +654,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote>" +
                 "</body>";
 
