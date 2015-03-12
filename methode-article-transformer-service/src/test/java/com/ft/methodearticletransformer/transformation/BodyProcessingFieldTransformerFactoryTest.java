@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +31,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,7 +61,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Before
     public void setup() {
-        when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
+        when(methodeFileService.assetTypes(anySetOf(String.class), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
         EomAssetType storyAsset1 = new EomAssetType.Builder()
                 .uuid("49336a18-051c-11e3-98a0-002128161462")
                 .type("EOM::Story")
@@ -329,7 +330,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-box></body>";
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
-                "<big-number-headline></big-number-headline>" +
                 "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 
@@ -337,23 +337,172 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
 	@Test
-	public void promoBoxWithoutClassNumbersComponentIsNotBigNumber() {
-		String bigNumberFromMethode = "<body><p>patelka</p><promo-box class=\"not-numbers-component\" align=\"right\">" +
-				"<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-headline><p class=\"title\">£350m</p>\n" +
-				"</promo-headline>\n" +
-				"<promo-link></promo-link>\n" +
+	public void nonClassNumbersComponentIsPromoBoxAndImagePreservedIfPresent() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
+				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
+				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxAndTitleRemovedIfDummyText() {
+		String bigNumberFromMethode = "<body><promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
+				"</p>\n" +
+				"</promo-title>\n" +
 				"</td>\n" +
 				"</tr>\n" +
-				"<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+				"<tr><td align=\"left\"><promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p>\n" +
+				"</promo-headline>\n" +
+				"</td>\n" +
+				"</tr>\n" +
+				"<tr><td><web-master xtransform=\"scale(0.1538 0.1538)\" tmx=\"2048 1152 315 177\" width=\"2048\" height=\"1152\" fileref=\"/FT/Graphics/Online/Master_2048x1152/Martin/butterfly-2048x1152.jpg?uuid=17ee1f24-ff46-11e2-9b3b-002128161462\" dtxInsert=\"Web Master\" id=\"U112075852229295\"/>\n" +
+				"</td>\n" +
+				"</tr>\n" +
+				"<tr><td align=\"left\"><promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <b>Monday</b>, with Labour claiming the coalition was alerted in 2010 to strikeout <span channel=\"!\">alleged </span>malpractice at the bank and took no action.</p>\n" +
+				"<p><a dtxInsert=\"Sidebar - right aligned\" href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a>" +
+				"</p>\n" +
 				"</promo-intro>\n" +
 				"</td>\n" +
 				"</tr>\n" +
 				"</table>\n" +
 				"</promo-box></body>";
 
-		String processedBigNumber = "<body><p>patelka</p></body>";
+		String processedPromoBox = "<body><promo-box>" +
+				"<promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p></promo-headline><promo-image>" +
+				"<content data-embedded=\"true\" id=\"17ee1f24-ff46-11e2-055d-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
+				"<promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <strong>Monday</strong>, with Labour claiming the coalition was alerted in 2010 to strikeout malpractice at the bank and took no action.</p>\n" +
+				"<p><a href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
+				"</promo-box></body>";
 
-		checkTransformation(bigNumberFromMethode, processedBigNumber);
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxAndBIsConvertedToStrong() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our <b>annual</b> list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
+				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
+				"<promo-intro><p>The risers and fallers in our <strong>annual</strong> list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsOmittedIfNoValuesPresent() {
+		String bigNumberFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p></p></promo-headline></td></tr><tr><td>" +
+				"</td></tr><tr><td><promo-intro><p></p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><p>patelka</p></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleEmpty() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box>" +
+				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
+				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
+				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleMissing() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box>" +
+				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
+				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
+				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Ignore("Un-ignore when UPP-318 is resolved.")
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotFileRefEmpty() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"<promo-image fileref=\"\"/>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"<promo-headline><p>Headline</p></promo-headline>" +
+				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
+	}
+
+	@Test
+	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotPresent() {
+		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
+				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
+				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
+				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
+				"</td></tr></table></promo-box></body>";
+
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
+				"<promo-headline><p>Headline</p></promo-headline>" +
+				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+
+		checkTransformation(bigNumberFromMethode, processedPromoBox);
 	}
 
     @Test
