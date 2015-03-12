@@ -330,7 +330,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</promo-box></body>";
 
         String processedBigNumber = "<body><p>patelka</p><big-number>" +
-                "<big-number-headline></big-number-headline>" +
                 "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
                 "</big-number></body>";
 

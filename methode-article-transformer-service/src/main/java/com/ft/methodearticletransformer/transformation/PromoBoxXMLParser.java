@@ -2,11 +2,13 @@ package com.ft.methodearticletransformer.transformation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.HTML5VoidElementHandlingXMLBodyWriter;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
@@ -58,27 +60,29 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 	protected void populateBean(PromoBoxData promoBoxData, StartElement nextStartElement,
 								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
 		// look for either promo-headline or promo-intro
-		if (isElementNamed(nextStartElement.getName(), PROMO_HEADLINE)) {
+		final QName elementName = nextStartElement.getName();
+		
+		if (isElementNamed(elementName, PROMO_HEADLINE)) {
 			promoBoxData.setHeadline(transformRawContentToStructuredFormat(
 					parseRawContent(PROMO_HEADLINE, xmlEventReader), bodyProcessingContext));
 		}
-		if (isElementNamed(nextStartElement.getName(), PROMO_INTRO)) {
+		if (isElementNamed(elementName, PROMO_INTRO)) {
 			promoBoxData.setIntro(transformRawContentToStructuredFormat(
 					parseRawContent(PROMO_INTRO, xmlEventReader), bodyProcessingContext));
 		}
-		if (isElementNamed(nextStartElement.getName(), PROMO_LINK)) {
+		if (isElementNamed(elementName, PROMO_LINK)) {
 			promoBoxData.setLink(parseRawContent(PROMO_LINK, xmlEventReader));
 		}
-		if (isElementNamed(nextStartElement.getName(), PROMO_IMAGE) || isElementNamed(nextStartElement.getName(), WEB_MASTER)) {
+		if (isElementNamed(elementName, PROMO_IMAGE) || isElementNamed(elementName, WEB_MASTER)) {
 			try {
 				HTML5VoidElementHandlingXMLBodyWriter writer = new HTML5VoidElementHandlingXMLBodyWriter((XMLOutputFactory2) XMLOutputFactory2.newInstance());
 				inlineImageXmlEventHandler.handleStartElementEvent(nextStartElement, xmlEventReader, writer, bodyProcessingContext);
 				promoBoxData.setImageHtml(writer.asString());
 			} catch (XMLStreamException | IOException e) {
-				throw new RuntimeException(e);
+				throw new BodyProcessingException(e);
 			}
 		}
-		if (isElementNamed(nextStartElement.getName(), PROMO_TITLE)) {
+		if (isElementNamed(elementName, PROMO_TITLE)) {
 			promoBoxData.setTitle(parseRawContent(PROMO_TITLE, xmlEventReader));
 		}
 	}

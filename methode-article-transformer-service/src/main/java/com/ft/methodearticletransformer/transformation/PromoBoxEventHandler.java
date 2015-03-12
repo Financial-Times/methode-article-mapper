@@ -67,13 +67,8 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	}
 
 	private void writeBigNumberElement(BodyWriter eventWriter, PromoBoxData dataBean) {
-		eventWriter.writeStartTag(BIG_NUMBER_HEADLINE, noAttributes());
-		eventWriter.writeRaw(dataBean.getHeadline());
-		eventWriter.writeEndTag(BIG_NUMBER_HEADLINE);
-
-		eventWriter.writeStartTag(BIG_NUMBER_INTRO, noAttributes());
-		eventWriter.writeRaw(dataBean.getIntro());
-		eventWriter.writeEndTag(BIG_NUMBER_INTRO);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getHeadline(), BIG_NUMBER_HEADLINE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getIntro(), BIG_NUMBER_INTRO);
 	}
 
 	private void writePromoBoxElement(BodyWriter eventWriter, PromoBoxData dataBean) {

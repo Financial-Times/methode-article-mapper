@@ -50,7 +50,7 @@ public class PromoBoxData {
 
 	public boolean isValidPromoBoxData() {
 		return containsValidData(this.intro) || containsValidData(this.link) || containsValidData(this.headline)
-				|| containsValidData(this.headline) || containsValidData(this.imageHtml);
+				|| containsValidData(this.title) || containsValidData(this.imageHtml);
 	}
 
 	public void setImageHtml(String imageHtml) {
