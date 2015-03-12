@@ -1,6 +1,6 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.StripByAttributesAndValuesEventHandlerRegistry.strikeoutMatcher;
+import static com.ft.methodearticletransformer.transformation.StripByAttributesAndValuesEventHandlerRegistry.attributeNameMatchesAndValueIsInList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
@@ -38,7 +38,7 @@ public class StripByAttributesAndValuesEventHandlerTest extends BaseXMLEventHand
         List<String> channelAttributes = new ArrayList<>();
         channelAttributes.add("FTcom");
         channelAttributes.add("!Financial Times");
-        eventHandler = new StripByAttributesAndValuesEventHandler(fallbackEventHandler, strikeoutMatcher("channel", channelAttributes), channelAttributes);
+        eventHandler = new StripByAttributesAndValuesEventHandler(fallbackEventHandler, attributeNameMatchesAndValueIsInList("channel", channelAttributes, true), channelAttributes);
     }
 
     @Test

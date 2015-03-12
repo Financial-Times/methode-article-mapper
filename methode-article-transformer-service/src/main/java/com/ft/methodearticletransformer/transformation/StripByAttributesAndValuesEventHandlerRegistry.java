@@ -6,6 +6,7 @@ import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 
 import java.util.ArrayList;
@@ -25,8 +26,10 @@ public class StripByAttributesAndValuesEventHandlerRegistry extends XMLEventHand
         List<String> classAttributes = new ArrayList<>();
         classAttributes.add("@notes");
 
-        registerDefaultEventHandler(new StripByAttributesAndValuesEventHandler(new StripByAttributesAndValuesEventHandler(new RetainXMLEventHandler(),
-                strikeoutMatcher("channel", channelAttributes), channelAttributes), negateStrikeoutMatcher("class", classAttributes), classAttributes));
+        XMLEventHandler retainXMLEventHandler = new RetainXMLEventHandler();
+
+        registerDefaultEventHandler(retainElementAndContentsIfValueMatches(channelAttributes, stripElementsAndContentsIfValueMatches(classAttributes, retainXMLEventHandler)));
+
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
 
@@ -34,49 +37,35 @@ public class StripByAttributesAndValuesEventHandlerRegistry extends XMLEventHand
 
     }
 
-    public static StrikeoutMatcher strikeoutMatcher(final String attributeName, final List<String> attributesValuesList) {
-        return new StrikeoutMatcher() {
-            @Override
-            public boolean matchesOnElementName(StartElement startElement) {
-                final Attribute attribute = startElement.getAttributeByName(new QName(attributeName));
-                return attribute != null;
-            }
+    public static ElementNameAndAttributeValueMatcher attributeNameMatchesAndValueIsInList(final String attributeName, final List<String> attributesValuesList, final boolean attributeValueMatches) {
+        return new ElementNameAndAttributeValueMatcher() {
 
             @Override
-            public boolean matchesStrikeoutCriteria(List<String> attributeValueList, StartElement startElement) {
-                final String startElementAttributeValue = startElement.getAttributeByName(new QName(attributeName)).getValue();
-                boolean channelValueIsStrikeout = true;
+            public boolean matchesElementNameAndAttributeValueCriteria(List<String> attributeValueList, StartElement startElement) {
+                final Attribute attribute = startElement.getAttributeByName(new QName(attributeName));
+                if(attribute==null) {
+                    return false;
+                }
+
+                final String startElementAttributeValue = attribute.getValue();
+                boolean matchesAttributeValueCriteria = attributeValueMatches;
                 for(String attributeValue : attributesValuesList) {
                     if(startElementAttributeValue.equals(attributeValue)) {
-                        channelValueIsStrikeout = false;
-                        return channelValueIsStrikeout;
+                        matchesAttributeValueCriteria = !attributeValueMatches;
+                        return matchesAttributeValueCriteria;
                     }
                 }
-                return channelValueIsStrikeout;
+                return matchesAttributeValueCriteria;
             }
         };
     }
 
-    public static StrikeoutMatcher negateStrikeoutMatcher(final String attributeName, final List<String> attributesValueList) {
-        return new StrikeoutMatcher() {
-            @Override
-            public boolean matchesOnElementName(StartElement startElement) {
-                final Attribute attribute = startElement.getAttributeByName(new QName(attributeName));
-                return attribute != null;
-            }
-
-            @Override
-            public boolean matchesStrikeoutCriteria(List<String> attributeValueList, StartElement startElement) {
-                final String startElementAttributeValue = startElement.getAttributeByName(new QName(attributeName)).getValue();
-                boolean channelValueIsStrikeout = false;
-                for(String attributeValue : attributesValueList) {
-                    if(startElementAttributeValue.equals(attributeValue)) {
-                        channelValueIsStrikeout = true;
-                        return channelValueIsStrikeout;
-                    }
-                }
-                return channelValueIsStrikeout;
-            }
-        };
+    public XMLEventHandler retainElementAndContentsIfValueMatches(List<String> channelAttributes, XMLEventHandler retainXMLEventHandler) {
+        return new StripByAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("channel", channelAttributes, true), channelAttributes);
     }
+
+    public XMLEventHandler stripElementsAndContentsIfValueMatches(List<String> classAttributes, XMLEventHandler retainXMLEventHandler) {
+        return new StripByAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("class", classAttributes, false), classAttributes);
+    }
+
 }

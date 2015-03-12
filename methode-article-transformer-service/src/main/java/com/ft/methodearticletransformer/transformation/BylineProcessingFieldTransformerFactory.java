@@ -19,7 +19,7 @@ public class BylineProcessingFieldTransformerFactory implements FieldTransformer
     }
 
     private List<BodyProcessor> bodyProcessors() {
-        return asList(strikeoutRemovingBodyProcessor(),
+        return asList(stripByAttributesAndValuesBodyProcessor(),
 				stAXTransformingBodyProcessor(),
         		new WhitespaceRemovingBodyProcessor(), // get rid of trailing and initial whitespace
         		new RemoveXMLEntityEscapingBodyProcessor(), // convert from XML back to plain text by unencoding escaped characters
@@ -30,7 +30,7 @@ public class BylineProcessingFieldTransformerFactory implements FieldTransformer
         return new StAXTransformingBodyProcessor(new MethodeBylineTransformationXMLEventHandlerRegistry());
     }
 
-	private BodyProcessor strikeoutRemovingBodyProcessor() {
+	private BodyProcessor stripByAttributesAndValuesBodyProcessor() {
 		return new StAXTransformingBodyProcessor(new StripByAttributesAndValuesEventHandlerRegistry());
 	}
 
