@@ -14,13 +14,13 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class StripByAttributesAndValuesEventHandler extends BaseXMLEventHandler {
+public class StripByPredefinedAttributesAndValuesEventHandler extends BaseXMLEventHandler {
 
     private final XMLEventHandler fallbackEventHandler;
     private final ElementNameAndAttributeValueMatcher matcher;
     private final List<String> attributeValuesList;
 
-    protected StripByAttributesAndValuesEventHandler(final XMLEventHandler fallbackEventHandler, final ElementNameAndAttributeValueMatcher matcher, List<String> attributeValuesList) {
+    protected StripByPredefinedAttributesAndValuesEventHandler(final XMLEventHandler fallbackEventHandler, final ElementNameAndAttributeValueMatcher matcher, List<String> attributeValuesList) {
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
         checkArgument(attributeValuesList != null, "attributeValuesList cannot be null");

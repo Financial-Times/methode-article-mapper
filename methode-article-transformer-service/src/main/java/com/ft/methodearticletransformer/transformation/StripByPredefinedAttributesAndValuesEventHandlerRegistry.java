@@ -12,9 +12,9 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StripByAttributesAndValuesEventHandlerRegistry extends XMLEventHandlerRegistry {
+public class StripByPredefinedAttributesAndValuesEventHandlerRegistry extends XMLEventHandlerRegistry {
 
-    public StripByAttributesAndValuesEventHandlerRegistry() {
+    public StripByPredefinedAttributesAndValuesEventHandlerRegistry() {
         // Default is to check all tags for channel attribute if there is no channel the element is retained
         // If the channel value is either FTcom or !Financial Times the elements are retained
         // If the value is something else the element is removed.
@@ -61,11 +61,11 @@ public class StripByAttributesAndValuesEventHandlerRegistry extends XMLEventHand
     }
 
     public XMLEventHandler retainElementAndContentsIfValueMatches(List<String> channelAttributes, XMLEventHandler retainXMLEventHandler) {
-        return new StripByAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("channel", channelAttributes, true), channelAttributes);
+        return new StripByPredefinedAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("channel", channelAttributes, true), channelAttributes);
     }
 
     public XMLEventHandler stripElementsAndContentsIfValueMatches(List<String> classAttributes, XMLEventHandler retainXMLEventHandler) {
-        return new StripByAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("class", classAttributes, false), classAttributes);
+        return new StripByPredefinedAttributesAndValuesEventHandler(retainXMLEventHandler, attributeNameMatchesAndValueIsInList("class", classAttributes, false), classAttributes);
     }
 
 }
