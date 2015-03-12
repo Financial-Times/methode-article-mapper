@@ -85,7 +85,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleVimeoVideo.setEmbedded(true);
 
         exampleYouTubeVideo = new Video();
-        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=77761436");
+        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
@@ -752,24 +752,24 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withPChannel() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withNoPChannel() {
-        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -777,7 +777,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotProcessOtherIframes() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
         String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -834,8 +834,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
-        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
-        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/OTT5dQcarl0\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(contentWithStrikeouts, transformedContent);
     }
@@ -845,7 +845,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String contentExternalImage = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\" align=\"left\"/></body>";
         String transformedContent = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\"/></body>";
         checkTransformation(contentExternalImage, transformedContent);
-
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
