@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
+import com.ft.content.model.Identifier;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
@@ -43,6 +44,7 @@ import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishExcep
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import com.google.common.collect.ImmutableSortedSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -199,6 +201,7 @@ public class EomFileProcessorForContentStoreTest {
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
 				.withContentOrigin(METHODE, uuid.toString())
+                .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withByline(TRANSFORMED_BYLINE).build();
 
         Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
@@ -405,6 +408,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
+                .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withUuid(uuid).build();
 	}
 
