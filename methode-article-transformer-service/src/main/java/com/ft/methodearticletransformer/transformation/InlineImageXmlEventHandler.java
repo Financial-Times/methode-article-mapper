@@ -16,8 +16,13 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(InlineImageXmlEventHandler.class);
 
     private static final String CONTENT_TAG = "content";
     private static final String FILE_REF_ATTRIBUTE = "fileref";
@@ -30,23 +35,27 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
         String uuid = getUuidForImage(event);
-        String imageSetUuid = ImageSetUuidGenerator.fromImageUuid(UUID.fromString(uuid)).toString();
 
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("id", imageSetUuid);
-        attributes.put("type", IMAGE_SET_TYPE);
-        attributes.put(DEFAULT_ATTRIBUTE_DATA_EMBEDDED, "true");
+        if (StringUtils.isNotEmpty(uuid)) {
+            String imageSetUuid = ImageSetUuidGenerator.fromImageUuid(UUID.fromString(uuid)).toString();
 
-        eventWriter.writeStartTag(CONTENT_TAG, attributes);
+            HashMap<String, String> attributes = new HashMap<>();
+            attributes.put("id", imageSetUuid);
+            attributes.put("type", IMAGE_SET_TYPE);
+            attributes.put(DEFAULT_ATTRIBUTE_DATA_EMBEDDED, "true");
+
+            eventWriter.writeStartTag(CONTENT_TAG, attributes);
+            eventWriter.writeEndTag(CONTENT_TAG);
+        }
         skipUntilMatchingEndTag(event.getName().getLocalPart(), xmlEventReader);
-        eventWriter.writeEndTag(CONTENT_TAG);
     }
 
     private String getUuidForImage(StartElement event) {
         Attribute fileReferenceAttribute = event.getAttributeByName(new QName(FILE_REF_ATTRIBUTE));
         if (fileReferenceAttribute == null) {
-            throw new BodyProcessingException(String.format("No attribute present for %s required for getting uuid",
-                    event.getName().getLocalPart()));
+            LOGGER.info("No fileref attribute present for {} required for getting uuid",
+                    event.getName().getLocalPart());
+            return null;
         }
         String fileReferenceValue = fileReferenceAttribute.getValue();
 
@@ -55,6 +64,6 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
             return uuidMatcher.group(1);
         }
 
-        throw new BodyProcessingException(String.format("Image uuid is missing in %s attribute", FILE_REF_ATTRIBUTE));
+        throw new BodyProcessingException("Image uuid could not be parsed from fileref attribute: " + fileReferenceValue);
     }
 }

@@ -81,11 +81,12 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
     }
 
-    @Test(expected = BodyProcessingException.class)
+    @Test
     public void testTransformStartElementShouldRejectMissingFileReference() throws Exception {
         StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", new HashMap<String, String>());
 
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
     }
 
     @Test
