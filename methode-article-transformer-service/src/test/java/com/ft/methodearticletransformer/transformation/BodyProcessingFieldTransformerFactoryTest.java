@@ -386,20 +386,18 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</body>";
 
         String processedBigNumber = "<body><p>A big number!</p>\n" +
-                "<p><big-number><big-number-headline><p>£350M</p></big-number-headline>" +
+                "<big-number><big-number-headline><p>£350M</p></big-number-headline>" +
                 "<big-number-intro><p>The cost of eating at Leon and Tossed every single day.</p></big-number-intro>" +
-                "</big-number></p>\n" +
+                "</big-number>\n\n\n" +
                 "<p>A big number right aligned.</p>\n" +
-                "<p><big-number>" +
+                "<big-number>" +
                 "<big-number-headline><p>52p</p></big-number-headline>" +
                 "<big-number-intro><p>The weekly saving made by making your own lunch.</p></big-number-intro>" +
                 "</big-number>\n" +
-                "</p>\n" +
                 "</body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }
-
 
     @Test
     public void shouldTransformDataTableWithDifferentFormatting() {
@@ -540,10 +538,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</tr>\n" +
                 "</table>&gt;</promo-box></p></body>";
 
-        String processedBigNumber = "<body><p>patelka</p><p><big-number>" +
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
                 "<big-number-headline><p>£350m</p></big-number-headline>" +
                 "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
-                "</big-number></p></body>";
+                "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }

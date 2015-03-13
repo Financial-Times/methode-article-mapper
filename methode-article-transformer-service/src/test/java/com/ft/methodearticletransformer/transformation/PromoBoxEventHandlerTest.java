@@ -30,6 +30,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String BIG_NUMBER_INTRO_VALUE = "intro";
     private static final String METHODE_PROMO_BOX_ELEMENT = "promo-box";
     private static final String INCORRECT_ELEMENT = "a";
+    public static final String PARAGRAPH_TAG = "p";
 
     @Mock private XMLEventReader mockXmlEventReader;
     @Mock private BodyWriter mockBodyWriter;
@@ -61,8 +62,8 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldWriteTransformedElementsToWriter() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
+		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.getHeadline()).thenReturn(BIG_NUMBER_HEADLINE_VALUE);
         when(mockPromoBoxData.getIntro()).thenReturn(BIG_NUMBER_INTRO_VALUE);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
@@ -70,6 +71,23 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
         verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
         verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
         verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
+    }
+
+    @Test
+    public void shouldNotWriteBigNumberElementWithinParagraphTags() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
+        when(mockPromoBoxData.getHeadline()).thenReturn(BIG_NUMBER_HEADLINE_VALUE);
+        when(mockPromoBoxData.getIntro()).thenReturn(BIG_NUMBER_INTRO_VALUE);
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
+        verify(mockBodyWriter).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
+        verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
+        verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
     }
 
 	private Map<String, String> attributeClassEqualToNumberComponent() {

@@ -65,7 +65,7 @@ Feature: Body processing rules
     | before                     | after                               |
     | <subhead>Duchess</subhead> | <h3 class="ft-subhead">Duchess</h3> |
 
-  Scenario Outline: Empty Paragraphs
+Scenario Outline: Empty Paragraphs
     Given I have a "empty paragraph" in a Methode XML body like <before>
     When I transform it into our Content Store format
     Then the body should be like <after>
@@ -75,6 +75,14 @@ Feature: Body processing rules
     | <body><p>Some text</p><p></p><p>More text</p></body>                                                        | <body><p>Some text</p><p>More text</p></body> |
     | <body><p>Some text</p><p><xref>this xref is removed leaving an empty para</xref></p><p>More text</p></body> | <body><p>Some text</p><p>More text</p></body> |
 
+  Scenario Outline: Handle block elements inside paragraph tags
+    Given I have a "block element" in a Methode XML body like <before>
+    When I transform it into our Content Store format
+    Then the body should be like <after>
+
+  Examples:
+| before                                                                                                                                                                                                                                                                                                                                                                                                 | after                                                                                                                                                                                                                                                                                                                                     |
+| <body><p>This is a line of text<promo-box class="numbers-component"><table><tr><td><promo-headline><p class="title">£350m</p></promo-headline></td></tr><tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></promo-intro></td></tr></table></promo-box>this is another line of text</p></body> | <body><p>This is a line of text</p><big-number><big-number-headline><p>£350m</p></big-number-headline><big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro></big-number><p>this is another line of text</p></body> |
 
   Scenario Outline: Handle videos
     Given I have a "video" in a Methode XML body like <before>

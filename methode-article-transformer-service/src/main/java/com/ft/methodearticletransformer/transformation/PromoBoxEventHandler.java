@@ -21,6 +21,7 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	private static final String PROMO_BOX = "promo-box";
 	public static final String NUMBERS_COMPONENT_CLASS = "numbers-component";
 	public static final String PROMO_CLASS_ATTRIBUTE = "class";
+    public static final String PARAGRAPH_TAG = "p";
 
 	private final PromoBoxXMLParser promoBoxXMLParser;
 
@@ -32,25 +33,42 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 	public void handleStartElementEvent(StartElement startElement, XMLEventReader xmlEventReader, BodyWriter eventWriter,
 										BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
 
-		// Confirm that the startEvent is of the correct type
-		if (isPromoBox(startElement)) {
+        // Confirm that the startEvent is of the correct type
+        if (isPromoBox(startElement)) {
 
-			// Parse the xml needed to create a bean
-			PromoBoxData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
+            // Parse the xml needed to create a bean
+            PromoBoxData dataBean = parseElementData(startElement, xmlEventReader, bodyProcessingContext);
 
-			// Add asset to the context and create the aside element if all required data is present
-			if (promoBoxIsValidBigNumber(startElement, dataBean)) {
-				eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-				writeBigNumberElement(eventWriter, dataBean);
-				eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
-			}
+            // Add asset to the context and create the aside element if all required data is present
+            if (promoBoxIsValidBigNumber(startElement, dataBean)) {
+                if (eventWriter.isPTagCurrentlyOpen()) {
+                    eventWriter.writeEndTag(PARAGRAPH_TAG);
 
-		} else {
-			throw new BodyProcessingException("event must correspond to " + PROMO_BOX + " tag");
-		}
-	}
+                    writeBigNumber(eventWriter, dataBean);
 
-	private boolean promoBoxIsValidBigNumber(StartElement startElement, PromoBoxData dataBean) {
+                    eventWriter.writeStartTag(PARAGRAPH_TAG, noAttributes());
+
+                }
+                else {
+                    writeBigNumber(eventWriter, dataBean);
+                }
+
+            }
+
+        }
+        else {
+            throw new BodyProcessingException("event must correspond to " + PROMO_BOX + " tag");
+        }
+    }
+
+    private void writeBigNumber(BodyWriter eventWriter, PromoBoxData dataBean) {
+        eventWriter.writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
+        writeBigNumberElement(eventWriter, dataBean);
+        eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
+    }
+
+
+    private boolean promoBoxIsValidBigNumber(StartElement startElement, PromoBoxData dataBean) {
 		Attribute classAttribute = startElement.getAttributeByName(new QName(PROMO_CLASS_ATTRIBUTE));
 		return isNumbersComponent(classAttribute) && dataBean.isValidBigNumberData();
 	}
