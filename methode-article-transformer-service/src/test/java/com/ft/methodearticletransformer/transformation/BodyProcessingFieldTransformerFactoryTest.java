@@ -31,7 +31,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -465,7 +464,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 		checkTransformation(bigNumberFromMethode, processedPromoBox);
 	}
 
-	@Ignore("Un-ignore when UPP-318 is resolved.")
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotFileRefEmpty() {
 		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
