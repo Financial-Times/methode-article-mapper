@@ -52,8 +52,8 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
 
     private String getUuidForImage(StartElement event) {
         Attribute fileReferenceAttribute = event.getAttributeByName(new QName(FILE_REF_ATTRIBUTE));
-        if (fileReferenceAttribute == null) {
-            LOGGER.info("No fileref attribute present for {} required for getting uuid",
+        if (fileReferenceAttribute == null || StringUtils.isBlank(fileReferenceAttribute.getValue())) {
+            LOGGER.info("No fileref or blank attribute present for {} required for getting uuid",
                     event.getName().getLocalPart());
             return null;
         }
