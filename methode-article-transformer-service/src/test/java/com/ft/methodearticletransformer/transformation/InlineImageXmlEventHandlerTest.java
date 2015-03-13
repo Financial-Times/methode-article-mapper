@@ -17,6 +17,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import com.google.common.collect.ImmutableMap;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,8 +83,17 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void testTransformStartElementShouldRejectMissingFileReference() throws Exception {
-        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", new HashMap<String, String>());
+    public void testTransformStartElementShouldSkipMissingFileReference() throws Exception {
+        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", ImmutableMap.<String, String>of());
+
+        eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
+    }
+
+    @Test
+    public void testTransformStartElementShouldSkipBlankFileReference() throws Exception {
+        Map<String, String> attributesMap = ImmutableMap.of(FILE_REF_ATTRIBUTE, " ");
+        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", attributesMap);
 
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
         verifyZeroInteractions(mockEventWriter);
