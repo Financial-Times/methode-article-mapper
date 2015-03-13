@@ -12,7 +12,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
@@ -64,6 +63,7 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
             return uuidMatcher.group(1);
         }
 
-        throw new BodyProcessingException("Image uuid could not be parsed from fileref attribute: " + fileReferenceValue);
+        LOGGER.warn("Image uuid could not be parsed from fileref attribute: {}", fileReferenceValue);
+        return null;
     }
 }
