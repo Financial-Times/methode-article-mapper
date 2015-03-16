@@ -12,12 +12,19 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
+import org.apache.commons.lang.StringUtils;
 
 public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
 	private static final String BIG_NUMBER_ELEMENT = "big-number";
+	private static final String PROMO_BOX_ELEMENT = "promo-box";
 	private static final String BIG_NUMBER_HEADLINE = "big-number-headline";
 	private static final String BIG_NUMBER_INTRO = "big-number-intro";
+	private static final String PROMO_BOX_TITLE = "promo-title";
+	private static final String PROMO_BOX_HEADLINE = "promo-headline";
+	private static final String PROMO_BOX_INTRO = "promo-intro";
+	private static final String PROMO_BOX_LINK = "promo-link";
+	private static final String PROMO_BOX_IMAGE = "promo-image";
 	private static final String PROMO_BOX = "promo-box";
 	public static final String NUMBERS_COMPONENT_CLASS = "numbers-component";
 	public static final String PROMO_CLASS_ATTRIBUTE = "class";
@@ -43,22 +50,35 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
             if (promoBoxIsValidBigNumber(startElement, dataBean)) {
                 if (eventWriter.isPTagCurrentlyOpen()) {
                     eventWriter.writeEndTag(PARAGRAPH_TAG);
-
                     writeBigNumber(eventWriter, dataBean);
-
                     eventWriter.writeStartTag(PARAGRAPH_TAG, noAttributes());
-
                 }
                 else {
                     writeBigNumber(eventWriter, dataBean);
                 }
 
-            }
+            }// Add asset to the context and create the aside element if all required data is present
+            else if (dataBean.isValidPromoBoxData()) {
+                if (eventWriter.isPTagCurrentlyOpen()) {
+                    eventWriter.writeEndTag(PARAGRAPH_TAG);
+                    writePromoBox(eventWriter, dataBean);
+                    eventWriter.writeStartTag(PARAGRAPH_TAG, noAttributes());
+                }
+                else {
+                    writePromoBox(eventWriter, dataBean);
+                }
 
+            }
         }
         else {
             throw new BodyProcessingException("event must correspond to " + PROMO_BOX + " tag");
         }
+    }
+
+    private void writePromoBox(BodyWriter eventWriter, PromoBoxData dataBean) {
+        eventWriter.writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
+        writePromoBoxElement(eventWriter, dataBean);
+        eventWriter.writeEndTag(PROMO_BOX_ELEMENT);
     }
 
     private void writeBigNumber(BodyWriter eventWriter, PromoBoxData dataBean) {
@@ -67,20 +87,30 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
         eventWriter.writeEndTag(BIG_NUMBER_ELEMENT);
     }
 
-
     private boolean promoBoxIsValidBigNumber(StartElement startElement, PromoBoxData dataBean) {
 		Attribute classAttribute = startElement.getAttributeByName(new QName(PROMO_CLASS_ATTRIBUTE));
 		return isNumbersComponent(classAttribute) && dataBean.isValidBigNumberData();
 	}
 
 	private void writeBigNumberElement(BodyWriter eventWriter, PromoBoxData dataBean) {
-		eventWriter.writeStartTag(BIG_NUMBER_HEADLINE, noAttributes());
-		eventWriter.writeRaw(dataBean.getHeadline());
-		eventWriter.writeEndTag(BIG_NUMBER_HEADLINE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getHeadline(), BIG_NUMBER_HEADLINE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getIntro(), BIG_NUMBER_INTRO);
+	}
 
-		eventWriter.writeStartTag(BIG_NUMBER_INTRO, noAttributes());
-		eventWriter.writeRaw(dataBean.getIntro());
-		eventWriter.writeEndTag(BIG_NUMBER_INTRO);
+	private void writePromoBoxElement(BodyWriter eventWriter, PromoBoxData dataBean) {
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getTitle(), PROMO_BOX_TITLE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getHeadline(), PROMO_BOX_HEADLINE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getImageHtml(), PROMO_BOX_IMAGE);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getIntro(), PROMO_BOX_INTRO);
+		writeElementIfDataNotEmpty(eventWriter, dataBean.getLink(), PROMO_BOX_LINK);
+	}
+
+	private void writeElementIfDataNotEmpty(BodyWriter eventWriter, String dataField, String elementName) {
+		if (StringUtils.isNotEmpty(dataField)) {
+			eventWriter.writeStartTag(elementName, noAttributes());
+			eventWriter.writeRaw(dataField);
+			eventWriter.writeEndTag(elementName);
+		}
 	}
 
 	private Map<String, String> noAttributes() {

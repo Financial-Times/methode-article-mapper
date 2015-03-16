@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import com.ft.content.model.Brand;
+import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
@@ -37,6 +38,7 @@ import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSortedSet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +134,7 @@ public class EomFileProcessorForContentStore {
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
 				.withContentOrigin(METHODE, uuid.toString())
+                .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .build();
 	}
 
