@@ -75,7 +75,7 @@ Scenario Outline: Empty Paragraphs
     | <body><p>Some text</p><p></p><p>More text</p></body>                                                        | <body><p>Some text</p><p>More text</p></body> |
     | <body><p>Some text</p><p><xref>this xref is removed leaving an empty para</xref></p><p>More text</p></body> | <body><p>Some text</p><p>More text</p></body> |
 
-  @BodyProcessing1
+
   Scenario Outline: Handle block elements inside paragraph tags
     Given I have a "block element" in a Methode XML body like <before>
     When I transform it into our Content Store format
