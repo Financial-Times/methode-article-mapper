@@ -309,12 +309,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote>" +
-                "<p>" +
                 "<pull-quote>" +
                 "<pull-quote-text><p>It suits the people to encourage drinking.</p></pull-quote-text>" +
                 "<pull-quote-source>source2</pull-quote-source>" +
                 "</pull-quote>" +
-                "</p>" +
                 "</body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
