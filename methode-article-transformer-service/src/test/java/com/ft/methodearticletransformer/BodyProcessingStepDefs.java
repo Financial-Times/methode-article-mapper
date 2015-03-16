@@ -115,6 +115,8 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "STRIP ELEMENT AND LEAVE CONTENT BY DEFAULT", "StripXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE WEB-PULL-QUOTE TO PULL-QUOTE", "PullQuoteEventHandler");
         rulesAndHandlers.put( "TRANSFORM TAG IF BIG NUMBER", "PromoBoxEventHandler");
+		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX", "PromoBoxEventHandler");
+		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX WITH MASTER IMAGE", "PromoBoxEventHandler");
         rulesAndHandlers.put( "RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES", "DataTableXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeBrightcoveVideoXmlEventHandler");
