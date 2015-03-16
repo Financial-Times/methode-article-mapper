@@ -10,13 +10,13 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import com.google.common.collect.ImmutableMap;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,31 +61,43 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         verify(mockEventWriter).writeEndTag(CONTENT_TAG);
     }
 
-    @Test(expected = BodyProcessingException.class)
-    public void testTransformStartElementShouldRejectInvalidUuidInFileReference() throws Exception {
+    @Test
+    public void testTransformStartElementShouldSkipInvalidUuidInFileReference() throws Exception {
         Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(FILE_REF_ATTRIBUTE, "/FT/Graphics/Online/Master_2048x1152/2014/04/MAS_CatalansDemo.jpg?uuid=invalidUuid");
 
         StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", attributesMap);
 
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
     }
 
-    @Test(expected = BodyProcessingException.class)
-    public void testTransformStartElementShouldRejectInvalidFileReference() throws Exception {
+    @Test
+    public void testTransformStartElementShouldSkipInvalidFileReference() throws Exception {
         Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(FILE_REF_ATTRIBUTE, "/FT/Graphics/Online/Master_2048x1152/2014/04/MAS_CatalansDemo.jpg?" + UUID);
 
         StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", attributesMap);
 
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
     }
 
-    @Test(expected = BodyProcessingException.class)
-    public void testTransformStartElementShouldRejectMissingFileReference() throws Exception {
-        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", new HashMap<String, String>());
+    @Test
+    public void testTransformStartElementShouldSkipMissingFileReference() throws Exception {
+        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", ImmutableMap.<String, String>of());
 
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
+    }
+
+    @Test
+    public void testTransformStartElementShouldSkipBlankFileReference() throws Exception {
+        Map<String, String> attributesMap = ImmutableMap.of(FILE_REF_ATTRIBUTE, " ");
+        StartElement webInlinePictureStartElementTag = getStartElementWithAttributes("web-inline-picture", attributesMap);
+
+        eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
+        verifyZeroInteractions(mockEventWriter);
     }
 
     @Test
