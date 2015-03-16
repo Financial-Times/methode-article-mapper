@@ -1,21 +1,22 @@
 package com.ft.methodearticletransformer.transformation;
 
+import java.util.Collections;
+import java.util.Map;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.StartElement;
-import java.util.Collections;
-import java.util.Map;
 
 public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
 	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
 	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
 	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
+    public static final String PARAGRAPH_TAG = "p";
 
 	private final PullQuoteXMLParser pullQuoteXMLParser;
 
@@ -35,7 +36,14 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
-				writePullQuoteElement(eventWriter, dataBean);
+                if (eventWriter.isPTagCurrentlyOpen()) {
+                    eventWriter.writeEndTag(PARAGRAPH_TAG);
+                    writePullQuoteElement(eventWriter, dataBean);
+                    eventWriter.writeStartTag(PARAGRAPH_TAG, noAttributes());
+                }
+                else{
+                    writePullQuoteElement(eventWriter, dataBean);
+                }
 			}
 
 		} else {
