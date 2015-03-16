@@ -593,8 +593,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</table>\n\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
-
-
     }
 
     @Test
@@ -639,6 +637,57 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>748↑ ↓986</td>\n" +
                 "</tr>\n" +
                 "</table>\n</body>";
+
+        checkTransformation(dataTableFromMethode, processedDataTable);
+    }
+
+    @Test
+    public void shouldTransformDataTableInsideOfPTags() {
+        String dataTableFromMethode = "<body><p>The following data table" +
+                "<div><table class=\"data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
+                "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
+                "</caption>\n" +
+                "<tr><th width=\"25%\">Sales</th>\n" +
+                "<th width=\"25%\">Net profit</th>\n" +
+                "<th width=\"25%\">Earnings per share</th>\n" +
+                "<th width=\"25%\">Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">324↑ ↓324</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">453↑ ↓435</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">123↑ ↓989</td>\n" +
+                "<td width=\"25%\" align=\"center\" valign=\"middle\">748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "</div> shows some data</p>" +
+                "</body>";
+
+        String processedDataTable = "<body><p>The following data table</p>" +
+                "<table class=\"data-table\">" +
+                "<caption>KarCrash Q1  02/2014- period from to 09/2014\n" +
+                "</caption>\n" +
+                "<tr><th>Sales</th>\n" +
+                "<th>Net profit</th>\n" +
+                "<th>Earnings per share</th>\n" +
+                "<th>Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "</tr>\n" +
+                "<tr><td>324↑ ↓324</td>\n" +
+                "<td>453↑ ↓435</td>\n" +
+                "<td>123↑ ↓989</td>\n" +
+                "<td>748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "<p> shows some data</p>" +
+                "</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
     }
