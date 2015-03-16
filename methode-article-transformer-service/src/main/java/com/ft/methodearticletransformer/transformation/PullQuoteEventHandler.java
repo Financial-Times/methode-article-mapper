@@ -16,7 +16,7 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
 	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
 	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
-    public static final String PARAGRAPH_TAG = "p";
+    private static final String PARAGRAPH_TAG = "p";
 
 	private final PullQuoteXMLParser pullQuoteXMLParser;
 
