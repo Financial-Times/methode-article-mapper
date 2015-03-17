@@ -1,15 +1,16 @@
 package com.ft.methodearticletransformer.transformation;
 
+import java.util.Collections;
+import java.util.Map;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.StartElement;
-import java.util.Collections;
-import java.util.Map;
+import com.google.common.base.Strings;
 
 public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
@@ -46,14 +47,17 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	private void writePullQuoteElement(BodyWriter eventWriter, PullQuoteData dataBean) {
 		eventWriter.writeStartTag(PULL_QUOTE_ELEMENT, noAttributes());
 
-		eventWriter.writeStartTag(PULL_QUOTE_TEXT, noAttributes());
-		eventWriter.writeRaw(dataBean.getQuoteText());
-		eventWriter.writeEndTag(PULL_QUOTE_TEXT);
+        if(!Strings.isNullOrEmpty(dataBean.getQuoteText())) {
+            eventWriter.writeStartTag(PULL_QUOTE_TEXT, noAttributes());
+            eventWriter.writeRaw(dataBean.getQuoteText());
+            eventWriter.writeEndTag(PULL_QUOTE_TEXT);
+        }
 
-		eventWriter.writeStartTag(PULL_QUOTE_SOURCE, noAttributes());
-		eventWriter.writeRaw(dataBean.getQuoteSource());
-		eventWriter.writeEndTag(PULL_QUOTE_SOURCE);
-
+        if(!Strings.isNullOrEmpty(dataBean.getQuoteSource())) {
+            eventWriter.writeStartTag(PULL_QUOTE_SOURCE, noAttributes());
+            eventWriter.writeRaw(dataBean.getQuoteSource());
+            eventWriter.writeEndTag(PULL_QUOTE_SOURCE);
+        }
 		eventWriter.writeEndTag(PULL_QUOTE_ELEMENT);
 	}
 

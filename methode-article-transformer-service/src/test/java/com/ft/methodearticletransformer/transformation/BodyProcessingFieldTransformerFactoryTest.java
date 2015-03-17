@@ -234,11 +234,55 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
+
+    @Test
+    public void pullQuotesShouldOmitNonExistentTxtTagsifWithEmptyRow() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source>It suits the extremists to encourage healthy eating.</web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-source>It suits the extremists to encourage healthy eating.</pull-quote-source>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+    @Test
+    public void pullQuotesShouldOmitNonExistentSrcTags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>\n" +
+                "\t\t\t\t\t<p>It suits the extremists to encourage healthy eating.</p>\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
 
     @Test
     public void shouldNotBarfOnTwoPullQuotes() {
@@ -738,7 +782,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesWithNoSourceShouldBeWritten() {
+    public void pullQuotesWithNoSourceShouldNotBeWritten() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -757,7 +801,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote>" +
                 "</body>";
 
