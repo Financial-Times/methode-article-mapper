@@ -85,7 +85,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleVimeoVideo.setEmbedded(true);
 
         exampleYouTubeVideo = new Video();
-        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=77761436");
+        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
@@ -624,8 +624,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</table>\n\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
-
-
     }
 
     @Test
@@ -670,6 +668,57 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<td>748↑ ↓986</td>\n" +
                 "</tr>\n" +
                 "</table>\n</body>";
+
+        checkTransformation(dataTableFromMethode, processedDataTable);
+    }
+
+    @Test
+    public void shouldTransformDataTableInsideOfPTags() {
+        String dataTableFromMethode = "<body><p>The following data table" +
+                "<div><table class=\"data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
+                "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
+                "</caption>\n" +
+                "<tr><th width=\"25%\">Sales</th>\n" +
+                "<th width=\"25%\">Net profit</th>\n" +
+                "<th width=\"25%\">Earnings per share</th>\n" +
+                "<th width=\"25%\">Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">324↑ ↓324</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">453↑ ↓435</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">123↑ ↓989</td>\n" +
+                "<td width=\"25%\" align=\"center\" valign=\"middle\">748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "</div> shows some data</p>" +
+                "</body>";
+
+        String processedDataTable = "<body><p>The following data table</p>" +
+                "<table class=\"data-table\">" +
+                "<caption>KarCrash Q1  02/2014- period from to 09/2014\n" +
+                "</caption>\n" +
+                "<tr><th>Sales</th>\n" +
+                "<th>Net profit</th>\n" +
+                "<th>Earnings per share</th>\n" +
+                "<th>Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "</tr>\n" +
+                "<tr><td>324↑ ↓324</td>\n" +
+                "<td>453↑ ↓435</td>\n" +
+                "<td>123↑ ↓989</td>\n" +
+                "<td>748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "<p> shows some data</p>" +
+                "</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
     }
@@ -930,24 +979,24 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withPChannel() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withNoPChannel() {
-        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -955,7 +1004,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotProcessOtherIframes() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
         String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -1012,8 +1061,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
-        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
-        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/OTT5dQcarl0\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(contentWithStrikeouts, transformedContent);
     }
@@ -1023,7 +1072,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String contentExternalImage = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\" align=\"left\"/></body>";
         String transformedContent = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\"/></body>";
         checkTransformation(contentExternalImage, transformedContent);
-
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {

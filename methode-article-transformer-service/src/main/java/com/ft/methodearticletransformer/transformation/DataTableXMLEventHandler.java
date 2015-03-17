@@ -22,6 +22,7 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 	private static final String DATA_TABLE_ATTRIBUTE_VALUE = "data-table";
 	private static final String DATA_TABLE_ATTRIBUTE_NAME = "class";
 	private static final String DATA_TABLE_HTML_ELEMENT_NAME = "table";
+    private static final String P_TAG = "p";
 	private XmlParser<DataTableData> dataTableDataXmlParser;
 	private StripElementAndContentsXMLEventHandler stripElementAndContentsXMLEventHandler;
 
@@ -47,17 +48,26 @@ public class DataTableXMLEventHandler extends BaseXMLEventHandler {
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
-				eventWriter.writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableAttribute());
-				eventWriter.writeRaw(dataBean.getBody());
-				eventWriter.writeEndTag(DATA_TABLE_HTML_ELEMENT_NAME);
-			}
-
+                if (eventWriter.isPTagCurrentlyOpen()) {
+                    eventWriter.writeEndTag(P_TAG);
+                    writeDataTable(eventWriter, dataBean);
+                    eventWriter.writeStartTag(P_TAG, null);
+                } else {
+                    writeDataTable(eventWriter, dataBean);
+                }
+            }
 		} else {
 			stripElementAndContentsXMLEventHandler.handleStartElementEvent(startElement, xmlEventReader, eventWriter, bodyProcessingContext);
 		}
 	}
 
-	private Map<String, String> dataTableAttribute() {
+    private void writeDataTable(BodyWriter eventWriter, DataTableData dataBean) {
+        eventWriter.writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableAttribute());
+        eventWriter.writeRaw(dataBean.getBody());
+        eventWriter.writeEndTag(DATA_TABLE_HTML_ELEMENT_NAME);
+    }
+
+    private Map<String, String> dataTableAttribute() {
 		Map<String, String> attributes = new HashMap<>();
 		attributes.put(DATA_TABLE_ATTRIBUTE_NAME, DATA_TABLE_ATTRIBUTE_VALUE);
 		return attributes;
