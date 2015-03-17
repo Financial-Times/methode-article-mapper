@@ -1,10 +1,12 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.StrikeoutEventHandlerRegistry.attributeNameMatcher;
+import static com.ft.methodearticletransformer.transformation.StripByPredefinedAttributesAndValuesEventHandlerRegistry.attributeNameMatchesAndValueIsInList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 
@@ -21,7 +23,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 
 @RunWith(value=MockitoJUnitRunner.class)
-public class FilterXMLByAttributeAndValuesEventHandlerTest extends BaseXMLEventHandlerTest {
+public class StripByPredefinedAttributesAndValuesEventHandlerTest extends BaseXMLEventHandlerTest {
     private BaseXMLEventHandler eventHandler;
 
     @Mock private XMLEventReader2 mockXmlEventReader;
@@ -33,7 +35,10 @@ public class FilterXMLByAttributeAndValuesEventHandlerTest extends BaseXMLEventH
 
     @Before
     public void setup() throws Exception {
-        eventHandler = new FilterXMLByAttributeAndValuesEventHandler(fallbackEventHandler, attributeNameMatcher("channel"), "FTcom", "!Financial Times");
+        List<String> channelAttributes = new ArrayList<>();
+        channelAttributes.add("FTcom");
+        channelAttributes.add("!Financial Times");
+        eventHandler = new StripByPredefinedAttributesAndValuesEventHandler(fallbackEventHandler, attributeNameMatchesAndValueIsInList("channel", channelAttributes, true), channelAttributes);
     }
 
     @Test
