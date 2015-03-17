@@ -67,7 +67,6 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
                 else {
                     writePromoBox(eventWriter, dataBean);
                 }
-
             }
         }
         else {

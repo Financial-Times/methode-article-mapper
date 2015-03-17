@@ -363,7 +363,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImagePreservedIfPresent() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -380,12 +380,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndTitleRemovedIfDummyText() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
 				"</p>\n" +
 				"</promo-title>\n" +
 				"</td>\n" +
@@ -413,12 +413,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
 				"</promo-box><p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndBIsConvertedToStrong() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -435,12 +435,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsOmittedIfNoValuesPresent() {
-		String bigNumberFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p></p></promo-headline></td></tr><tr><td>" +
@@ -450,12 +450,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 		String processedPromoBox = "<body><p>patelka</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleEmpty() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -471,13 +471,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleMissing() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
@@ -492,12 +492,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotFileRefEmpty() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -513,12 +513,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotPresent() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -533,7 +533,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
     @Test
