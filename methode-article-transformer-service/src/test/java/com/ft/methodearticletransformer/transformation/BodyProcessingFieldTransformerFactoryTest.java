@@ -262,11 +262,55 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote></body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
+
+    @Test
+    public void pullQuotesShouldOmitNonExistentTxtTagsifWithEmptyRow() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source>It suits the extremists to encourage healthy eating.</web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-source>It suits the extremists to encourage healthy eating.</pull-quote-source>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+    @Test
+    public void pullQuotesShouldOmitNonExistentSrcTags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>\n" +
+                "\t\t\t\t\t<p>It suits the extremists to encourage healthy eating.</p>\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
 
     @Test
     public void shouldNotBarfOnTwoPullQuotes() {
@@ -363,7 +407,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImagePreservedIfPresent() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -380,12 +424,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndTitleRemovedIfDummyText() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
 				"</p>\n" +
 				"</promo-title>\n" +
 				"</td>\n" +
@@ -413,12 +457,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
 				"</promo-box><p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndBIsConvertedToStrong() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -435,12 +479,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsOmittedIfNoValuesPresent() {
-		String bigNumberFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p></p></promo-headline></td></tr><tr><td>" +
@@ -450,12 +494,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 		String processedPromoBox = "<body><p>patelka</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleEmpty() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -471,13 +515,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleMissing() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
@@ -492,12 +536,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotFileRefEmpty() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -513,12 +557,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotPresent() {
-		String bigNumberFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
@@ -533,7 +577,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
                 "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
     @Test
@@ -818,7 +862,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-    public void pullQuotesWithNoSourceShouldBeWritten() {
+    public void pullQuotesWithNoSourceShouldNotBeWritten() {
         String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
                 "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
                 "\t\t<tr>\n" +
@@ -837,7 +881,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
                 "<pull-quote-text>It suits the extremists to encourage healthy eating.</pull-quote-text>" +
-                "<pull-quote-source></pull-quote-source>" +
                 "</pull-quote>" +
                 "</body>";
 
@@ -1072,6 +1115,20 @@ public class BodyProcessingFieldTransformerFactoryTest {
         String contentExternalImage = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\" align=\"left\"/></body>";
         String transformedContent = "<body><img src=\"someImage.jpg\" alt=\"someAltText\" width=\"200\" height=\"200\"/></body>";
         checkTransformation(contentExternalImage, transformedContent);
+    }
+
+    @Test
+    public void shouldStripAllAnnotationTagsFromContent() throws Exception {
+        String contentWithAnnotation = "<body><p>This is <annotation c=\"roddamm\" cd=\"20150224170716\">A new annotation </annotation>annotated</p></body>";
+        String transformedContent = "<body><p>This is annotated</p></body>";
+        checkTransformation(contentWithAnnotation, transformedContent);
+    }
+
+    @Test
+    public void shouldStripAllNotesFromContent() throws Exception {
+        String contentWithNotes = "<body><p><span class=\"@notes\">Test notes</span>This text should remain</p></body>";
+        String transformedContent = "<body><p>This text should remain</p></body>";
+        checkTransformation(contentWithNotes, transformedContent);
     }
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {

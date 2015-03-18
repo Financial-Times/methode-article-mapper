@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,84 +55,124 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldNotTransformContentIfBigNumberAndAllValidDataIsNotPresent() throws Exception {
 		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader,
+                mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
         when(mockPromoBoxData.isValidBigNumberData()).thenReturn(false);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter, times(0)).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-        verify(mockBodyWriter, times(0)).writeEndTag(BIG_NUMBER_ELEMENT);
+        verify(mockBodyWriter, never()).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
+        verify(mockBodyWriter, never()).writeEndTag(BIG_NUMBER_ELEMENT);
     }
 
     @Test
-    public void shouldWriteTransformedBigNumberElementsToWriter() throws Exception {
-		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
-        when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
-		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
-        when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
-        when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
-        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
-        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
-        verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
+    public void shouldWriteTransformedBigNumberElementsToWriterWhenPtags1() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
+        shouldWriteTransformedBigNumberElementsToWriter();
+        verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
     }
 
     @Test
-    public void shouldNotWriteBigNumberElementWithinParagraphTags() throws Exception {
-        StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
+    public void shouldWriteTransformedBigNumberElementsToWriterWhenPtags2() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
-        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
-        when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
-        when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
-        when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
-        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
-        verify(mockBodyWriter).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
-        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
-        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
-        verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
+        shouldWriteTransformedBigNumberElementsToWriter();
         verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
     }
 
 	@Test
 	public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElements() throws Exception {
-		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, new HashMap<String, String>());
-		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
-		when(mockPromoBoxData.isValidPromoBoxData()).thenReturn(true);
-		when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
-		when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
-		eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-		verify(mockBodyWriter).writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
-		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
-		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
-		verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
 	}
 
+    @Test
+    public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElementsWhenPtags1() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
+        verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+        verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
+    }
+
+    @Test
+    public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElementsWhenPtags2() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
+        verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+        verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
+    }
+
+    @Test
+    public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElements() throws Exception {
+        when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
+        when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getTitle());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getLink());
+        verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+    }
+
 	@Test
-	public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElements() throws Exception {
-		StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, new HashMap<String, String>());
-		when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
-		when(mockPromoBoxData.isValidPromoBoxData()).thenReturn(true);
-		when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
-		when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
+	public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElementsWhenPtags1() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
 		when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
 		when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
-		eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-		verify(mockBodyWriter).writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
-		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
-		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
 		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getTitle());
 		verify(mockBodyWriter).writeRaw(mockPromoBoxData.getLink());
 		verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+        verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
 	}
 
-	private Map<String, String> attributeClassEqualToNumberComponent() {
-		Map<String, String> attributeClassEqualToNumberComponent = new HashMap<>();
-		attributeClassEqualToNumberComponent.put(PromoBoxEventHandler.PROMO_CLASS_ATTRIBUTE,
-				PromoBoxEventHandler.NUMBERS_COMPONENT_CLASS);
-		return attributeClassEqualToNumberComponent;
-	}
+    @Test
+    public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElementsWhenPtags2() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
+        when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getTitle());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getLink());
+        verify(mockBodyWriter).writeEndTag(PROMO_BOX_ELEMENT);
+        verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
+    }
 
-	private Map<String, String> noAttributes() {
+    public void shouldWriteTransformedBigNumberElementsToWriter() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, attributeClassEqualToNumberComponent());
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader,
+                mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxData.isValidBigNumberData()).thenReturn(true);
+        when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
+        when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
+        verify(mockBodyWriter).writeStartTag(BIG_NUMBER_ELEMENT, noAttributes());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
+        verify(mockBodyWriter).writeEndTag(BIG_NUMBER_ELEMENT);
+    }
+
+    public void shouldWriteTransformedPromoBoxElementsToWriter() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(METHODE_PROMO_BOX_ELEMENT, new HashMap<String, String>());
+        when(mockPromoBoxXMLParser.parseElementData(startElement, mockXmlEventReader,
+                mockBodyProcessingContext)).thenReturn(mockPromoBoxData);
+        when(mockPromoBoxData.isValidPromoBoxData()).thenReturn(true);
+        when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
+        when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
+        verify(mockBodyWriter).writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
+        verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
+    }
+
+    private Map<String, String> noAttributes() {
         return Collections.emptyMap();
+    }
+    private Map<String, String> attributeClassEqualToNumberComponent() {
+        Map<String, String> attributeClassEqualToNumberComponent = new HashMap<>();
+        attributeClassEqualToNumberComponent.put(PromoBoxEventHandler.PROMO_CLASS_ATTRIBUTE,
+                PromoBoxEventHandler.NUMBERS_COMPONENT_CLASS);
+        return attributeClassEqualToNumberComponent;
     }
 }

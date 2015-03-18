@@ -76,7 +76,7 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
         shouldWriteTransformedElementsToWriter();
         verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
-        verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
     }
 
 
@@ -85,7 +85,7 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
         shouldWriteTransformedElementsToWriter();
         verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
-        verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
     }
 
 

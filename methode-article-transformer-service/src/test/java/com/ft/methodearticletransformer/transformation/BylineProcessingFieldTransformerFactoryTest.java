@@ -95,6 +95,16 @@ public class BylineProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void notesShouldBeRemoved() {
+        checkTransformation("Text with a note <span class=\"@notes\"></span>in the middle", "Text with a note in the middle");
+    }
+
+    @Test
+    public void annotationsShouldBeRemoved() {
+        checkTransformation("This is <annotation c=\"roddamm\" cd=\"20150224170716\">A new annotation </annotation>annotated", "This is annotated");
+    }
+
+    @Test
     public void nbspShouldBeReplacedWithSpace() {
         checkTransformation("This is a sentence&nbsp;.",
                 String.format("This is a sentence%s.", String.valueOf('\u00A0')));
