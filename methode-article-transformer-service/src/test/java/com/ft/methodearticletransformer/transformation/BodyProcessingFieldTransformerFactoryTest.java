@@ -839,28 +839,62 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Test
     public void timelineShouldBeRetained() {
         String timelineFromMethode = "<body><p>Intro text</p>" +
-        		"<timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
-        		"<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
-        		"<timeline-sources>FT Research</timeline-sources>\r\n" +
-        		"<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
-        		"<timeline-item>\r\n<timeline-image height=\"1152\" width=\"2048\"/>\r\n" +
-        		"<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
-        		"<timeline-title>1997</timeline-title>\r\n" +
-        		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
+        		"<timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+        		"<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+        		"<timeline-sources>FT Research</timeline-sources>\n" +
+        		"<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+        		"<timeline-item>\n<timeline-image fileref=\"/FT/Graphics/Online/Master_2048x1152/Martin/mas_Microsoft-Surface-tablet--566x318.jpg?uuid=213bb10c-71fe-11e2-8104-002128161462\" height=\"1152\" tmx=\"566 318 164 92\" width=\"2048\" xtransform=\" scale(0.2897527 0.2897527)\"></timeline-image>\n" +
+        		"<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+        		"<timeline-title>1997</timeline-title>\n" +
+        		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>\n" +
         		"</timeline></body>";
         
         String processedTimeline = "<body><p>Intro text</p>" +
-                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
-                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
-                "<timeline-sources>FT Research</timeline-sources>\r\n" +
-                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
-                "<timeline-item>\r\n<timeline-image height=\"1152\" width=\"2048\"/>\r\n" +
-                "<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
-                "<timeline-title>1997</timeline-title>\r\n" +
-                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image><content data-embedded=\"true\" id=\"213bb10c-71fe-11e2-1f62-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>" +
                 "</ft-timeline></body>";
         
         checkTransformation(timelineFromMethode, processedTimeline);
+    }
+
+
+    @Test
+    public void timelineShouldBeWrittenOutsideOfPtags() {
+        String timelineFromMethode = "<body><p>Intro text</p><p>" +
+                "<timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image fileref=\"/FT/Graphics/Online/Master_2048x1152/Martin/mas_Microsoft-Surface-tablet--566x318.jpg?uuid=213bb10c-71fe-11e2-8104-002128161462\" height=\"1152\" tmx=\"566 318 164 92\" width=\"2048\" xtransform=\" scale(0.2897527 0.2897527)\"></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>\n" +
+                "</timeline></p></body>";
+
+        String processedTimeline = "<body><p>Intro text</p>" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image><content data-embedded=\"true\" id=\"213bb10c-71fe-11e2-1f62-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>" +
+                "</ft-timeline></body>";
+
+        checkTransformation(timelineFromMethode, processedTimeline);
+    }
+
+
+    @Test
+    public void shouldRenameTagAndCloseOpenPtags() throws Exception {
+
     }
 
     @Test

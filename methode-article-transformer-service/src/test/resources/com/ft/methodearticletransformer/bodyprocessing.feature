@@ -13,6 +13,24 @@ Feature: Body processing
     | b       | strong      |
     | i       | em          |
 
+
+  Scenario Outline: Transform the tag but as a block element
+    Given the Methode body contains <tagname> the transformer will REPLACE BLOCK ELEMENT TAG and the replacement tag will be <replacement>
+
+
+  Examples: Transform tags
+    | tagname   | replacement   |
+    | timeline  | ft-timeline   |
+
+
+  Scenario Outline: Transform the inline image and wrap it in specified tags
+    Given the Methode body has <tagname> the transformer will WRAP AND TRANSFORM A INLINE IMAGE
+
+  Examples:
+    | tagname         |
+    | timeline-image  |
+
+
   Scenario Outline: Retain element and remove formatting attributes
     Given the Methode body has <tagname> the transformer will RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES
 
@@ -182,6 +200,7 @@ Feature: Body processing
     | tagname   | html                                           |
     | !--       | <!-- comments -->                              |
     | weird     | <weird>text surrounded by unknown tags</weird> |
+
 
   Scenario Outline: Entity translation to unicode
     Given an entity reference <entity>

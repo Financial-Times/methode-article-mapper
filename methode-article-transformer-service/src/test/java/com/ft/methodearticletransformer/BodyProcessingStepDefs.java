@@ -2,9 +2,9 @@ package com.ft.methodearticletransformer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -22,35 +22,32 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
 
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
-import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.TransformableEvent;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
-import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
-import org.apache.commons.lang.RandomStringUtils;
-import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
-import org.codehaus.stax2.ri.evt.StartElementEventImpl;
-import org.custommonkey.xmlunit.Diff;
-
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
+import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
-
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import org.apache.commons.lang.RandomStringUtils;
+import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
+import org.codehaus.stax2.ri.evt.StartElementEventImpl;
+import org.custommonkey.xmlunit.Diff;
 
 public class BodyProcessingStepDefs {
 
@@ -121,6 +118,8 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeBrightcoveVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
+        rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
+        rulesAndHandlers.put( "REPLACE BLOCK ELEMENT TAG", "SimpleTransformBlockElementEventHandler");
 
         when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
 
@@ -165,8 +164,8 @@ public class BodyProcessingStepDefs {
 
 
     @Given("^the Methode body contains (.+) the transformer will (.+) and the replacement tag will be (.+)$")
-    public void the_methode_body_contains_transforms_into(String tagname, String replacement, String rule) throws Throwable {
-        assertTagIsRegisteredToTransform(replacement, tagname, rule);
+    public void the_methode_body_contains_transforms_into(String tagname, String rule, String replacement) throws Throwable {
+        assertTagIsRegisteredToTransform(rule, tagname, replacement);
     }
 
     @Given("^the Methode body has (.+) the transformer will (.+)$")
@@ -317,14 +316,16 @@ public class BodyProcessingStepDefs {
     }
 
     private void assertTagIsRegisteredToTransform(String rule, String before, String after){
-        SimpleTransformTagXmlEventHandler eventHandler = null;
-        try{
-            eventHandler = (SimpleTransformTagXmlEventHandler)assertTagIsRegistered(before, rule);
+        XMLEventHandler eventHandler = null;
+
+        eventHandler = assertTagIsRegistered(before, rule);
+
+        if(eventHandler instanceof TransformableEvent) {
+            assertThat("The replacement tag is not registered properly", ((TransformableEvent)eventHandler).getNewElement(), equalTo(after));
         }
-        catch (ClassCastException cce){
-            assertThat("The transformer is not SimpleTransformTagXmlEventHandler", false);
+        else{
+            assertThat("The transformer is not of type TransformableEvent", false);
         }
-        assertThat("The replacement tag is not registered properly", eventHandler.getNewElement(), equalTo(after));
 
     }
 
