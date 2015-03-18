@@ -34,7 +34,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     private List<BodyProcessor> bodyProcessors() {
         return asList(
-				strikeoutRemovingBodyProcessor(),
+                stripByAttributesAndValuesBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)\\s*(</p>)|(<p/>)"),
 				new RegexRemoverBodyProcessor("(<p class=\".*?\">)\\s*(</p>)|(<p/>)"),
                 stAXTransformingBodyProcessor(),
@@ -50,7 +50,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         return new StAXTransformingBodyProcessor(new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher));
     }
 
-    private BodyProcessor strikeoutRemovingBodyProcessor() {
-        return new StAXTransformingBodyProcessor(new StrikeoutEventHandlerRegistry());
+    private BodyProcessor stripByAttributesAndValuesBodyProcessor() {
+        return new StAXTransformingBodyProcessor(new StripByPredefinedAttributesAndValuesEventHandlerRegistry());
     }
 }

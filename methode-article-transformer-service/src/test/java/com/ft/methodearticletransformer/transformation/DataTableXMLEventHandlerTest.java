@@ -35,7 +35,8 @@ public class DataTableXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String DATA_TABLE_ATTRIBUTE_VALUE = "data-table";
     private static final String DATA_TABLE_ATTRIBUTE_NAME = "class";
     private static final String DATA_TABLE_HTML_ELEMENT_NAME = "table";
-    private static final String INCORRECT_HTML_ELEMENT_NAME = "p";
+    private static final String INCORRECT_HTML_ELEMENT_NAME = "div";
+    private static final String P_TAG = "p";
 
     @Before
     public void setup() throws Exception  {
@@ -57,6 +58,21 @@ public class DataTableXMLEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockDataTableXMLParser, times(0)).transformFieldContentToStructuredFormat(mockDataTableData, mockBodyProcessingContext);
         verify(mockBodyWriter, times(0)).writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
+    }
+
+    @Test
+    public void shouldNotWriteTransformedTableElementsToWriterInsideOfPTags() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
+        when(mockDataTableXMLParser.parseElementData(startElement, mockXmlEventReader, mockBodyProcessingContext)).thenReturn(mockDataTableData);
+        when(mockDataTableData.isAllRequiredDataPresent()).thenReturn(true);
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        when(mockDataTableData.getBody()).thenReturn(DATA_TABLE_BODY);
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
+        verify(mockBodyWriter).writeEndTag(P_TAG);
+        verify(mockBodyWriter).writeStartTag(DATA_TABLE_HTML_ELEMENT_NAME, dataTableClass());
+        verify(mockBodyWriter).writeRaw(mockDataTableData.getBody());
+        verify(mockBodyWriter).writeEndTag(DATA_TABLE_HTML_ELEMENT_NAME);
+        verify(mockBodyWriter).writeStartTag(P_TAG, null);
     }
 
     @Test
