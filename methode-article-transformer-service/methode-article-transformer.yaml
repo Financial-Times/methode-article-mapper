@@ -2,7 +2,7 @@ financialTimesBrandId: http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
-      template: "https://www.youtube.com/watch?v=%s"
+      template: null
       embedded: true
       retainedParams: ["t"]
       forceHTTPS: true
