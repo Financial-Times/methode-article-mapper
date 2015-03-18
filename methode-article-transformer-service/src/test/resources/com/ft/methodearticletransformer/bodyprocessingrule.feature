@@ -148,11 +148,12 @@ Scenario Outline: Empty Paragraphs
     Then the body should be like <after>
 
   Examples:
-    | before                                                                                                                   | after                                                 |
-    | <body><p class="@notes">This text shall be stripped</p><span>This text shall remain</span></body>                        | <body>This text shall remain</body>                   |
-    | <body><p><span channel="FTcom" class="@notes">This text shall be stripped</span>This text shall remain</p></body>        | <body><p>This text shall remain</p></body>            |
-    | <body><span class="@notes">This text shall be stripped<p channel="FTcom">This text shall be stripped</p></span></body>   | <body></body>                                         |
-    | <body><b channel="FTcom">This text shall remain<p class="@notes">This text shall be stripped</p></b></body>              | <body><strong>This text shall remain</strong></body>  |
+    | before                                                                                                                                                                                                                                                  | after                                                                                                                       |
+    | <body><p class="@notes">This text shall be stripped</p><span>This text shall remain</span></body>                                                                                                                                                       | <body>This text shall remain</body>                                                                                         |
+    | <body><p><span channel="FTcom" class="@notes">This text shall be stripped</span>This text shall remain</p></body>                                                                                                                                       | <body><p>This text shall remain</p></body>                                                                                  |
+    | <body><span class="@notes">This text shall be stripped<p channel="FTcom">This text shall be stripped</p></span></body>                                                                                                                                  | <body></body>                                                                                                               |
+    | <body><b channel="FTcom">This text shall remain<p class="@notes">This text shall be stripped</p></b></body>                                                                                                                                             | <body><strong>This text shall remain</strong></body>                                                                        |
+    | <body><p id="U2701984843929SdD" class="@notes">Woohoo Lorem ipsum</p><p id="U2701984843929oX" class="">Following Promo (big numbers component) has TD tag that surrounds the promo-headline with class @notes</p><p id="U2701984843929DoH"></p></body>  | <body><p>Following Promo (big numbers component) has TD tag that surrounds the promo-headline with class @notes</p></body>  |
 
   Scenario Outline: Remove comments
     Given I have a "comment" in a Methode XML body like <before>
