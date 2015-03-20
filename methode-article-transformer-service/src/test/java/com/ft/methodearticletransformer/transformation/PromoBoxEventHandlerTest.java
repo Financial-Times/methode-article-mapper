@@ -64,7 +64,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldWriteTransformedBigNumberElementsToWriterWhenPtags1() throws Exception {
+    public void shouldWriteTransformedBigNumberElementsToWriterOutsideClosedPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
         shouldWriteTransformedBigNumberElementsToWriter();
         verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
@@ -72,7 +72,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldWriteTransformedBigNumberElementsToWriterWhenPtags2() throws Exception {
+    public void shouldClosePtagsAndWriteTransformedBigNumberElementsToWriterOutsideOfPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
         shouldWriteTransformedBigNumberElementsToWriter();
         verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
@@ -86,7 +86,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 	}
 
     @Test
-    public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElementsWhenPtags1() throws Exception {
+    public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElementsOutsideClosedPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
         shouldWriteTransformedPromoBoxElementsToWriter();
         verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
@@ -95,7 +95,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void shouldWriteTransformedPromoBoxElementsToWriterWithTwoElementsWhenPtags2() throws Exception {
+    public void shouldClosePtagsAndWriteTransformedPromoBoxElementsToWriterWithTwoElementsOutsideOfPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
         shouldWriteTransformedPromoBoxElementsToWriter();
         verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
@@ -114,7 +114,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
 	@Test
-	public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElementsWhenPtags1() throws Exception {
+	public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElementsOutsideClosedPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
 		when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
 		when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
@@ -127,7 +127,7 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 	}
 
     @Test
-    public void shouldWriteTransformedPromoBoxElementsToWriterWithFourElementsWhenPtags2() throws Exception {
+    public void shouldClosePtagsAndWriteTransformedPromoBoxElementsToWriterWithFourElementsOutsideOfPtags() throws Exception {
         when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
         when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
         when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
