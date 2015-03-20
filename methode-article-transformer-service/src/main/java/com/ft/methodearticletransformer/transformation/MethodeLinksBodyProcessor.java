@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.parsers.DocumentBuilder;
@@ -43,6 +44,7 @@ import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
 import com.google.common.base.Optional;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -58,6 +60,8 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern REGEX_PATTERN = Pattern.compile(UUID_REGEX);
+    private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
+    private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
 
 	private static final String ANCHOR_PREFIX = "#";
     public static final String FT_COM_WWW_URL = "http://www.ft.com/";
@@ -227,19 +231,35 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     		Optional<String> assetId = extractId(node);
     		if(assetId.isPresent()){
 	    		String uuid = assetId.get();
-	    		if(assetTypes.containsKey(uuid) && isValidInternalLink(assetTypes.get(uuid))){
-	    			transformInternalLink(assetTypes, node, uuid);
+	    		if(assetTypes.containsKey(uuid) && isValidMethodeContent(assetTypes.get(uuid))){
+	    			transformLinkToMethodeContent(assetTypes.get(uuid), node, uuid);
 	    		}
     		}
     	}
     }
 
-	private void transformInternalLink(Map<String, AssetCharacter> assetTypes, Node node, String uuid) {
-		if(isInternalLink(assetTypes.get(uuid))) {
-			replaceInternalLink(node, assetTypes.get(uuid).getUuid());
+	private void transformLinkToMethodeContent(AssetCharacter assetType, Node node, String uuid) {
+		if(isInternalLink(assetType)) {
+			replaceInternalLink(node, uuid);
+		} else if (isConvertableToAssetOnFtCom(node)){
+			transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
 		} else {
-            transformLinkToAssetOnFtCom(node, uuid);
+			// leave it alone, we don't know what to do with it
 		}
+	}
+	
+	private boolean isConvertableToAssetOnFtCom(Node node) {
+		String href = getHref(node);
+		if (href.startsWith(FT_COM_WWW_URL)) {
+			return true;
+		} else if (href.startsWith("/")) { // i.e. it's a relative path in Methode with a UUID param		
+			Matcher matcher = UUID_PARAM_REGEX_PATTERN.matcher(href);
+			if(matcher.matches()){
+				return true;
+			}
+		}
+        return false;
+		
 	}
 
 	private void replaceInternalLink(Node node, String uuid) {
@@ -325,7 +345,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     	return assetCharacter.existsInContentStore() || new SupportedTypeResolver(assetCharacter.getUnderlyingType()).isASupportedType();
     }
     
-    private boolean isValidInternalLink(AssetCharacter assetCharacter){
+    private boolean isValidMethodeContent(AssetCharacter assetCharacter){
     	return "".equals(assetCharacter.getErrorMessage());
     }
 

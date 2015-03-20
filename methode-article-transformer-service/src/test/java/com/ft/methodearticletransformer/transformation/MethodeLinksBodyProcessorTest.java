@@ -115,6 +115,17 @@ public class MethodeLinksBodyProcessorTest {
 	}
 	
 	@Test
+	public void shouldNotTransformAPDFLinkIntoAnInternalLink() {
+		Map<String, EomAssetType> assetTypes = new HashMap<>();
+		assetTypes.put("add666f2-cd78-11e4-a15a-00144feab7de", new EomAssetType.Builder().type("Pdf").uuid("add666f2-cd78-11e4-a15a-00144feab7de").build());
+		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		String body = "<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>";
+		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+		assertThat(processedBody, is(identicalXmlTo("<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>")));
+	}
+	
+	@Test
 	public void shouldStripIntlFromHrefValueWhenItsNotAValidInternalLink(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
