@@ -17,7 +17,7 @@ import org.codehaus.stax2.XMLOutputFactory2;
 
 /**
  * This class allows you to wrap another eventHandler and insert the contents
- * between another set of specified tags.
+ * between another set of tags which will be the same as the start element.
  */
 public class WrappedHandlerXmlEventHandler extends BaseXMLEventHandler {
 
@@ -32,10 +32,7 @@ public class WrappedHandlerXmlEventHandler extends BaseXMLEventHandler {
         String eventTag = event.getName().toString();
         try {
             eventWriter.writeStartTag(eventTag, noAttributes());
-            HTML5VoidElementHandlingXMLBodyWriter writer = new HTML5VoidElementHandlingXMLBodyWriter((XMLOutputFactory2) XMLOutputFactory2.newInstance());
-            eventHandlerToWrap.handleStartElementEvent(event, xmlEventReader, writer, bodyProcessingContext);
-            String imageOutput = writer.asString();
-            eventWriter.writeRaw(imageOutput);
+            applyWrappedEventHandler(event, xmlEventReader, eventWriter, bodyProcessingContext);
             eventWriter.writeEndTag(eventTag);
         }
         catch(IOException ioe){
@@ -45,5 +42,12 @@ public class WrappedHandlerXmlEventHandler extends BaseXMLEventHandler {
 
     private Map<String, String> noAttributes() {
         return Collections.emptyMap();
+    }
+
+    private void applyWrappedEventHandler(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter, BodyProcessingContext bodyProcessingContext) throws XMLStreamException, IOException{
+        HTML5VoidElementHandlingXMLBodyWriter writer = new HTML5VoidElementHandlingXMLBodyWriter((XMLOutputFactory2) XMLOutputFactory2.newInstance());
+        eventHandlerToWrap.handleStartElementEvent(event, xmlEventReader, writer, bodyProcessingContext);
+        String imageOutput = writer.asString();
+        eventWriter.writeRaw(imageOutput);
     }
 }

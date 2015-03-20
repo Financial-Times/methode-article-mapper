@@ -27,7 +27,7 @@ import javax.xml.namespace.QName;
 
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
-import com.ft.bodyprocessing.xml.eventhandlers.TransformableEvent;
+import com.ft.bodyprocessing.xml.eventhandlers.TransformingEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
@@ -320,8 +320,8 @@ public class BodyProcessingStepDefs {
 
         eventHandler = assertTagIsRegistered(before, rule);
 
-        if(eventHandler instanceof TransformableEvent) {
-            assertThat("The replacement tag is not registered properly", ((TransformableEvent)eventHandler).getNewElement(), equalTo(after));
+        if(eventHandler instanceof TransformingEventHandler) {
+            assertThat("The replacement tag is not registered properly", ((TransformingEventHandler)eventHandler).getNewElement(), equalTo(after));
         }
         else{
             assertThat("The transformer is not of type TransformableEvent", false);
