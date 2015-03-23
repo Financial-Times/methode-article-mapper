@@ -6,7 +6,17 @@ import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
-import com.ft.bodyprocessing.xml.eventhandlers.*;
+import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.RetainWithSpecificAttributesXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.RetainWithoutAttributesXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformBlockElementEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.StripXMLEventHandler;
+import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
+
 
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
@@ -31,8 +41,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         //timelines
         registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), 
                 "timeline", "timeline-header", "timeline-credits",
-                "timeline-sources", "timeline-byline", "timeline-item",
-                "timeline-image", "timeline-date", "timeline-title",
+                "timeline-sources", "timeline-byline", "timeline-item", "timeline-date", "timeline-title",
                 "timeline-body"
                 );
         
@@ -62,9 +71,10 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         );
 
 		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
-		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("ft-timeline"), "timeline");
+		registerStartAndEndElementEventHandler(new SimpleTransformBlockElementEventHandler(new StAXTransformingBodyProcessor(this), "ft-timeline"), "timeline");
 
         registerStartAndEndElementEventHandler(new InlineImageXmlEventHandler(),"web-inline-picture");
+        registerStartAndEndElementEventHandler(new WrappedHandlerXmlEventHandler(new InlineImageXmlEventHandler()),"timeline-image");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),

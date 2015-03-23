@@ -1,5 +1,15 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.Map;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
+
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
@@ -8,15 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.StartElement;
-import java.util.Collections;
-import java.util.Map;
-
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
@@ -28,6 +29,7 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String TRANSFORMED_PULL_QUOTE = "pull-quote";
     private static final String PULL_QUOTE_TEXT = "text";
     private static final String PULL_QUOTE_SOURCE = "source";
+    public static final String PARAGRAPH_TAG = "p";
 
     @Mock private XMLEventReader mockXmlEventReader;
     @Mock private BodyWriter mockBodyWriter;
@@ -68,11 +70,29 @@ public class PullQuoteEventHandlerTest extends BaseXMLEventHandlerTest {
         verify(mockBodyWriter, times(0)).writeEndTag(PULL_QUOTE_ELEMENT);
     }
 
+
     @Test
-    public void shouldWriteTransformedElementsToWriter() throws Exception {
+    public void shouldWriteTransformedElementsToWriterWhenPtags1() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(false);
+        shouldWriteTransformedElementsToWriter();
+        verify(mockBodyWriter, never()).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter, never()).writeEndTag(PARAGRAPH_TAG);
+    }
+
+
+    @Test
+    public void shouldWriteTransformedElementsToWriterWhenPtags2() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        shouldWriteTransformedElementsToWriter();
+        verify(mockBodyWriter).writeStartTag(PARAGRAPH_TAG, noAttributes());
+        verify(mockBodyWriter).writeEndTag(PARAGRAPH_TAG);
+    }
+
+
+    private void shouldWriteTransformedElementsToWriter() throws Exception {
         StartElement startElement = getStartElementWithAttributes(PULL_QUOTE_ELEMENT, noAttributes());
         when(mockPullQuoteXMLParser.parseElementData(startElement, mockXmlEventReader,
-				mockBodyProcessingContext)).thenReturn(mockPullQuoteData);
+                mockBodyProcessingContext)).thenReturn(mockPullQuoteData);
         when(mockPullQuoteData.isAllRequiredDataPresent()).thenReturn(true).thenReturn(true);
         when(mockPullQuoteData.getQuoteText()).thenReturn(PULL_QUOTE_TEXT);
         when(mockPullQuoteData.getQuoteSource()).thenReturn(PULL_QUOTE_SOURCE);

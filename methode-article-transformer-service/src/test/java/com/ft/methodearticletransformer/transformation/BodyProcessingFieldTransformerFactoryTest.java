@@ -85,7 +85,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleVimeoVideo.setEmbedded(true);
 
         exampleYouTubeVideo = new Video();
-        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=77761436");
+        exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
@@ -186,7 +186,35 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
 
-	@Test
+    @Test
+    public void pullQuotesWrittenOutsidePtags() {
+        String pullQuoteFromMethode = "<body><p>patelka</p><p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
+                "\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-text>\n" +
+                "\t\t\t\t\t<p>It suits the extremists to encourage healthy eating.</p>\n" +
+                "\t\t\t\t</web-pull-quote-text>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t\t<tr>\n" +
+                "\t\t\t<td>\n" +
+                "\t\t\t\t<web-pull-quote-source>source1</web-pull-quote-source>\n" +
+                "\t\t\t</td>\n" +
+                "\t\t</tr>\n" +
+                "\t</table>&gt;\n" +
+                "</web-pull-quote></p></body>";
+
+        String processedPullQuote = "<body><p>patelka</p><pull-quote>" +
+                "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
+                "<pull-quote-source>source1</pull-quote-source>" +
+                "</pull-quote></body>";
+
+        checkTransformation(pullQuoteFromMethode, processedPullQuote);
+    }
+
+
+    @Test
 	public void markupInsidePullQuotesShouldBeTransformed() {
 		String pullQuoteFromMethode = "<body><p>patelka</p><web-pull-quote align=\"left\" channel=\"FTcom\">&lt;\n" +
 				"\t<table align=\"left\" cellpadding=\"6px\" width=\"170px\">\n" +
@@ -325,12 +353,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<pull-quote-text><p>It suits the extremists to encourage healthy eating.</p></pull-quote-text>" +
                 "<pull-quote-source>source1</pull-quote-source>" +
                 "</pull-quote>" +
-                "<p>" +
                 "<pull-quote>" +
                 "<pull-quote-text><p>It suits the people to encourage drinking.</p></pull-quote-text>" +
                 "<pull-quote-source>source2</pull-quote-source>" +
                 "</pull-quote>" +
-                "</p>" +
                 "</body>";
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
@@ -381,28 +407,29 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImagePreservedIfPresent() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndTitleRemovedIfDummyText() {
-		String bigNumberFromMethode = "<body><promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"right\" channel=\"FTcom\"><table width=\"156px\" align=\"right\" cellpadding=\"4px\"><tr><td align=\"left\"><promo-title><p><?EM-dummyText Sidebar title ?>\n" +
 				"</p>\n" +
 				"</promo-title>\n" +
 				"</td>\n" +
@@ -421,42 +448,43 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td>\n" +
 				"</tr>\n" +
 				"</table>\n" +
-				"</promo-box></body>";
+				"</promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
 				"<promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"17ee1f24-ff46-11e2-055d-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <strong>Monday</strong>, with Labour claiming the coalition was alerted in 2010 to strikeout malpractice at the bank and took no action.</p>\n" +
 				"<p><a href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
-				"</promo-box></body>";
+				"</promo-box><p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndBIsConvertedToStrong() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our <b>annual</b> list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our <strong>annual</strong> list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsOmittedIfNoValuesPresent() {
-		String bigNumberFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>patelka</p><promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p></p></promo-headline></td></tr><tr><td>" +
@@ -466,85 +494,90 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 		String processedPromoBox = "<body><p>patelka</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleEmpty() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
+
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxEvenWhenTitleMissing() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image uuid=\"432b5632-9e79-11e0-9469-00144feabdc0\" fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/06/SEC_ft500.jpg?uuid=432b5632-9e79-11e0-9469-00144feabdc0\"/>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotFileRefEmpty() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"<promo-image fileref=\"\"/>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
 	@Test
 	public void nonClassNumbersComponentIsPromoBoxAndImageNotPreservedIfNotPresent() {
-		String bigNumberFromMethode = "<body><promo-box align=\"left\">" +
+		String promoBoxFromMethode = "<body><p>This is the beginning of a sentence.<promo-box align=\"left\">" +
 				"<table align=\"left\" cellpadding=\"6px\" width=\"170px\"><tr><td>" +
 				"<promo-title><p><a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"</td></tr><tr><td><promo-headline><p>Headline</p></promo-headline></td></tr><tr><td>" +
 				"</td></tr><tr><td><promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro>" +
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
-				"</td></tr></table></promo-box></body>";
+				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
-				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box></body>";
+				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
+                "<p>This is the end of the sentence.</p></body>";
 
-		checkTransformation(bigNumberFromMethode, processedPromoBox);
+		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
 
     @Test
@@ -577,20 +610,18 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</body>";
 
         String processedBigNumber = "<body><p>A big number!</p>\n" +
-                "<p><big-number><big-number-headline><p>£350M</p></big-number-headline>" +
+                "<big-number><big-number-headline><p>£350M</p></big-number-headline>" +
                 "<big-number-intro><p>The cost of eating at Leon and Tossed every single day.</p></big-number-intro>" +
-                "</big-number></p>\n" +
+                "</big-number>\n\n\n" +
                 "<p>A big number right aligned.</p>\n" +
-                "<p><big-number>" +
+                "<big-number>" +
                 "<big-number-headline><p>52p</p></big-number-headline>" +
                 "<big-number-intro><p>The weekly saving made by making your own lunch.</p></big-number-intro>" +
                 "</big-number>\n" +
-                "</p>\n" +
                 "</body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }
-
 
     @Test
     public void shouldTransformDataTableWithDifferentFormatting() {
@@ -637,8 +668,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</table>\n\n</body>";
 
         checkTransformation(dataTableFromMethode, processedDataTable);
-
-
     }
 
     @Test
@@ -688,6 +717,57 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void shouldTransformDataTableInsideOfPTags() {
+        String dataTableFromMethode = "<body><p>The following data table" +
+                "<div><table class=\"data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
+                "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
+                "</caption>\n" +
+                "<tr><th width=\"25%\">Sales</th>\n" +
+                "<th width=\"25%\">Net profit</th>\n" +
+                "<th width=\"25%\">Earnings per share</th>\n" +
+                "<th width=\"25%\">Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">€</td>\n" +
+                "</tr>\n" +
+                "<tr><td align=\"center\" width=\"25%\" valign=\"middle\">324↑ ↓324</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">453↑ ↓435</td>\n" +
+                "<td align=\"center\" width=\"25%\" valign=\"middle\">123↑ ↓989</td>\n" +
+                "<td width=\"25%\" align=\"center\" valign=\"middle\">748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "</div> shows some data</p>" +
+                "</body>";
+
+        String processedDataTable = "<body><p>The following data table</p>" +
+                "<table class=\"data-table\">" +
+                "<caption>KarCrash Q1  02/2014- period from to 09/2014\n" +
+                "</caption>\n" +
+                "<tr><th>Sales</th>\n" +
+                "<th>Net profit</th>\n" +
+                "<th>Earnings per share</th>\n" +
+                "<th>Dividend</th>\n" +
+                "</tr>\n" +
+                "<tr><td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "<td>€</td>\n" +
+                "</tr>\n" +
+                "<tr><td>324↑ ↓324</td>\n" +
+                "<td>453↑ ↓435</td>\n" +
+                "<td>123↑ ↓989</td>\n" +
+                "<td>748↑ ↓986</td>\n" +
+                "</tr>\n" +
+                "</table>" +
+                "<p> shows some data</p>" +
+                "</body>";
+
+        checkTransformation(dataTableFromMethode, processedDataTable);
+    }
+
+    @Test
     public void shouldNotTransformTable() {
         String tableFromMethode = "<body><div><table class=\"pseudo-data-table\" border=\"\" cellspacing=\"\" cellpadding=\"\" " +
                 "id=\"U1817116616509jH\" width=\"100%\"><caption id=\"k63G\"><span id=\"U181711661650mIC\">KarCrash Q1  02/2014- period from to 09/2014</span>\n" +
@@ -731,10 +811,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</tr>\n" +
                 "</table>&gt;</promo-box></p></body>";
 
-        String processedBigNumber = "<body><p>patelka</p><p><big-number>" +
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
                 "<big-number-headline><p>£350m</p></big-number-headline>" +
                 "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
-                "</big-number></p></body>";
+                "</big-number></body>";
 
         checkTransformation(bigNumberFromMethode, processedBigNumber);
     }
@@ -851,28 +931,62 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Test
     public void timelineShouldBeRetained() {
         String timelineFromMethode = "<body><p>Intro text</p>" +
-        		"<timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
-        		"<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
-        		"<timeline-sources>FT Research</timeline-sources>\r\n" +
-        		"<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
-        		"<timeline-item>\r\n<timeline-image height=\"1152\" width=\"2048\"/>\r\n" +
-        		"<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
-        		"<timeline-title>1997</timeline-title>\r\n" +
-        		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
+        		"<timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+        		"<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+        		"<timeline-sources>FT Research</timeline-sources>\n" +
+        		"<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+        		"<timeline-item>\n<timeline-image fileref=\"/FT/Graphics/Online/Master_2048x1152/Martin/mas_Microsoft-Surface-tablet--566x318.jpg?uuid=213bb10c-71fe-11e2-8104-002128161462\" height=\"1152\" tmx=\"566 318 164 92\" width=\"2048\" xtransform=\" scale(0.2897527 0.2897527)\"></timeline-image>\n" +
+        		"<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+        		"<timeline-title>1997</timeline-title>\n" +
+        		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>\n" +
         		"</timeline></body>";
         
         String processedTimeline = "<body><p>Intro text</p>" +
-                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\r\n" +
-                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\r\n" +
-                "<timeline-sources>FT Research</timeline-sources>\r\n" +
-                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\r\n" +
-                "<timeline-item>\r\n<timeline-image height=\"1152\" width=\"2048\"/>\r\n" +
-                "<timeline-date>1997-01-01 00:00:00</timeline-date>\r\n" +
-                "<timeline-title>1997</timeline-title>\r\n" +
-                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\r\n</timeline-body>\r\n</timeline-item>\r\n" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image><content data-embedded=\"true\" id=\"213bb10c-71fe-11e2-1f62-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>" +
                 "</ft-timeline></body>";
         
         checkTransformation(timelineFromMethode, processedTimeline);
+    }
+
+
+    @Test
+    public void timelineShouldBeWrittenOutsideOfPtags() {
+        String timelineFromMethode = "<body><p>Intro text</p><p>" +
+                "<timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image fileref=\"/FT/Graphics/Online/Master_2048x1152/Martin/mas_Microsoft-Surface-tablet--566x318.jpg?uuid=213bb10c-71fe-11e2-8104-002128161462\" height=\"1152\" tmx=\"566 318 164 92\" width=\"2048\" xtransform=\" scale(0.2897527 0.2897527)\"></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>\n" +
+                "</timeline></p></body>";
+
+        String processedTimeline = "<body><p>Intro text</p>" +
+                "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
+                "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
+                "<timeline-sources>FT Research</timeline-sources>\n" +
+                "<timeline-byline>Tom Burgis, Callum Locke, Katie Carnie, Steve Bernard</timeline-byline>\n" +
+                "<timeline-item>\n<timeline-image><content data-embedded=\"true\" id=\"213bb10c-71fe-11e2-1f62-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></timeline-image>\n" +
+                "<timeline-date>1997-01-01 00:00:00</timeline-date>\n" +
+                "<timeline-title>1997</timeline-title>\n" +
+                "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>" +
+                "</ft-timeline></body>";
+
+        checkTransformation(timelineFromMethode, processedTimeline);
+    }
+
+
+    @Test
+    public void shouldRenameTagAndCloseOpenPtags() throws Exception {
+
     }
 
     @Test
@@ -942,24 +1056,24 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withPChannel() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoCorrectly_withNoPChannel() {
-        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p>Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
     @Test
     public void shouldProcessYouTubeVideoWithHttpsCorrectly() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/77761436\" width=\"600\"></iframe></p></body>";
-        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=77761436\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\">Youtube Video<iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"https://www.youtube.com/embed/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
+        String processedVideoText = "<body><p>Youtube Video<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-embedded=\"true\" data-asset-type=\"video\"></a></p></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -967,7 +1081,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotProcessOtherIframes() {
-        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/77761436\" width=\"600\"></iframe></p></body>";
+        String videoTextfromMethode = "<body><p align=\"left\" channel=\"FTcom\"><iframe height=\"245\" frameborder=\"0\" allowfullscreen=\"\" src=\"http://www.bbc.co.uk/video/OTT5dQcarl0\" width=\"600\"></iframe></p></body>";
         String processedVideoText = "<body></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
@@ -1024,8 +1138,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldRetainElementsAndContentWithChannelAttributesThatAreNotStrikeouts() {
-        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/77761436\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
-        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=77761436\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
+        String contentWithStrikeouts = "<body><p channel=\"FTcom\">Random Text<iframe src=\"http://www.youtube.com/embed/OTT5dQcarl0\"></iframe></p><b channel=\"!Financial Times\">Not Financial Times</b></body>";
+        String transformedContent = "<body><p>Random Text<a href=\"https://www.youtube.com/watch?v=OTT5dQcarl0\" data-asset-type=\"video\" data-embedded=\"true\"/></p><strong>Not Financial Times</strong></body>";
         when(videoMatcher.filterVideo(any(RichContentItem.class))).thenReturn(exampleYouTubeVideo);
         checkTransformation(contentWithStrikeouts, transformedContent);
     }

@@ -17,6 +17,7 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
 	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
 	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
+    private static final String PARAGRAPH_TAG = "p";
 
 	private final PullQuoteXMLParser pullQuoteXMLParser;
 
@@ -36,7 +37,14 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 
 			// Add asset to the context and create the aside element if all required data is present
 			if (dataBean.isAllRequiredDataPresent()) {
-				writePullQuoteElement(eventWriter, dataBean);
+                if (eventWriter.isPTagCurrentlyOpen()) {
+                    eventWriter.writeEndTag(PARAGRAPH_TAG);
+                    writePullQuoteElement(eventWriter, dataBean);
+                    eventWriter.writeStartTag(PARAGRAPH_TAG, noAttributes());
+                }
+                else{
+                    writePullQuoteElement(eventWriter, dataBean);
+                }
 			}
 
 		} else {
