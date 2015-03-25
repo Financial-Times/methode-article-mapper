@@ -23,9 +23,9 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String TRUE = "true";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
     private static final String VIDEO = "video";
+
     private final XMLEventHandler fallbackHandler;
-    private String videoIdAttributeName;
-    private Map<String, String> attributesToAdd;
+    private final String videoIdAttributeName;
 
     public MethodeBrightcoveVideoXmlEventHandler(String videoIdAttributeName, XMLEventHandler fallbackHandler) {
         this.fallbackHandler = fallbackHandler;
@@ -41,7 +41,7 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
             return;
         }
         String videoUrl = String.format(VIDEO_URL, id);
-        attributesToAdd = new HashMap<>();
+        Map<String, String> attributesToAdd = new HashMap<>();
         attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
         attributesToAdd.put(DATA_EMBEDDED, TRUE);
         attributesToAdd.put(DATA_ASSET_TYPE, VIDEO);
