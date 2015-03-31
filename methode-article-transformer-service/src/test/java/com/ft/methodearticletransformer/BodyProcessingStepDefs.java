@@ -61,6 +61,7 @@ public class BodyProcessingStepDefs {
     private MethodeFileService methodeFileService;
     private ResilientClient semanticStoreContentReaderClient;
     private VideoMatcher videoMatcher;
+    private URI uri;
 
     private InBoundHeaders headers;
     private MessageBodyWorkers workers;
@@ -89,18 +90,19 @@ public class BodyProcessingStepDefs {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         methodeFileService = mock(MethodeFileService.class);
         semanticStoreContentReaderClient = mock(ResilientClient.class);
+
+        uri = new URI("www.anyuri.com");
         videoMatcher = new VideoMatcher(DEFAULTS);
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        semanticStoreContentReaderClient = mock(ResilientClient.class);
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher);
 
         rulesAndHandlers = new HashMap<>();
@@ -159,7 +161,7 @@ public class BodyProcessingStepDefs {
         when(builder.header(anyString(), anyObject())).thenReturn(builder);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
     }
 
 

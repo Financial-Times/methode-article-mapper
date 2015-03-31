@@ -15,6 +15,8 @@ public class MethodeApiEndpointConfiguration {
 
 	private final AssetTypeRequestConfiguration assetTypeRequestConfiguration;
 
+    private final ConnectionConfiguration connectionConfig;
+
 	/**
 	 * Creates a simple configuration for a test host (e.g. WireMock)
 	 * with GZip disabled.
@@ -23,7 +25,7 @@ public class MethodeApiEndpointConfiguration {
 	 * @param assetTypeRequestConfiguration the configuration for requesting asset types
 	 * @return a simple configuration
 	 */
-	public static MethodeApiEndpointConfiguration forTesting(String host, int port, AssetTypeRequestConfiguration assetTypeRequestConfiguration) {
+	public static MethodeApiEndpointConfiguration forTesting(String host, int port, AssetTypeRequestConfiguration assetTypeRequestConfiguration, ConnectionConfiguration connectionConfig) {
 
 		JerseyClientConfiguration clientConfig = new JerseyClientConfiguration();
 		clientConfig.setGzipEnabled(false);
@@ -38,15 +40,18 @@ public class MethodeApiEndpointConfiguration {
 
 		return new MethodeApiEndpointConfiguration(
 				endpointConfiguration,
-				assetTypeRequestConfiguration
+				assetTypeRequestConfiguration,
+                connectionConfig
 		);
 	}
 
 
 	public MethodeApiEndpointConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
-										   @JsonProperty("assetTypeRequestConfiguration") AssetTypeRequestConfiguration assetTypeRequestConfiguration) {
+										   @JsonProperty("assetTypeRequestConfiguration") AssetTypeRequestConfiguration assetTypeRequestConfiguration,
+                                           @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfig) {
 		this.endpointConfiguration = endpointConfiguration;
 		this.assetTypeRequestConfiguration = assetTypeRequestConfiguration;
+        this.connectionConfig = connectionConfig;
 	}
 
 	public EndpointConfiguration getEndpointConfiguration() {
@@ -57,11 +62,14 @@ public class MethodeApiEndpointConfiguration {
 		return assetTypeRequestConfiguration;
 	}
 
+    public ConnectionConfiguration getConnectionConfiguration() { return connectionConfig; }
+
 	protected Objects.ToStringHelper toStringHelper() {
 		return Objects
 				.toStringHelper(this)
 				.add("endpointConfiguration", endpointConfiguration)
-				.add("assetTypeRequestConfiguration", assetTypeRequestConfiguration);
+				.add("assetTypeRequestConfiguration", assetTypeRequestConfiguration)
+                .add("connectionConfig", connectionConfig);
 	}
 
 	@Override

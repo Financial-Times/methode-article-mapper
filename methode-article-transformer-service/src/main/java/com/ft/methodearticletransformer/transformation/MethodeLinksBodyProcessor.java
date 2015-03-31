@@ -69,10 +69,12 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
 	private final com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
+    private URI uri;
 
-	public MethodeLinksBodyProcessor(com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient) {
+	public MethodeLinksBodyProcessor(com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri) {
         this.methodeFileService = methodeFileService;
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
+        this.uri = uri;
 	}
 
     @Override
@@ -197,11 +199,8 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	}
 
 	private UriBuilder contentUrlBuilder() {
-		return UriBuilder.fromPath("content")
-				.path("{uuid}")
-				.scheme("http")
-				.host(semanticStoreContentReaderClient.getDefaultHost())
-				.port(semanticStoreContentReaderClient.getDefaultPort());
+		return UriBuilder.fromUri(uri).path("{uuid}");
+
 	}
 
 	private String serializeBody(Document document) {

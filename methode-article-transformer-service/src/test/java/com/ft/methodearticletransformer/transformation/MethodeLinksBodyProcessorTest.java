@@ -53,10 +53,12 @@ public class MethodeLinksBodyProcessorTest {
     @Mock
     private ClientHandlerException clientHandlerException;
 
+    private URI uri;
 	private InputStream entity;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
+        uri = new URI("www.anyuri.com");
 		entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
 		WebResource webResource = mock(WebResource.class);
 		when(semanticStoreContentReaderClient.resource(any(URI.class))).thenReturn(webResource);
@@ -72,7 +74,7 @@ public class MethodeLinksBodyProcessorTest {
 
     @Test(expected = SemanticReaderUnavailableException.class)
     public void shouldThrowSemanticReaderNotAvailable(){
-        bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+        bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
         when(builder.get(ClientResponse.class)).thenThrow(clientHandlerException);
         when(clientHandlerException.getCause()).thenReturn(new IOException());
 
@@ -85,7 +87,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("EOM::CompoundStory").uuid(uuid).build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -94,7 +96,7 @@ public class MethodeLinksBodyProcessorTest {
 
 	@Test
 	public void shouldReplaceNodeWhenItsALinkThatWillBeInTheContentStoreWhenAvailableInContentStore(){
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		when(builder.get(ClientResponse.class)).thenReturn(clientResponseWithCode(200));
 
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -107,7 +109,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -119,7 +121,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put("add666f2-cd78-11e4-a15a-00144feab7de", new EomAssetType.Builder().type("Pdf").uuid("add666f2-cd78-11e4-a15a-00144feab7de").build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		String body = "<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 		assertThat(processedBody, is(identicalXmlTo("<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>")));
@@ -130,7 +132,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/intl/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -142,7 +144,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html?param=5\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -151,7 +153,7 @@ public class MethodeLinksBodyProcessorTest {
 	
 	@Test
 	public void shouldRemoveNodeIfATagHasNoHrefAttributeForNonInternalLinks() {
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a title=\"Some absurd text here\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -160,7 +162,7 @@ public class MethodeLinksBodyProcessorTest {
 	
 	@Test
 	public void shouldRemoveNodeIfATagHasNoHrefAttributeForNonInternalLinksEvenIfNodeEmpty() {
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a title=\"Some absurd text here\"/></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -172,7 +174,7 @@ public class MethodeLinksBodyProcessorTest {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("EOM::MediaGallery").uuid(uuid).build());
 		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient);
+		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"/FT Production/Slideshows/gallery.xml;uuid=" + uuid + "\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));

@@ -53,13 +53,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Mock private Builder builder;
     @Mock private ClientResponse clientResponse;
     @Mock private InputStream inputStream;
-    
+
+    private URI uri;
 	private static final String TRANSACTION_ID = "tid_test";
     private Video exampleYouTubeVideo;
     private Video exampleVimeoVideo;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         when(methodeFileService.assetTypes(anySetOf(String.class), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
         EomAssetType storyAsset1 = new EomAssetType.Builder()
                 .uuid("49336a18-051c-11e3-98a0-002128161462")
@@ -80,6 +81,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         when(methodeFileService.assetTypes(setWithBothUuids, TRANSACTION_ID))
                 .thenReturn(mapWithBothUuids);
 
+        uri = new URI("www.anyuri.com");
         exampleVimeoVideo = new Video();
         exampleVimeoVideo.setUrl("https://www.vimeo.com/77761436");
         exampleVimeoVideo.setEmbedded(true);
@@ -88,7 +90,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
         when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
