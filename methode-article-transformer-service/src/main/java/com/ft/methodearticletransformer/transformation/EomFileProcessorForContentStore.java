@@ -133,7 +133,6 @@ public class EomFileProcessorForContentStore {
 				.withMainImage(mainImage)
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
-				.withContentOrigin(METHODE, uuid.toString())
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .build();
 	}

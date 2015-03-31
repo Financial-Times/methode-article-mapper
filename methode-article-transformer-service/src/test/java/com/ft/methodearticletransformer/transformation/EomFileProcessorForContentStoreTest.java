@@ -200,7 +200,6 @@ public class EomFileProcessorForContentStoreTest {
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
-				.withContentOrigin(METHODE, uuid.toString())
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withByline(TRANSFORMED_BYLINE).build();
 
@@ -407,7 +406,6 @@ public class EomFileProcessorForContentStoreTest {
                 .withByline("")
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
-				.withContentOrigin(METHODE, uuid.toString())
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withUuid(uuid).build();
 	}
