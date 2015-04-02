@@ -2,7 +2,7 @@ financialTimesBrandId: <%=scope.function_hiera('financialTimesBrandId')%>
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
-      template: null
+      template: "https://www.youtube.com/watch?v=%s"
       embedded: true
       retainedParams: ["t"]
       forceHTTPS: true
@@ -10,7 +10,10 @@ videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)"
       template: "https://www.youtube.com/watch?v=%s"
       embedded: false
-      retainedParams: ["t"]
+      convertedParams:
+          - startingParameter: "start"
+            convertedParameter: "t"
+            conversionTemplate: "s"
       forceHTTPS: true
 
     - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"

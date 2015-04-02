@@ -15,6 +15,7 @@ import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
+import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
 import com.ft.methodearticletransformer.configuration.SemanticReaderEndpointConfiguration;
@@ -53,9 +54,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
     	environment.jersey().register(buildInfoResource);
 
         SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration = configuration.getSemanticReaderEndpointConfiguration();
-    	ResilientClient semanticReaderClient = configureContentReaderClient(environment, semanticReaderEndpointConfiguration);
+        ResilientClient semanticReaderClient = (ResilientClient) configureResilientClient(environment, semanticReaderEndpointConfiguration.getEndpointConfiguration(), semanticReaderEndpointConfiguration.getConnectionConfig());
     	MethodeApiEndpointConfiguration methodeApiEndpointConfiguration = configuration.getMethodeApiConfiguration();
-    	Client clientForMethodeApiClient = getClientForMethodeApiClient(environment, methodeApiEndpointConfiguration);
+        Client clientForMethodeApiClient = configureResilientClient(environment, methodeApiEndpointConfiguration.getEndpointConfiguration(), methodeApiEndpointConfiguration.getConnectionConfiguration());
     	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
 
         VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
@@ -82,19 +83,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         return new RestMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
 	}
 
-	private ResilientClient configureContentReaderClient(Environment environment, SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment)
-                .using(semanticReaderEndpointConfiguration.getEndpointConfiguration())
-                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(semanticReaderEndpointConfiguration.getConnectionConfig().getNumberOfConnectionAttempts(), semanticReaderEndpointConfiguration.getConnectionConfig().getTimeoutMultiplier()))
+    private Client configureResilientClient(Environment environment, EndpointConfiguration endpointConfiguration, ConnectionConfiguration connectionConfig) {
+        return  ResilientClientBuilder.in(environment)
+                .using(endpointConfiguration)
+                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(connectionConfig.getNumberOfConnectionAttempts(), connectionConfig.getTimeoutMultiplier()))
                 .build();
-	}
-	
-	private Client getClientForMethodeApiClient(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment)
-                .using(methodeApiEndpointConfiguration.getEndpointConfiguration())
-                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(methodeApiEndpointConfiguration.getConnectionConfiguration().getNumberOfConnectionAttempts(), methodeApiEndpointConfiguration.getConnectionConfiguration().getTimeoutMultiplier()))
-                .build();
-	}
+    }
 
 	private Client getClientForMethodeApiClientOnAdminPort(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
 		return ResilientClientBuilder.in(environment)

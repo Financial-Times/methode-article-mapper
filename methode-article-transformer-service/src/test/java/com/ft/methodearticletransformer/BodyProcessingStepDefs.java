@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
 
+import com.ft.bodyprocessing.richcontent.ConvertParameters;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.bodyprocessing.xml.eventhandlers.TransformingEventHandler;
@@ -35,6 +36,7 @@ import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
+import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
@@ -76,13 +78,19 @@ public class BodyProcessingStepDefs {
     private static final List<String> T = Collections.singletonList("t");
     private static final List<String> NONE = Collections.emptyList();
 
+    private static final String STARTING_PARAMETER = "start";
+    private static final String CONVERTED_PARAMETER = "t";
+    private static final String CONVERSION_TEMPLATE = "s";
+    private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(STARTING_PARAMETER, CONVERTED_PARAMETER, CONVERSION_TEMPLATE);
+    private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
+
     public static List<VideoSiteConfiguration> DEFAULTS = Arrays.asList(
-            new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", true, T, true),
-            new VideoSiteConfiguration("https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false,T, true),
-            new VideoSiteConfiguration("https?://youtu.be/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, T, true),
-            new VideoSiteConfiguration("https?://vimeo.com/(?<id>[0-9]+)", null, false, NONE, true),
-            new VideoSiteConfiguration("//player.vimeo.com/video/(?<id>[0-9]+)", "https://www.vimeo.com/%s", true, NONE, true),
-            new VideoSiteConfiguration("https?://video.ft.com/(?<id>[0-9]+)/", null, false, NONE, true)
+            new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", true, T, null, true),
+            new VideoSiteConfiguration("https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, NONE, CONVERT_PARAMETERS_LIST, true),
+            new VideoSiteConfiguration("https?://youtu.be/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, T, null, true),
+            new VideoSiteConfiguration("https?://www.vimeo.com/(?<id>[0-9]+)", null, false, NONE, null, true),
+            new VideoSiteConfiguration("//player.vimeo.com/video/(?<id>[0-9]+)", "https://www.vimeo.com/%s", true, NONE, null, true),
+            new VideoSiteConfiguration("https?://video.ft.com/(?<id>[0-9]+)/", null, false, NONE, null, true)
     );
 
     private static String randomChars(int howMany) {
