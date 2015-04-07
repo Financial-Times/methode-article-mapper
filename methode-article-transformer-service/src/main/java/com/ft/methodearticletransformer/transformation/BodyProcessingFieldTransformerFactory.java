@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.transformation;
 
 import static java.util.Arrays.asList;
 
+import java.net.URI;
 import java.util.List;
 
 import com.ft.bodyprocessing.BodyProcessor;
@@ -18,11 +19,13 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     private final MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
+    private URI uri;
     private VideoMatcher videoMatcher;
 
-	public BodyProcessingFieldTransformerFactory(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, VideoMatcher videoMatcher) {
+	public BodyProcessingFieldTransformerFactory(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri, VideoMatcher videoMatcher) {
         this.methodeFileService = methodeFileService;
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
+        this.uri = uri;
         this.videoMatcher = videoMatcher;
 	}
 
@@ -41,7 +44,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
-                new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient),
+                new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri),
                 new Html5SelfClosingTagBodyProcessor()
         );
     }

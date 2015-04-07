@@ -2,7 +2,7 @@ financialTimesBrandId: <%=scope.function_hiera('financialTimesBrandId')%>
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
-      template: null
+      template: "https://www.youtube.com/watch?v=%s"
       embedded: true
       retainedParams: ["t"]
       forceHTTPS: true
@@ -10,7 +10,10 @@ videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)"
       template: "https://www.youtube.com/watch?v=%s"
       embedded: false
-      retainedParams: ["t"]
+      convertedParams:
+          - startingParameter: "start"
+            convertedParameter: "t"
+            conversionTemplate: "s"
       forceHTTPS: true
 
     - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"
@@ -34,12 +37,16 @@ videoSiteConfig:
       embedded: false
 
 semanticContentStoreReader:
-    shortName: "semanticReader"
-    path: content/
-    jerseyClient:
-        timeout: 2000ms
-    primaryNodes: <%=scope.function_hiera('semanticReaderLocalNodes')%>
-    secondaryNodes: <%=scope.function_hiera('semanticReaderRemoteNodes','null')%>
+    endpointConfiguration:
+        shortName: "semanticReader"
+        path: content/
+        jerseyClient:
+            timeout: 2000ms
+        primaryNodes: <%=scope.function_hiera('semanticReaderLocalNodes')%>
+        secondaryNodes: <%=scope.function_hiera('semanticReaderRemoteNodes','null')%>
+    connectionConfig:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000
 
 methodeApi:
     endpointConfiguration:
@@ -51,6 +58,9 @@ methodeApi:
     assetTypeRequestConfiguration:
         numberOfAssetIdsPerAssetTypeRequest: 3
         numberOfParallelAssetTypeRequests: 4
+    connectionConfig:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000
         
 server:
 

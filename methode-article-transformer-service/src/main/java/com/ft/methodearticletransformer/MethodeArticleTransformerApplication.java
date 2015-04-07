@@ -1,7 +1,9 @@
 package com.ft.methodearticletransformer;
 
+import java.net.URI;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
+import javax.ws.rs.core.UriBuilder;
 
 import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
@@ -12,8 +14,11 @@ import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
+import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
+import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
+import com.ft.methodearticletransformer.configuration.SemanticReaderEndpointConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
@@ -47,17 +52,21 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
     	BuildInfoResource buildInfoResource = new BuildInfoResource();   	
     	environment.jersey().register(buildInfoResource);
-    	
-    	ResilientClient semanticReaderClient = configureContentReaderClient(environment, configuration.getSemanticContentStoreReaderConfiguration());
+
+        SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration = configuration.getSemanticReaderEndpointConfiguration();
+        ResilientClient semanticReaderClient = (ResilientClient) configureResilientClient(environment, semanticReaderEndpointConfiguration.getEndpointConfiguration(), semanticReaderEndpointConfiguration.getConnectionConfig());
     	MethodeApiEndpointConfiguration methodeApiEndpointConfiguration = configuration.getMethodeApiConfiguration();
-    	Client clientForMethodeApiClient = getClientForMethodeApiClient(environment, methodeApiEndpointConfiguration);
+        Client clientForMethodeApiClient = configureResilientClient(environment, methodeApiEndpointConfiguration.getEndpointConfiguration(), methodeApiEndpointConfiguration.getConnectionConfiguration());
     	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
 
         VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
 
+        EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
+        UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).path(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
+        URI uri = builder.build();
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
-        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, configuration.getFinancialTimesBrand(), videoMatcher)));
+        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, uri, configuration.getFinancialTimesBrand(), videoMatcher)));
         
         environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
                 clientForMethodeApiClientOnAdminPort,
@@ -74,21 +83,24 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         return new RestMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
 	}
 
-	private ResilientClient configureContentReaderClient(Environment environment, EndpointConfiguration semanticReaderEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment).using(semanticReaderEndpointConfiguration).build();
-	}
-	
-	private Client getClientForMethodeApiClient(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).build();
-	}
+    private Client configureResilientClient(Environment environment, EndpointConfiguration endpointConfiguration, ConnectionConfiguration connectionConfig) {
+        return  ResilientClientBuilder.in(environment)
+                .using(endpointConfiguration)
+                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(connectionConfig.getNumberOfConnectionAttempts(), connectionConfig.getTimeoutMultiplier()))
+                .build();
+    }
 
 	private Client getClientForMethodeApiClientOnAdminPort(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment).using(methodeApiEndpointConfiguration.getEndpointConfiguration()).usingAdminPorts().build();
+		return ResilientClientBuilder.in(environment)
+                .using(methodeApiEndpointConfiguration.getEndpointConfiguration())
+                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(methodeApiEndpointConfiguration.getConnectionConfiguration().getNumberOfConnectionAttempts(), methodeApiEndpointConfiguration.getConnectionConfiguration().getTimeoutMultiplier()))
+                .usingAdminPorts()
+                .build();
 	}
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, Brand financialTimesBrand, VideoMatcher videoMatcher) {
+	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri, Brand financialTimesBrand, VideoMatcher videoMatcher) {
 		return new EomFileProcessorForContentStore(
-				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, videoMatcher).newInstance(),
+				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}

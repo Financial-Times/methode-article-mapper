@@ -36,6 +36,7 @@ import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
+import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
 import com.ft.methodearticletransformer.methode.MethodeApiUnavailableException;
 import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
 import com.ft.methodearticletransformer.methode.UnexpectedMethodeApiException;
@@ -116,8 +117,10 @@ public class RestMethodeFileServiceTest {
 		AssetTypeRequestConfiguration assetTypeRequestConfiguration =
 		        new AssetTypeRequestConfiguration(NUMBER_OF_ASSET_TYPE_IDS_PER_REQUEST, NUMBER_OF_PARALLEL_ASSET_TYPE_REQUESTS);
 
+        ConnectionConfiguration connectionConfig = new ConnectionConfiguration(3, 1000);
+
 		methodeApiEndpointConfiguration =
-				new MethodeApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration);
+				new MethodeApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration, connectionConfig);
 
 		environment = new Environment("test-env", null, null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
 
