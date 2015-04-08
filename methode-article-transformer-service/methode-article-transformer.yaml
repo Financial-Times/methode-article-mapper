@@ -11,9 +11,9 @@ videoSiteConfig:
       template: "https://www.youtube.com/watch?v=%s"
       embedded: false
       convertedParams:
-          - startingParameter: "start"
-            convertedParameter: "t"
-            conversionTemplate: "s"
+          - convertFromParameter: "start"
+            convertedToParameter: "t"
+            conversionTemplate: "%ss"
       forceHTTPS: true
 
     - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"
