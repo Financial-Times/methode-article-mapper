@@ -80,7 +80,7 @@ public class BodyProcessingStepDefs {
 
     private static final String STARTING_PARAMETER = "start";
     private static final String CONVERTED_PARAMETER = "t";
-    private static final String CONVERSION_TEMPLATE = "s";
+    private static final String CONVERSION_TEMPLATE = "%ss";
     private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(STARTING_PARAMETER, CONVERTED_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
 

@@ -13,7 +13,7 @@ videoSiteConfig:
       convertedParams:
           - startingParameter: "start"
             convertedParameter: "t"
-            conversionTemplate: "s"
+            conversionTemplate: "%ss"
       forceHTTPS: true
 
     - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"
