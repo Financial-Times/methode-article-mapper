@@ -78,10 +78,10 @@ public class BodyProcessingStepDefs {
     private static final List<String> T = Collections.singletonList("t");
     private static final List<String> NONE = Collections.emptyList();
 
-    private static final String STARTING_PARAMETER = "start";
-    private static final String CONVERTED_PARAMETER = "t";
+    private static final String CONVERT_FROM_PARAMETER = "start";
+    private static final String CONVERTED_TO_PARAMETER = "t";
     private static final String CONVERSION_TEMPLATE = "%ss";
-    private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(STARTING_PARAMETER, CONVERTED_PARAMETER, CONVERSION_TEMPLATE);
+    private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(CONVERT_FROM_PARAMETER, CONVERTED_TO_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
 
     public static List<VideoSiteConfiguration> DEFAULTS = Arrays.asList(
