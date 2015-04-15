@@ -10,13 +10,13 @@ import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.ws.rs.core.MediaType;
 
 import com.ft.bodyprocessing.BodyProcessingException;
@@ -26,10 +26,14 @@ import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodeapi.model.EomAssetType;
 import com.ft.methodearticletransformer.methode.MethodeFileService;
-import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Resources;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +45,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class BodyProcessingFieldTransformerFactoryTest {
 	
+	private static final String SLIDESHOW_ASSET1_UUID = "49336a18-051c-11e3-98a0-001234567890";
+	private static final String SLIDESHOW_ASSET2_UUID = "49336a18-051c-11e3-98a0-002128161462";
+
+	private static final String KITCHEN_SINK_ASSET1_UUID = "d586f60a-5be5-11e2-bf31-00144feab49a";
+	private static final String KITCHEN_SINK_ASSET2_UUID = "e78a8668-c997-11e1-aae2-002128161462";
+	private static final String KITCHEN_SINK_ASSET3_UUID = "9b9fed88-d986-11e2-bce1-002128161462";
+	private static final String KITCHEN_SINK_ASSET4_UUID = "f3b60ad0-acda-11e2-a7c4-002128161462";
+
+
+
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -62,24 +76,16 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Before
     public void setup() throws Exception {
         when(methodeFileService.assetTypes(anySetOf(String.class), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
-        EomAssetType storyAsset1 = new EomAssetType.Builder()
-                .uuid("49336a18-051c-11e3-98a0-002128161462")
-                .type("EOM::Story")
-                .build();
-        EomAssetType storyAsset2 = new EomAssetType.Builder()
-                .uuid("49336a18-051c-11e3-98a0-001234567890")
-                .type("EOM::Story")
-                .build();
-        when(methodeFileService.assetTypes(Collections.singleton("49336a18-051c-11e3-98a0-002128161462"), TRANSACTION_ID))
-                .thenReturn(Collections.singletonMap("49336a18-051c-11e3-98a0-002128161462", storyAsset1));
-        Set<String> setWithBothUuids = new HashSet<>();
-        setWithBothUuids.add("49336a18-051c-11e3-98a0-002128161462");
-        setWithBothUuids.add("49336a18-051c-11e3-98a0-001234567890");
-        Map<String, EomAssetType> mapWithBothUuids = new HashMap<>();
-        mapWithBothUuids.put("49336a18-051c-11e3-98a0-002128161462", storyAsset1);
-        mapWithBothUuids.put("49336a18-051c-11e3-98a0-001234567890", storyAsset2);
-        when(methodeFileService.assetTypes(setWithBothUuids, TRANSACTION_ID))
-                .thenReturn(mapWithBothUuids);
+        
+        EomAssetType slideshowAsset1 = getEomAssetType(SLIDESHOW_ASSET1_UUID, "Slideshow");
+  	    EomAssetType slideshowAsset2 = getEomAssetType(SLIDESHOW_ASSET2_UUID, "Slideshow");
+  	    
+  	    when(methodeFileService.assetTypes(Collections.singleton(SLIDESHOW_ASSET2_UUID), TRANSACTION_ID))
+              .thenReturn(Collections.singletonMap(SLIDESHOW_ASSET2_UUID, slideshowAsset2));
+      
+        when(methodeFileService.assetTypes(ImmutableSet.of(SLIDESHOW_ASSET1_UUID, SLIDESHOW_ASSET2_UUID), TRANSACTION_ID))
+              .thenReturn(ImmutableMap.of(SLIDESHOW_ASSET1_UUID, slideshowAsset1, SLIDESHOW_ASSET2_UUID, slideshowAsset2 ));
+        
 
         uri = new URI("www.anyuri.com");
         exampleVimeoVideo = new Video();
@@ -99,46 +105,41 @@ public class BodyProcessingFieldTransformerFactoryTest {
         when(clientResponse.getEntityInputStream()).thenReturn(inputStream);
     }
 
+    // This is our thorough test of a complicated article that can be created in Methode. Has all the special characters and components. Do not remove!
     @Test
-    public void tagsShouldBeTransformed() {
-        final String originalBody = "<body><p><web-inline-picture fileref=\"/FT/Graphics/Online/Z_" +
-                "Undefined/2013/04/600-Saloua-Raouda-Choucair-02.jpg?uuid=7784185e-a888-11e2-8e5d-00144feabdc0\" " +
-                "tmx=\"600 445 600 445\"/>\n</p>\n<p id=\"U1060483110029GKD\">In Paris in the late 1940s, a publicity-hungry gallerist " +
-                "invited a young, beautiful, unknown Lebanese artist to pose for a photograph alongside Picasso, “before death overtakes him”. " +
-                "Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n\n\n" +
-                "<p><br/></p><p><br/> </p><p>Did she protest too much? " +
-                "Tate’s poster image for the retrospective <i>Saloua Raouda Choucair</i> is a classic post-cubist self-portrait. The artist " +
-                "has simplified her features into a mask-like countenance; her clothes – white turban, green sweater, ochre jacket – are " +
-                "composed of angular, geometric elements; a background of interlocking jagged shapes underlines the formality of the endeavour. " +
-                "It is an engaging image, dominated by the fierce, unswerving gaze of the almond-eyes and the delicately painted turban, " +
-                "enclosing the head as if to announce self-reliance, the containment of an inner life. Daring you to want to know more, " +
-                "it also keeps you at a distance.</p>\n<p>Raouda Choucair is still unknown, and you can see why Tate Modern selected this " +
-                "image to advertise her first western retrospective, which opened this week. But it is a disingenuous choice: the painting " +
-                "is the sole portrait in the show, and a rare figurative work. The only others are nudes, made while Raouda Choucair studied " +
-                "with “tubist” painter Fernand Léger; they subvert his muscly female figures into awkwardly posed blocks of flesh, " +
-                "breasts and faces sketched rudimentarily, to imply a feminist agenda – models reading about art history " +
-                "in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>";
+    public void kitchenSinkArticleShouldBeTransformedAccordingToRules() {
+    	// methode content used in the kitchen sink
+    	Set<String> setOfAssetIds = ImmutableSet.of(KITCHEN_SINK_ASSET1_UUID, 
+    			KITCHEN_SINK_ASSET2_UUID, 
+    			KITCHEN_SINK_ASSET3_UUID, 
+    			KITCHEN_SINK_ASSET4_UUID, 
+    			SLIDESHOW_ASSET2_UUID);
+    	
+    	Map<String, EomAssetType> assetTypes = ImmutableMap.of(
+    			KITCHEN_SINK_ASSET1_UUID, getEomAssetType(KITCHEN_SINK_ASSET1_UUID, "EOM::CompoundStory"),
+    			KITCHEN_SINK_ASSET2_UUID, getEomAssetType(KITCHEN_SINK_ASSET2_UUID, "EOM::CompoundStory"),
+    	    	KITCHEN_SINK_ASSET3_UUID, getEomAssetType(KITCHEN_SINK_ASSET3_UUID, "EOM::CompoundStory"),
+    	    	KITCHEN_SINK_ASSET4_UUID, getEomAssetType(KITCHEN_SINK_ASSET4_UUID, "EOM::CompoundStory"),
+    	    	SLIDESHOW_ASSET2_UUID, getEomAssetType(SLIDESHOW_ASSET2_UUID, "Slideshow"));
 
-        //Does include some strange extra spaces in the output file
-        final String expectedTransformedBody = String.format("<body><p><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>\n</p>\n" +
-                "<p>In Paris in the late 1940s, a publicity-hungry gallerist invited a young, beautiful, unknown Lebanese artist to pose for a photograph " +
-                "alongside Picasso, “before death overtakes him”. Without hesitation, Saloua Raouda Choucair said, “As far as I’m concerned, he’s already dead.”</p>\n" +
-                "<p>Did she protest too much? Tate’s poster image for the retrospective <em>Saloua Raouda Choucair</em> is a classic post-cubist self-portrait. " +
-                "The artist has simplified her features into a mask-like countenance; her clothes – white turban, green sweater, " +
-                "ochre jacket – are composed of angular, geometric elements; a background of interlocking jagged shapes underlines the formality of the endeavour. " +
-                "It is an engaging image, dominated by the fierce, unswerving gaze of the almond-eyes and the delicately painted turban, enclosing " +
-                "the head as if to announce self-reliance, the containment of an inner life. Daring you to want to know more, it also keeps you at a distance.</p>" +
-                "\n<p>Raouda Choucair is still unknown, and you can see why Tate Modern selected this image to advertise her first western retrospective, " +
-                "which opened this week. But it is a disingenuous choice: the painting is the sole portrait in the show, and a rare figurative work. " +
-                "The only others are nudes, made while Raouda Choucair studied with “tubist” painter Fernand Léger; they subvert his muscly female figures into awkwardly " +
-                "posed blocks of flesh, breasts and faces sketched rudimentarily, to imply a feminist agenda – models " +
-                "reading about art history in “Les Peintres Célèbres”, or occupied with housework in “Chores”.</p>\n</body>",
-                ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString("7784185e-a888-11e2-8e5d-00144feabdc0")).toString());
+        when(methodeFileService.assetTypes(setOfAssetIds, TRANSACTION_ID))
+                .thenReturn(assetTypes);
+    	
+        String originalBody = readFromFile("body/kitchen_sink_article_body.xml");
+
+        String expectedTransformedBody = readFromFile("body/expected_transformed_kitchen_sink_article_body.xml");
 
         checkTransformation(originalBody, expectedTransformedBody);
     }
     
-    @Test
+    private EomAssetType getEomAssetType(String uuid, String type) {
+		return new EomAssetType.Builder()
+    	.uuid(uuid)
+    	.type(type)
+    	.build();
+	}
+
+	@Test
     public void shouldThrowExceptionIfBodyNull() {
     	expectedException.expect(BodyProcessingException.class);
         expectedException.expect(hasProperty("message", equalTo("Body is null")));
@@ -915,6 +916,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotBarfOnTwoSlideshows() {
+    	
         String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
                 "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 1</DIHeadlineCopy></a></p>" +
@@ -1178,6 +1180,23 @@ public class BodyProcessingFieldTransformerFactoryTest {
     private void checkTransformationToEmpty(String originalBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
         assertThat(actualTransformedBody, is(""));
+    }
+    
+    private String readFromFile(String resourceName) {
+        String bodyFromFile = "";
+        try {
+            bodyFromFile = Resources.toString(BodyProcessingFieldTransformerFactoryTest.class.getResource(resourceName), Charsets.UTF_8);
+
+            // because what we get back from the API uses UNIX line encodings, but when working locally on Windows, the expected file will have \r\n
+            if (System.getProperty("line.separator").equals("\r\n")) {
+                bodyFromFile = bodyFromFile.replace("\r", "");
+            }
+            
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected error reading in file",e);
+        }
+        
+        return bodyFromFile;
     }
 
 }
