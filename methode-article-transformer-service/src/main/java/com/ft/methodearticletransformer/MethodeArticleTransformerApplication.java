@@ -62,7 +62,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
 
         EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
-        UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).path(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
+        UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
         MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
         environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
