@@ -172,29 +172,38 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
 	private boolean doesNotExistInSemanticStore(String idToCheck, String transactionId) {
-		ClientResponse clientResponse;
+        int responseStatusCode;
+        ClientResponse clientResponse = null;
 		URI contentUrl = contentUrlBuilder().build(idToCheck);
 		try {
 			clientResponse = semanticStoreContentReaderClient.resource(contentUrl)
 					.accept(MediaType.APPLICATION_JSON_TYPE)
 					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
 					.get(ClientResponse.class);
-		} catch (ClientHandlerException che) {
+            
+            responseStatusCode = clientResponse.getStatus();
+        }
+        catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
 			if(cause instanceof IOException) {
 				throw new SemanticReaderUnavailableException(che);
 			}
 			throw che;
 		}
-
-		int responseStatusCode = clientResponse.getStatus();
-		int responseStatusFamily = responseStatusCode / 100;
-
-        try {
-            clientResponse.getEntityInputStream().close(); // So that the connection does not stay open.
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        finally {
+            if (clientResponse != null) {
+                clientResponse.close();
+            }
         }
+
+		int responseStatusFamily = responseStatusCode / 100;
+        
+        if (responseStatusFamily == 5) {
+            // can't tell whether it exists
+            String msg = String.format("Semantic Reader returned %s", responseStatusCode);
+            throw new SemanticReaderUnavailableException(msg);
+        }
+
 		return responseStatusFamily != 2;
 	}
 
