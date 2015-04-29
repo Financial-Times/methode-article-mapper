@@ -82,6 +82,15 @@ public class MethodeLinksBodyProcessorTest {
         bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
     }
 
+    @Test(expected = SemanticReaderUnavailableException.class)
+    public void shouldThrowSemanticReaderNotAvailableFor5XX(){
+        bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponseWithCode(503));
+
+        String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
+        bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+    }
+
 	@Test
 	public void shouldReplaceNodeWhenItsALinkThatWillBeInTheContentStoreWhenAvailableInMethode(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
