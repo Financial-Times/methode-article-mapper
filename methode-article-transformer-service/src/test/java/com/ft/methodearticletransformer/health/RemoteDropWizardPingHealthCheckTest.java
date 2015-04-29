@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.health;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -28,7 +29,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasProperty;
 
-public class RemoteDropWizardPingHealthCheckIT {
+public class RemoteDropWizardPingHealthCheckTest {
 	public static final String TEST_HOST = "localhost";
 	public static final String ROOT = "/";
 	private static final Integer TIMEOUT = 5000;
@@ -62,7 +63,7 @@ public class RemoteDropWizardPingHealthCheckIT {
 				Collections.<String>emptyList()
 		);
 
-		environment = new Environment("test-env", null, null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
+		environment = new Environment("test-env", new ObjectMapper(), null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
 
 		client = ResilientClientBuilder.in(environment).using(endpointConfiguration).usingAdminPorts().build();
 	}
