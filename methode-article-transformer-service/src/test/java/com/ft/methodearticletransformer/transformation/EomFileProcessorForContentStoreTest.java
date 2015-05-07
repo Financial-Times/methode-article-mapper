@@ -244,7 +244,7 @@ public class EomFileProcessorForContentStoreTest {
 
     @Test
     public void testMainImageReferenceIsPutInBodyWhenPresentAndPrimarySizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>" +
+        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
                 "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Primary size",
@@ -253,7 +253,7 @@ public class EomFileProcessorForContentStoreTest {
 
     @Test
     public void testMainImageReferenceIsPutInBodyWhenPresentAndArticleSizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"/>" +
+        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
                 "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Article size",
