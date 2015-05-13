@@ -26,7 +26,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerCharactersEventHandler(new RetainXMLEventHandler());
         registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
         // want to be sure to keep the wrapping node
-        registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body", "content");
+        registerStartAndEndElementEventHandler(new RetainXMLEventHandler(), "body");
         
         //rich content
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(this))), "web-pull-quote");
@@ -58,7 +58,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         );
         // strip methode tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
-                "annotation", "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
+                "annotation", "byline", "content", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
                 "plainHtml", "promo-headline", "promo-image", "promo-intro",
                 "promo-link", "promo-title", "promobox-body", "pull-quote", "pull-quote-header",

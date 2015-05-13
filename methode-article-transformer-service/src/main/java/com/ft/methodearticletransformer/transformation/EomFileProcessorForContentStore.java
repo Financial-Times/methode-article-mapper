@@ -118,7 +118,6 @@ public class EomFileProcessorForContentStore {
 
         String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument), bodyTransformer, transactionId);
 
-
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
 
         final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", eomFileDocument),

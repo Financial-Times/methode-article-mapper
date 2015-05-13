@@ -82,6 +82,7 @@ Feature: Body processing
     | col                        |
     | colgroup                   |
     | command                    |
+    | content                    |
     | datalist                   |
     | del                        |
     | dir                        |
