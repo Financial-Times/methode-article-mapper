@@ -59,7 +59,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	private static final String CONTENT_TAG = "content";
 	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
-    private static final Pattern REGEX_PATTERN = Pattern.compile(UUID_REGEX);
+    private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
 
@@ -99,7 +99,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                     if (isRemovable(href)) {
                     	removeATag(aTag);
                     } else {
-                        if (shouldCheckTypeWithMethode(href)) {
+                        if (containsUuid(href)) {
                             aTagsToCheck.add(aTag);
                         } 
                     }
@@ -108,15 +108,17 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                 throw new BodyProcessingException(e);
             }
 
-            final Set<String> idsToCheck = extractIds(aTagsToCheck);
+            final Set<String> uuidsToCheck = extractUuids(aTagsToCheck);
 
 			if (bodyProcessingContext instanceof TransactionIdBodyProcessingContext) {
 				TransactionIdBodyProcessingContext transactionIdBodyProcessingContext =
 						(TransactionIdBodyProcessingContext) bodyProcessingContext;
-				final Map<String, AssetCharacter> assetTypes = getAssetTypes(idsToCheck,
+				final Map<String, AssetCharacter> assetTypes = getAssetTypes(uuidsToCheck,
 						transactionIdBodyProcessingContext.getTransactionId());
+				
+				final List<String> uuidsPresentInContentStore = getUuidsPresentInContentStore(uuidsToCheck, transactionIdBodyProcessingContext.getTransactionId());
 
-				processATags(aTagsToCheck, assetTypes);
+				processATags(aTagsToCheck, uuidsPresentInContentStore);
 
 				final String modifiedBody = serializeBody(document);
 				return modifiedBody;
@@ -169,6 +171,21 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		}
 
 		return assetCharacterMap;
+    }
+
+    private List<String> getUuidsPresentInContentStore(Set<String> uuidsToCheck, String transactionId) {
+        if(uuidsToCheck.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        List<String> uuidsPresentInContentStore = new ArrayList<>();
+        
+        for (String uuidToCheck: uuidsToCheck) {
+            if (!doesNotExistInSemanticStore(uuidToCheck, transactionId)) { //TODO change!
+                uuidsPresentInContentStore.add(uuidToCheck);
+            }
+        }
+        return uuidsPresentInContentStore;
     }
 
 	private boolean doesNotExistInSemanticStore(String idToCheck, String transactionId) {
@@ -233,28 +250,24 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             throw new BodyProcessingException(e);
         }
     }
+	
 
-    private void processATags(List<Node> aTagsToCheck, Map<String, AssetCharacter> assetTypes) {
-    	for(Node node : aTagsToCheck){
-    		Optional<String> assetId = extractId(node);
-    		if(assetId.isPresent()){
-	    		String uuid = assetId.get();
-	    		if(assetTypes.containsKey(uuid) && isValidMethodeContent(assetTypes.get(uuid))){
-	    			transformLinkToMethodeContent(assetTypes.get(uuid), node, uuid);
-	    		}
-    		}
-    	}
+
+    private void processATags(List<Node> aTagsToCheck, List<String> uuidsPresentInContentStore) {
+        for(Node node : aTagsToCheck){
+            Optional<String> assetUuid = extractUuid(node);
+            if(assetUuid.isPresent()){
+                String uuid = assetUuid.get();
+                if (uuidsPresentInContentStore.contains(uuid)) {
+                    replaceInternalLink(node, uuid);
+                } else if (isConvertableToAssetOnFtCom(node)){
+                    transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
+                } else {
+                    // leave it alone, we don't know what to do with it
+                }
+            }
+        }
     }
-
-	private void transformLinkToMethodeContent(AssetCharacter assetType, Node node, String uuid) {
-		if(isInternalLink(assetType)) {
-			replaceInternalLink(node, uuid);
-		} else if (isConvertableToAssetOnFtCom(node)){
-			transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
-		} else {
-			// leave it alone, we don't know what to do with it
-		}
-	}
 	
 	private boolean isConvertableToAssetOnFtCom(Node node) {
 		String href = getHref(node);
@@ -337,12 +350,12 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		return aTag.getAttributes().getNamedItem(attributeName);
 	}
 
-	private Optional<String> extractId(Node node) {
-        return extractId(getHref(node));
+	private Optional<String> extractUuid(Node node) {
+        return extractUuid(getHref(node));
 	}
 
-    private Optional<String> extractId(String href) {
-        Matcher matcher = REGEX_PATTERN.matcher(href);
+    private Optional<String> extractUuid(String href) {
+        Matcher matcher = UUID_REGEX_PATTERN.matcher(href);
         if(matcher.matches()){
             return Optional.fromNullable(matcher.group(1));
         }
@@ -372,20 +385,20 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     	}
 	}
 
-    private Set<String> extractIds(List<Node> aTagsToCheck) {
-        final List<String> ids = new ArrayList<>(aTagsToCheck.size());
+    private Set<String> extractUuids(List<Node> aTagsToCheck) {
+        final List<String> uuids = new ArrayList<>(aTagsToCheck.size());
 
         for (Node node : aTagsToCheck) {
-            Optional<String> optionalId = extractId(node);
-            if(optionalId.isPresent())
-				ids.add(optionalId.get());
+            Optional<String> optionalUuid = extractUuid(node);
+            if(optionalUuid.isPresent())
+				uuids.add(optionalUuid.get());
         }
 
-        return new HashSet<>(ids);
+        return new HashSet<>(uuids);
     }
 
-    private boolean shouldCheckTypeWithMethode(String href) {
-        return extractId(href).isPresent();
+    private boolean containsUuid(String href) {
+        return extractUuid(href).isPresent();
     }
 
     private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {

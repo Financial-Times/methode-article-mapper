@@ -18,7 +18,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import javax.ws.rs.core.MediaType;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
@@ -30,11 +37,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MethodeLinksBodyProcessorTest {
@@ -90,18 +92,6 @@ public class MethodeLinksBodyProcessorTest {
         String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
         bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
     }
-
-	@Test
-	public void shouldReplaceNodeWhenItsALinkThatWillBeInTheContentStoreWhenAvailableInMethode(){
-		Map<String, EomAssetType> assetTypes = new HashMap<>();
-		assetTypes.put(uuid, new EomAssetType.Builder().type("EOM::CompoundStory").uuid(uuid).build());
-		when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
-		bodyProcessor = new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri);
-		
-		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
-		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
-        assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.ARTICLE_TYPE + "\"> Link Text</content></body>")));
-	}
 
 	@Test
 	public void shouldReplaceNodeWhenItsALinkThatWillBeInTheContentStoreWhenAvailableInContentStore(){
