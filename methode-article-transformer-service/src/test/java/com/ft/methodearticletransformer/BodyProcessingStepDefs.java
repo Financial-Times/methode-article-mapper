@@ -4,12 +4,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,7 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 
 import com.ft.bodyprocessing.richcontent.ConvertParameters;
@@ -37,19 +42,23 @@ import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransf
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
 import com.sun.jersey.spi.MessageBodyWorkers;
+
 import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
 import org.codehaus.stax2.ri.evt.StartElementEventImpl;
 import org.custommonkey.xmlunit.Diff;
+import org.mockito.Mock;
 
 public class BodyProcessingStepDefs {
 
@@ -60,7 +69,6 @@ public class BodyProcessingStepDefs {
 
     private static final String TEXT = "Some text in between tags";
 
-    private MethodeFileService methodeFileService;
     private ResilientClient semanticStoreContentReaderClient;
     private VideoMatcher videoMatcher;
     private URI uri;
@@ -99,7 +107,6 @@ public class BodyProcessingStepDefs {
 
     @Before
     public void setup() throws Exception {
-        methodeFileService = mock(MethodeFileService.class);
         semanticStoreContentReaderClient = mock(ResilientClient.class);
 
         uri = new URI("www.anyuri.com");
@@ -110,7 +117,7 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher);
 
         rulesAndHandlers = new HashMap<>();
@@ -131,45 +138,26 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
         rulesAndHandlers.put( "REPLACE BLOCK ELEMENT TAG", "SimpleTransformBlockElementEventHandler");
 
-        when(methodeFileService.assetTypes(anySet(), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
 
-        EomAssetType compoundStoryAsset = new EomAssetType.Builder()
-                .uuid("fbbee07f-5054-4a42-b596-64e0625d19a6")
-                .type("EOM::CompoundStory")
-                .build();
-        when(methodeFileService.assetTypes(Collections.singleton("fbbee07f-5054-4a42-b596-64e0625d19a6"), TRANSACTION_ID))
-                .thenReturn(Collections.<String, EomAssetType>singletonMap("fbbee07f-5054-4a42-b596-64e0625d19a6", compoundStoryAsset));
-
-        EomAssetType storyAsset = new EomAssetType.Builder()
-                .uuid("2d5f0ee9-09b3-4b09-af1b-e340276c7d6b")
-                .type("EOM::Story")
-                .build();
-        when(methodeFileService.assetTypes(Collections.singleton("2d5f0ee9-09b3-4b09-af1b-e340276c7d6b"), TRANSACTION_ID))
-                .thenReturn(Collections.<String, EomAssetType>singletonMap("2d5f0ee9-09b3-4b09-af1b-e340276c7d6b", storyAsset));
-
-
-        EomAssetType pdfAsset = new EomAssetType.Builder()
-                .uuid("5e231aca-a42b-11e1-a701-00144feabdc0")
-                .type("Pdf")
-                .build();
-        when(methodeFileService.assetTypes(Collections.singleton("5e231aca-a42b-11e1-a701-00144feabdc0"), TRANSACTION_ID))
-                .thenReturn(Collections.<String, EomAssetType>singletonMap("5e231aca-a42b-11e1-a701-00144feabdc0", pdfAsset));
-
-        EomAssetType pageAsset = new EomAssetType.Builder()
-                .uuid("ee08dbdc-cd25-11de-a748-00144feabdc0")
-                .type("EOM::WebPage")
-                .build();
-        when(methodeFileService.assetTypes(Collections.singleton("ee08dbdc-cd25-11de-a748-00144feabdc0"), TRANSACTION_ID))
-                .thenReturn(Collections.<String, EomAssetType>singletonMap("ee08dbdc-cd25-11de-a748-00144feabdc0", pageAsset));
-
+        WebResource webResourceNotFound = mock(WebResource.class);
+        when(semanticStoreContentReaderClient.resource(any(URI.class))).thenReturn(webResourceNotFound);
+        WebResource.Builder builderNotFound = mock(WebResource.Builder.class);
+        when(webResourceNotFound.accept(any(MediaType[].class))).thenReturn(builderNotFound);
+        when(builderNotFound.header(anyString(), anyObject())).thenReturn(builderNotFound);
+        when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
+        
         WebResource webResource = mock(WebResource.class);
-        when(semanticStoreContentReaderClient.resource(any(URI.class))).thenReturn(webResource);
+        when(semanticStoreContentReaderClient.resource(UriBuilder.fromUri(uri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         WebResource.Builder builder = mock(WebResource.Builder.class);
-        when(webResource.accept(any(MediaType[].class))).thenReturn(builder);
-        when(builder.header(anyString(), anyObject())).thenReturn(builder);
-        when(builder.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
+        when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.header(anyString(), anyString())).thenReturn(builder);
+        ClientResponse clientResponseSuccess = mock(ClientResponse.class);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
+        InputStream inputStream = mock(InputStream.class);
+        when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
+        when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
     }
 
 

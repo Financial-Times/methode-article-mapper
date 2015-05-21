@@ -100,7 +100,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
 	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri, Brand financialTimesBrand, VideoMatcher videoMatcher) {
 		return new EomFileProcessorForContentStore(
-				new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance(),
+				new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}

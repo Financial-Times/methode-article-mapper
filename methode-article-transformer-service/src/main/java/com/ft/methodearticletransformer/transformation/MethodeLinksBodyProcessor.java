@@ -1,6 +1,5 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.MethodeLinksBodyProcessor.AssetCharacter.existsInContentStore;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.IOException;
@@ -9,10 +8,8 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,19 +29,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
-import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.google.common.base.Optional;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -52,6 +36,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
+import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
+import com.google.common.base.Optional;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
 
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
@@ -66,13 +61,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	private static final String ANCHOR_PREFIX = "#";
     public static final String FT_COM_WWW_URL = "http://www.ft.com/";
 	public static final String TYPE = "type";
-
-	private final com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
     private URI uri;
 
-	public MethodeLinksBodyProcessor(com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri) {
-        this.methodeFileService = methodeFileService;
+	public MethodeLinksBodyProcessor(ResilientClient semanticStoreContentReaderClient, URI uri) {
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
         this.uri = uri;
 	}
@@ -113,8 +105,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 			if (bodyProcessingContext instanceof TransactionIdBodyProcessingContext) {
 				TransactionIdBodyProcessingContext transactionIdBodyProcessingContext =
 						(TransactionIdBodyProcessingContext) bodyProcessingContext;
-				final Map<String, AssetCharacter> assetTypes = getAssetTypes(uuidsToCheck,
-						transactionIdBodyProcessingContext.getTransactionId());
 				
 				final List<String> uuidsPresentInContentStore = getUuidsPresentInContentStore(uuidsToCheck, transactionIdBodyProcessingContext.getTransactionId());
 
@@ -145,34 +135,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		return href.startsWith(ANCHOR_PREFIX);
 	}
 
-	private Map<String, AssetCharacter> getAssetTypes(Set<String> idsToCheck, String transactionId) {
-        if(idsToCheck.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-		Map<String, AssetCharacter> assetCharacterMap = new HashMap<>();
-
-		Set<String> idsToCheckStill = new HashSet<>();
-		for (String idToCheck: idsToCheck) {
-			if (doesNotExistInSemanticStore(idToCheck, transactionId)) {
-				idsToCheckStill.add(idToCheck);
-			} else {
-				assetCharacterMap.put(idToCheck, existsInContentStore(idToCheck));
-			}
-		}
-
-		if (idsToCheckStill.isEmpty()) {
-			return assetCharacterMap;
-		}
-
-		Map<String, EomAssetType> eomAssetTypes = methodeFileService.assetTypes(new HashSet<>(idsToCheckStill), transactionId);
-        for (EomAssetType eomAssetType: eomAssetTypes.values()) {
-			assetCharacterMap.put(eomAssetType.getUuid(), new AssetCharacter(eomAssetType));
-		}
-
-		return assetCharacterMap;
-    }
-
     private List<String> getUuidsPresentInContentStore(Set<String> uuidsToCheck, String transactionId) {
         if(uuidsToCheck.isEmpty()) {
             return Collections.emptyList();
@@ -181,14 +143,14 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         List<String> uuidsPresentInContentStore = new ArrayList<>();
         
         for (String uuidToCheck: uuidsToCheck) {
-            if (!doesNotExistInSemanticStore(uuidToCheck, transactionId)) { //TODO change!
+            if (existsInSemanticStore(uuidToCheck, transactionId)) {
                 uuidsPresentInContentStore.add(uuidToCheck);
             }
         }
         return uuidsPresentInContentStore;
     }
 
-	private boolean doesNotExistInSemanticStore(String idToCheck, String transactionId) {
+	private boolean existsInSemanticStore(String idToCheck, String transactionId) {
         int responseStatusCode;
         ClientResponse clientResponse = null;
 		URI contentUrl = contentUrlBuilder().build(idToCheck);
@@ -221,7 +183,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             throw new SemanticReaderUnavailableException(msg);
         }
 
-		return responseStatusFamily != 2;
+		return responseStatusFamily == 2;
 	}
 
 	private UriBuilder contentUrlBuilder() {
@@ -259,7 +221,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             if(assetUuid.isPresent()){
                 String uuid = assetUuid.get();
                 if (uuidsPresentInContentStore.contains(uuid)) {
-                    replaceInternalLink(node, uuid);
+                    replaceLinkToContentPresentInSemanticStore(node, uuid);
                 } else if (isConvertableToAssetOnFtCom(node)){
                     transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
                 } else {
@@ -283,7 +245,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		
 	}
 
-	private void replaceInternalLink(Node node, String uuid) {
+	private void replaceLinkToContentPresentInSemanticStore(Node node, String uuid) {
 		Element newElement = node.getOwnerDocument().createElement(CONTENT_TAG);
 		newElement.setAttribute("id", uuid);
 		newElement.setAttribute("type", ARTICLE_TYPE);
@@ -362,14 +324,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return Optional.absent();
     }
 
-    private boolean isInternalLink(AssetCharacter assetCharacter){
-    	return assetCharacter.existsInContentStore() || new SupportedTypeResolver(assetCharacter.getUnderlyingType()).isASupportedType();
-    }
-    
-    private boolean isValidMethodeContent(AssetCharacter assetCharacter){
-    	return "".equals(assetCharacter.getErrorMessage());
-    }
-
     private String getHref(Node aTag) {
         final NamedNodeMap attributes = aTag.getAttributes();
         final Node hrefAttr = attributes.getNamedItem("href");
@@ -408,42 +362,4 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return documentBuilderFactory.newDocumentBuilder();
     }
 
-	static class AssetCharacter {
-
-		private String uuid;
-		private String errorMessage = "";
-		private String underlyingType;
-		private boolean existsInContentStore;
-
-		AssetCharacter(EomAssetType eomAssetType) {
-			this.uuid = eomAssetType.getUuid();
-			this.errorMessage = eomAssetType.getErrorMessage();
-			this.underlyingType = eomAssetType.getType();
-		}
-
-		private AssetCharacter(String uuid, boolean existsInContentStore) {
-			this.uuid = uuid;
-			this.existsInContentStore = existsInContentStore;
-		}
-
-		static AssetCharacter existsInContentStore(String uuid) {
-			return new AssetCharacter(uuid, true);
-		}
-
-		public String getUuid() {
-			return uuid;
-		}
-
-		public String getErrorMessage() {
-			return errorMessage;
-		}
-
-		public String getUnderlyingType() {
-			return underlyingType;
-		}
-
-		public boolean existsInContentStore() {
-			return existsInContentStore;
-		}
-	}
 }

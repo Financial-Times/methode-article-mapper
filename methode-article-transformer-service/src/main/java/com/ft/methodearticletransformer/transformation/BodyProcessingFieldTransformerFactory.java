@@ -13,17 +13,14 @@ import com.ft.bodyprocessing.regex.RegexReplacerBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
 
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
 
-    private final MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
     private URI uri;
     private VideoMatcher videoMatcher;
 
-	public BodyProcessingFieldTransformerFactory(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri, VideoMatcher videoMatcher) {
-        this.methodeFileService = methodeFileService;
+	public BodyProcessingFieldTransformerFactory(ResilientClient semanticStoreContentReaderClient, URI uri, VideoMatcher videoMatcher) {
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
         this.uri = uri;
         this.videoMatcher = videoMatcher;
@@ -44,7 +41,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
-                new MethodeLinksBodyProcessor(methodeFileService, semanticStoreContentReaderClient, uri),
+                new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri),
                 new Html5SelfClosingTagBodyProcessor()
         );
     }
