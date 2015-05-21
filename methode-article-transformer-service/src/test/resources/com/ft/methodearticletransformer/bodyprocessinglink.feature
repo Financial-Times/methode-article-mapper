@@ -130,8 +130,3 @@ Feature: Body processing links
     | before                                                                                                                                                                                                               | after                                                                                                          |
     # Link to an image set that exists in the content store should be converted into a <content>[...]</content> link and all the attributes and any text between the <web-inline-picture> opening and closing tags should be dropped:
     | <p><web-inline-picture fileref="/FT/Graphics/Online/Master_2048x1152/2014/01/img26.jpg?uuid=3b630b4a-4d51-11e4-a7d4-002128161462" alt="All attributes will be dropped">Text will be dropped</web-inline-picture></p> | <p><content data-embedded="true" id="3b630b4a-4d51-11e4-39b2-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content></p> |
-
-  Scenario: Main image reference put on body is retained
-    Given I have  "image content tag" in a Methode XML body like <body><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/ImageSet"/><p>Some random text</p></body>
-    When I transform it into our Content Store format
-    Then the body should be like <body><content id="fbbee07f-5054-4a42-b596-64e0625d19a6" type="http://www.ft.com/ontology/content/ImageSet"></content><p>Some random text</p></body>

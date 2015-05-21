@@ -10,9 +10,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.UUID;
 import java.util.TreeSet;
-
+import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,17 +26,21 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.Brand;
+import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
+import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
-import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -47,11 +50,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import com.ft.content.model.Content;
-import com.ft.methodeapi.model.EomFile;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.google.common.base.Strings;
 
 public class EomFileProcessorForContentStore {
 
@@ -118,17 +116,17 @@ public class EomFileProcessorForContentStore {
 
 		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
 
-        Optional<String> preProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, eomFileDocument, mainImage);
+        String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument), bodyTransformer, transactionId);
 
-        String transformedBody = transformField(preProcessedBody.isPresent() ? preProcessedBody.get() : retrieveField(xpath, "/doc/story/text/body", eomFileDocument),
-				bodyTransformer, transactionId);
+        String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
+
         final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", eomFileDocument),
 				bylineTransformer, transactionId); //byline is optional
 
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
-                .withXmlBody(transformedBody)
+                .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
 				.withMainImage(mainImage)
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
@@ -137,16 +135,19 @@ public class EomFileProcessorForContentStore {
                 .build();
 	}
 
-    private Optional<String> putMainImageReferenceInBodyXml(XPath xpath, Document attributesDocument, Document eomFileDocument, String mainImage) throws XPathExpressionException, TransformerException {
+    private String putMainImageReferenceInBodyXml(XPath xpath, Document attributesDocument, String mainImage, String body) throws XPathExpressionException,
+            TransformerException, ParserConfigurationException, SAXException, IOException {
+
         if (mainImage != null) {
-            final String flag = xpath
-                    .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomArticleImage", attributesDocument);
+            Element bodyNode = getDocumentBuilder()
+                    .parse(new ByteArrayInputStream(body.getBytes()))
+                    .getDocumentElement();
+            final String flag = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomArticleImage", attributesDocument);
             if (!NO_PICTURE_FLAG.equalsIgnoreCase(flag)) {
-                final Node node = (Node) xpath.evaluate("/doc/story/text/body", eomFileDocument, XPathConstants.NODE);
-                return Optional.fromNullable(putMainImageReferenceInBodyNode(node, mainImage));
+                return putMainImageReferenceInBodyNode(bodyNode, mainImage);
             }
         }
-        return Optional.absent();
+        return body;
     }
 
     private String putMainImageReferenceInBodyNode(Node bodyNode, String mainImage) throws TransformerException {
@@ -155,7 +156,7 @@ public class EomFileProcessorForContentStore {
         newElement.setAttribute("type", IMAGE_SET_TYPE);
         newElement.setAttribute(DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED, "true");
         bodyNode.insertBefore(newElement, bodyNode.getFirstChild());
-        return getNodeAsString(bodyNode);
+        return getNodeAsHTML5String(bodyNode);
     }
 
     private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
@@ -221,15 +222,25 @@ public class EomFileProcessorForContentStore {
 		return documentBuilderFactory.newDocumentBuilder();
 	}
 
-	private String getNodeAsString(Node node) throws TransformerException {
-		// if node is null, this returns ""
-		StringWriter writer = new StringWriter();
+    private String getNodeAsString(Node node) throws TransformerException {
+        return convertNodeToStringReturningEmptyIfNull(node);
+    }
+
+
+    private String getNodeAsHTML5String(Node node) throws TransformerException {
+        Html5SelfClosingTagBodyProcessor processor = new Html5SelfClosingTagBodyProcessor();
+        String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
+        return processor.process(nodeAsString, null);
+	}
+
+    private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
+        StringWriter writer = new StringWriter();
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         transformer.transform(new DOMSource(node), new StreamResult(writer));
         return writer.toString();
-	}
+    }
 
 	private static Date toDate(String dateString, String format) {
 		if (dateString == null || dateString.equals("")) {
