@@ -4,35 +4,20 @@ import static com.ft.methodetesting.xml.XmlMatcher.identicalXmlTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
-
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.richcontent.RichContentItem;
-import com.ft.bodyprocessing.richcontent.Video;
-import com.ft.bodyprocessing.richcontent.VideoMatcher;
-import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.io.Resources;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
+import javax.ws.rs.core.UriBuilder;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,11 +27,20 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.richcontent.RichContentItem;
+import com.ft.bodyprocessing.richcontent.Video;
+import com.ft.bodyprocessing.richcontent.VideoMatcher;
+import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.io.Resources;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
+
 @RunWith(MockitoJUnitRunner.class)
 public class BodyProcessingFieldTransformerFactoryTest {
-	
-	private static final String SLIDESHOW_ASSET1_UUID = "49336a18-051c-11e3-98a0-001234567890";
-	private static final String SLIDESHOW_ASSET2_UUID = "49336a18-051c-11e3-98a0-002128161462";
 
 	private static final String KITCHEN_SINK_ASSET1_UUID = "d586f60a-5be5-11e2-bf31-00144feab49a";
 	private static final String KITCHEN_SINK_ASSET2_UUID = "e78a8668-c997-11e1-aae2-002128161462";
@@ -60,12 +54,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     private FieldTransformer bodyTransformer;
 
-    @Mock private MethodeFileService methodeFileService;
     @Mock private ResilientClient semanticStoreContentReaderClient;
     @Mock private VideoMatcher videoMatcher;
+    @Mock private WebResource webResourceNotFound;
+    @Mock private ClientResponse clientResponseNotFound;
+    @Mock private Builder builderNotFound;
     @Mock private WebResource webResource;
-    @Mock private Builder builder;
     @Mock private ClientResponse clientResponse;
+    @Mock private Builder builder;
     @Mock private InputStream inputStream;
 
     private URI uri;
@@ -75,18 +71,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Before
     public void setup() throws Exception {
-        when(methodeFileService.assetTypes(anySetOf(String.class), anyString())).thenReturn(Collections.<String, EomAssetType>emptyMap());
         
-        EomAssetType slideshowAsset1 = getEomAssetType(SLIDESHOW_ASSET1_UUID, "Slideshow");
-  	    EomAssetType slideshowAsset2 = getEomAssetType(SLIDESHOW_ASSET2_UUID, "Slideshow");
-  	    
-  	    when(methodeFileService.assetTypes(Collections.singleton(SLIDESHOW_ASSET2_UUID), TRANSACTION_ID))
-              .thenReturn(Collections.singletonMap(SLIDESHOW_ASSET2_UUID, slideshowAsset2));
-      
-        when(methodeFileService.assetTypes(ImmutableSet.of(SLIDESHOW_ASSET1_UUID, SLIDESHOW_ASSET2_UUID), TRANSACTION_ID))
-              .thenReturn(ImmutableMap.of(SLIDESHOW_ASSET1_UUID, slideshowAsset1, SLIDESHOW_ASSET2_UUID, slideshowAsset2 ));
-        
-
         uri = new URI("www.anyuri.com");
         exampleVimeoVideo = new Video();
         exampleVimeoVideo.setUrl("https://www.vimeo.com/77761436");
@@ -96,34 +81,30 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(methodeFileService, semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
-        when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResource);
-        when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
-        when(builder.header(anyString(), anyString())).thenReturn(builder);
-        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
-        when(clientResponse.getStatus()).thenReturn(404);
-        when(clientResponse.getEntityInputStream()).thenReturn(inputStream);
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
+        when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResourceNotFound);
+        when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
+        when(builderNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
+        when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseNotFound);
+        when(clientResponseNotFound.getStatus()).thenReturn(404);
+        when(clientResponseNotFound.getEntityInputStream()).thenReturn(inputStream);
     }
 
     // This is our thorough test of a complicated article that can be created in Methode. Has all the special characters and components. Do not remove!
     @Test
     public void kitchenSinkArticleShouldBeTransformedAccordingToRules() {
-    	// methode content used in the kitchen sink
-    	Set<String> setOfAssetIds = ImmutableSet.of(KITCHEN_SINK_ASSET1_UUID, 
-    			KITCHEN_SINK_ASSET2_UUID, 
-    			KITCHEN_SINK_ASSET3_UUID, 
-    			KITCHEN_SINK_ASSET4_UUID, 
-    			SLIDESHOW_ASSET2_UUID);
+    	// content used as links in the kitchen sink
+    	Set<URI> setOfAssetIds = ImmutableSet.of(UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET1_UUID).build(), 
+    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET2_UUID).build(), 
+    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET3_UUID).build(), 
+    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET4_UUID).build());
     	
-    	Map<String, EomAssetType> assetTypes = ImmutableMap.of(
-    			KITCHEN_SINK_ASSET1_UUID, getEomAssetType(KITCHEN_SINK_ASSET1_UUID, "EOM::CompoundStory"),
-    			KITCHEN_SINK_ASSET2_UUID, getEomAssetType(KITCHEN_SINK_ASSET2_UUID, "EOM::CompoundStory"),
-    	    	KITCHEN_SINK_ASSET3_UUID, getEomAssetType(KITCHEN_SINK_ASSET3_UUID, "EOM::CompoundStory"),
-    	    	KITCHEN_SINK_ASSET4_UUID, getEomAssetType(KITCHEN_SINK_ASSET4_UUID, "EOM::CompoundStory"),
-    	    	SLIDESHOW_ASSET2_UUID, getEomAssetType(SLIDESHOW_ASSET2_UUID, "Slideshow"));
-
-        when(methodeFileService.assetTypes(setOfAssetIds, TRANSACTION_ID))
-                .thenReturn(assetTypes);
+    	when(semanticStoreContentReaderClient.resource(argThat(isIn(setOfAssetIds)))).thenReturn(webResource);
+        when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+        when(clientResponse.getStatus()).thenReturn(200);
+        when(clientResponse.getEntityInputStream()).thenReturn(inputStream);
     	
         String originalBody = readFromFile("body/kitchen_sink_article_body.xml");
 
@@ -131,13 +112,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         checkTransformation(originalBody, expectedTransformedBody);
     }
-    
-    private EomAssetType getEomAssetType(String uuid, String type) {
-		return new EomAssetType.Builder()
-    	.uuid(uuid)
-    	.type(type)
-    	.build();
-	}
 
 	@Test
     public void shouldThrowExceptionIfBodyNull() {
@@ -457,7 +431,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"17ee1f24-ff46-11e2-055d-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <strong>Monday</strong>, with Labour claiming the coalition was alerted in 2010 to strikeout malpractice at the bank and took no action.</p>\n" +
-				"<p><a href=\"/FT/Content/World%20News/Stories/Live/hsbcpoltix.uk.9.xml?uuid=2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
+				"<p><a href=\"http://www.ft.com/cms/s/2f9b640c-b056-11e4-a2cc-00144feab7de.html\">Continue reading</a></p></promo-intro>" +
 				"</promo-box><p>This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);

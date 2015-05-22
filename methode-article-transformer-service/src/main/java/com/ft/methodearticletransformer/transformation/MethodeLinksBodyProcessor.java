@@ -1,6 +1,5 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.ft.methodearticletransformer.transformation.MethodeLinksBodyProcessor.AssetCharacter.existsInContentStore;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.IOException;
@@ -9,10 +8,8 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,19 +29,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
-import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.google.common.base.Optional;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -53,26 +37,34 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
+import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
+import com.google.common.base.Optional;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
+
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
 
 	private static final String CONTENT_TAG = "content";
 	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
-    private static final Pattern REGEX_PATTERN = Pattern.compile(UUID_REGEX);
+    private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
 
 	private static final String ANCHOR_PREFIX = "#";
     public static final String FT_COM_WWW_URL = "http://www.ft.com/";
 	public static final String TYPE = "type";
-
-	private final com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService;
 	private ResilientClient semanticStoreContentReaderClient;
     private URI uri;
 
-	public MethodeLinksBodyProcessor(com.ft.methodearticletransformer.methode.MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri) {
-        this.methodeFileService = methodeFileService;
+	public MethodeLinksBodyProcessor(ResilientClient semanticStoreContentReaderClient, URI uri) {
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
         this.uri = uri;
 	}
@@ -99,7 +91,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                     if (isRemovable(href)) {
                     	removeATag(aTag);
                     } else {
-                        if (shouldCheckTypeWithMethode(href)) {
+                        if (containsUuid(href)) {
                             aTagsToCheck.add(aTag);
                         } 
                     }
@@ -108,15 +100,15 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                 throw new BodyProcessingException(e);
             }
 
-            final Set<String> idsToCheck = extractIds(aTagsToCheck);
+            final Set<String> uuidsToCheck = extractUuids(aTagsToCheck);
 
 			if (bodyProcessingContext instanceof TransactionIdBodyProcessingContext) {
 				TransactionIdBodyProcessingContext transactionIdBodyProcessingContext =
 						(TransactionIdBodyProcessingContext) bodyProcessingContext;
-				final Map<String, AssetCharacter> assetTypes = getAssetTypes(idsToCheck,
-						transactionIdBodyProcessingContext.getTransactionId());
+				
+				final List<String> uuidsPresentInContentStore = getUuidsPresentInContentStore(uuidsToCheck, transactionIdBodyProcessingContext.getTransactionId());
 
-				processATags(aTagsToCheck, assetTypes);
+				processATags(aTagsToCheck, uuidsPresentInContentStore);
 
 				final String modifiedBody = serializeBody(document);
 				return modifiedBody;
@@ -143,35 +135,22 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		return href.startsWith(ANCHOR_PREFIX);
 	}
 
-	private Map<String, AssetCharacter> getAssetTypes(Set<String> idsToCheck, String transactionId) {
-        if(idsToCheck.isEmpty()) {
-            return Collections.emptyMap();
+    private List<String> getUuidsPresentInContentStore(Set<String> uuidsToCheck, String transactionId) {
+        if(uuidsToCheck.isEmpty()) {
+            return Collections.emptyList();
         }
-
-		Map<String, AssetCharacter> assetCharacterMap = new HashMap<>();
-
-		Set<String> idsToCheckStill = new HashSet<>();
-		for (String idToCheck: idsToCheck) {
-			if (doesNotExistInSemanticStore(idToCheck, transactionId)) {
-				idsToCheckStill.add(idToCheck);
-			} else {
-				assetCharacterMap.put(idToCheck, existsInContentStore(idToCheck));
-			}
-		}
-
-		if (idsToCheckStill.isEmpty()) {
-			return assetCharacterMap;
-		}
-
-		Map<String, EomAssetType> eomAssetTypes = methodeFileService.assetTypes(new HashSet<>(idsToCheckStill), transactionId);
-        for (EomAssetType eomAssetType: eomAssetTypes.values()) {
-			assetCharacterMap.put(eomAssetType.getUuid(), new AssetCharacter(eomAssetType));
-		}
-
-		return assetCharacterMap;
+        
+        List<String> uuidsPresentInContentStore = new ArrayList<>();
+        
+        for (String uuidToCheck: uuidsToCheck) {
+            if (existsInSemanticStore(uuidToCheck, transactionId)) {
+                uuidsPresentInContentStore.add(uuidToCheck);
+            }
+        }
+        return uuidsPresentInContentStore;
     }
 
-	private boolean doesNotExistInSemanticStore(String idToCheck, String transactionId) {
+	private boolean existsInSemanticStore(String idToCheck, String transactionId) {
         int responseStatusCode;
         ClientResponse clientResponse = null;
 		URI contentUrl = contentUrlBuilder().build(idToCheck);
@@ -204,7 +183,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             throw new SemanticReaderUnavailableException(msg);
         }
 
-		return responseStatusFamily != 2;
+		return responseStatusFamily == 2;
 	}
 
 	private UriBuilder contentUrlBuilder() {
@@ -233,28 +212,24 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             throw new BodyProcessingException(e);
         }
     }
+	
 
-    private void processATags(List<Node> aTagsToCheck, Map<String, AssetCharacter> assetTypes) {
-    	for(Node node : aTagsToCheck){
-    		Optional<String> assetId = extractId(node);
-    		if(assetId.isPresent()){
-	    		String uuid = assetId.get();
-	    		if(assetTypes.containsKey(uuid) && isValidMethodeContent(assetTypes.get(uuid))){
-	    			transformLinkToMethodeContent(assetTypes.get(uuid), node, uuid);
-	    		}
-    		}
-    	}
+
+    private void processATags(List<Node> aTagsToCheck, List<String> uuidsPresentInContentStore) {
+        for(Node node : aTagsToCheck){
+            Optional<String> assetUuid = extractUuid(node);
+            if(assetUuid.isPresent()){
+                String uuid = assetUuid.get();
+                if (uuidsPresentInContentStore.contains(uuid)) {
+                    replaceLinkToContentPresentInSemanticStore(node, uuid);
+                } else if (isConvertableToAssetOnFtCom(node)){
+                    transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
+                } else {
+                    // leave it alone, we don't know what to do with it
+                }
+            }
+        }
     }
-
-	private void transformLinkToMethodeContent(AssetCharacter assetType, Node node, String uuid) {
-		if(isInternalLink(assetType)) {
-			replaceInternalLink(node, uuid);
-		} else if (isConvertableToAssetOnFtCom(node)){
-			transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
-		} else {
-			// leave it alone, we don't know what to do with it
-		}
-	}
 	
 	private boolean isConvertableToAssetOnFtCom(Node node) {
 		String href = getHref(node);
@@ -270,7 +245,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		
 	}
 
-	private void replaceInternalLink(Node node, String uuid) {
+	private void replaceLinkToContentPresentInSemanticStore(Node node, String uuid) {
 		Element newElement = node.getOwnerDocument().createElement(CONTENT_TAG);
 		newElement.setAttribute("id", uuid);
 		newElement.setAttribute("type", ARTICLE_TYPE);
@@ -337,24 +312,16 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		return aTag.getAttributes().getNamedItem(attributeName);
 	}
 
-	private Optional<String> extractId(Node node) {
-        return extractId(getHref(node));
+	private Optional<String> extractUuid(Node node) {
+        return extractUuid(getHref(node));
 	}
 
-    private Optional<String> extractId(String href) {
-        Matcher matcher = REGEX_PATTERN.matcher(href);
+    private Optional<String> extractUuid(String href) {
+        Matcher matcher = UUID_REGEX_PATTERN.matcher(href);
         if(matcher.matches()){
             return Optional.fromNullable(matcher.group(1));
         }
         return Optional.absent();
-    }
-
-    private boolean isInternalLink(AssetCharacter assetCharacter){
-    	return assetCharacter.existsInContentStore() || new SupportedTypeResolver(assetCharacter.getUnderlyingType()).isASupportedType();
-    }
-    
-    private boolean isValidMethodeContent(AssetCharacter assetCharacter){
-    	return "".equals(assetCharacter.getErrorMessage());
     }
 
     private String getHref(Node aTag) {
@@ -372,20 +339,20 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     	}
 	}
 
-    private Set<String> extractIds(List<Node> aTagsToCheck) {
-        final List<String> ids = new ArrayList<>(aTagsToCheck.size());
+    private Set<String> extractUuids(List<Node> aTagsToCheck) {
+        final List<String> uuids = new ArrayList<>(aTagsToCheck.size());
 
         for (Node node : aTagsToCheck) {
-            Optional<String> optionalId = extractId(node);
-            if(optionalId.isPresent())
-				ids.add(optionalId.get());
+            Optional<String> optionalUuid = extractUuid(node);
+            if(optionalUuid.isPresent())
+				uuids.add(optionalUuid.get());
         }
 
-        return new HashSet<>(ids);
+        return new HashSet<>(uuids);
     }
 
-    private boolean shouldCheckTypeWithMethode(String href) {
-        return extractId(href).isPresent();
+    private boolean containsUuid(String href) {
+        return extractUuid(href).isPresent();
     }
 
     private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
@@ -395,42 +362,4 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return documentBuilderFactory.newDocumentBuilder();
     }
 
-	static class AssetCharacter {
-
-		private String uuid;
-		private String errorMessage = "";
-		private String underlyingType;
-		private boolean existsInContentStore;
-
-		AssetCharacter(EomAssetType eomAssetType) {
-			this.uuid = eomAssetType.getUuid();
-			this.errorMessage = eomAssetType.getErrorMessage();
-			this.underlyingType = eomAssetType.getType();
-		}
-
-		private AssetCharacter(String uuid, boolean existsInContentStore) {
-			this.uuid = uuid;
-			this.existsInContentStore = existsInContentStore;
-		}
-
-		static AssetCharacter existsInContentStore(String uuid) {
-			return new AssetCharacter(uuid, true);
-		}
-
-		public String getUuid() {
-			return uuid;
-		}
-
-		public String getErrorMessage() {
-			return errorMessage;
-		}
-
-		public String getUnderlyingType() {
-			return underlyingType;
-		}
-
-		public boolean existsInContentStore() {
-			return existsInContentStore;
-		}
-	}
 }
