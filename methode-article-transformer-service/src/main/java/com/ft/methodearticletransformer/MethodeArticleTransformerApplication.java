@@ -47,6 +47,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
     @Override
     public void run(final MethodeArticleTransformerConfiguration configuration, final Environment environment) throws Exception {
+        org.slf4j.LoggerFactory.getLogger(MethodeArticleTransformerApplication.class)
+            .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
+        
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
     		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*");
 
