@@ -60,7 +60,7 @@ public class EomFileProcessorForContentStoreTest {
 	private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 	private static final String TRANSFORMED_BODY = "<p>some other random text</p>";
 	private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
-    private static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
+    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
 
     public static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -292,12 +292,12 @@ public class EomFileProcessorForContentStoreTest {
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
-
+    
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
     }
 
-    private EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
+    public static EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
