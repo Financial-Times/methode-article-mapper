@@ -1,18 +1,18 @@
 package com.ft.methodearticletransformer.methode;
 
 /**
- * MethodeApiUnavailableException
+ * SourceApiUnavailableException
  *
  * @author Simon.Gibbs
  */
-public class MethodeApiUnavailableException extends RuntimeException {
+public class SourceApiUnavailableException extends RuntimeException {
 	private static final long serialVersionUID = 8803441501377423575L;
 
-	public MethodeApiUnavailableException(Throwable cause) {
+	public SourceApiUnavailableException(Throwable cause) {
         super(cause.getMessage(),cause);
     }
 
-    public MethodeApiUnavailableException(String msg, Throwable cause) {
+    public SourceApiUnavailableException(String msg, Throwable cause) {
         super(msg, cause);
     }
 

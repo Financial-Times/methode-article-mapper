@@ -2,11 +2,11 @@ package com.ft.methodearticletransformer.methode;
 
 import java.util.UUID;
 
-public class MethodeFileNotFoundException extends RuntimeException {
+public class ResourceNotFoundException extends RuntimeException {
 	private static final long serialVersionUID = -8165313320588116117L;
 	private final UUID uuid;
 
-    public MethodeFileNotFoundException(UUID uuid) {
+    public ResourceNotFoundException(UUID uuid) {
         super("methode file not found for uuid " + uuid);
         this.uuid = uuid;
     }

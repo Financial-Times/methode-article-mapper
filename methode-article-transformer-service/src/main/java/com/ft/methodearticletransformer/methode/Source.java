@@ -1,13 +1,13 @@
 package com.ft.methodearticletransformer.methode;
 
+import com.ft.methodearticletransformer.model.EomAssetType;
+import com.ft.methodearticletransformer.model.EomFile;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodeapi.model.EomFile;
-
-public interface MethodeFileService {
+public interface Source {
 
     EomFile fileByUuid(UUID uuid, String transactionId);
 

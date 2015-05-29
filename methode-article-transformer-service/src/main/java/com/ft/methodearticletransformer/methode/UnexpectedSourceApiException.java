@@ -3,14 +3,14 @@ package com.ft.methodearticletransformer.methode;
 import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
 
 /**
- * UnexpectedMethodeApiException
+ * UnexpectedSourceApiException
  *
  * @author Simon.Gibbs
  */
-public class UnexpectedMethodeApiException extends RuntimeException {
+public class UnexpectedSourceApiException extends RuntimeException {
 	private static final long serialVersionUID = 2878959132253974219L;
 
-	public UnexpectedMethodeApiException(RemoteApiException cause) {
+	public UnexpectedSourceApiException(RemoteApiException cause) {
         super(cause.getMessage(),cause);
     }
 
