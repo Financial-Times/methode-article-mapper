@@ -139,8 +139,12 @@ public class EomFileProcessorForContentStore {
             TransformerException, ParserConfigurationException, SAXException, IOException {
 
         if (mainImage != null) {
+
+            InputSource inputSource = new InputSource();
+            inputSource.setCharacterStream(new StringReader(body));
+
             Element bodyNode = getDocumentBuilder()
-                    .parse(new ByteArrayInputStream(body.getBytes()))
+                    .parse(inputSource)
                     .getDocumentElement();
             final String flag = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomArticleImage", attributesDocument);
             if (!NO_PICTURE_FLAG.equalsIgnoreCase(flag)) {
