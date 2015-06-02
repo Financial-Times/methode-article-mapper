@@ -20,7 +20,7 @@ import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfigurat
 import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
 import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
 import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
-import com.ft.methodearticletransformer.methode.Source;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.UnexpectedSourceApiException;
 import com.ft.methodearticletransformer.model.EomAssetType;
 import com.ft.methodearticletransformer.model.EomFile;
@@ -35,9 +35,9 @@ import io.dropwizard.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RestSource implements Source {
+public class RestContentSourceService implements ContentSourceService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RestSource.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RestContentSourceService.class);
 
 	private final int numberOfAssetIdsPerAssetTypeRequest;
 	private final Client jerseyClient;
@@ -46,7 +46,7 @@ public class RestSource implements Source {
 	private ExecutorService executorService;
 
 
-	public RestSource(Environment environment, Client sourceApiClient, SourceApiEndpointConfiguration sourceApiConfiguration) {
+	public RestContentSourceService(Environment environment, Client sourceApiClient, SourceApiEndpointConfiguration sourceApiConfiguration) {
 		jerseyClient = sourceApiClient;
 		apiHost = sourceApiConfiguration.getEndpointConfiguration().getHost();
 		apiPort = sourceApiConfiguration.getEndpointConfiguration().getPort();

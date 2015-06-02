@@ -66,7 +66,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Matchers;
 
-public class RestSourceTest {
+public class RestContentSourceServiceTest {
 
 	private static final String TEST_HOST = "localhost";
 	private static final String ROOT = "/";
@@ -94,8 +94,8 @@ public class RestSourceTest {
     private Client mockClient = new Client(handler);
     private ClientResponse clientResponse = mock(ClientResponse.class);
 
-	private RestSource restMethodeFileService;
-	private RestSource mockedClientRestMethodeFileService;
+	private RestContentSourceService restMethodeFileService;
+	private RestContentSourceService mockedClientRestMethodeFileService;
 
 	@Before
 	public void setup() {
@@ -127,12 +127,12 @@ public class RestSourceTest {
 		HostAndPort endpoint = HostAndPort.fromParts("localhost", port);
 		Client client = ResilientClientBuilder.inTesting(endpoint).build();
 
-		restMethodeFileService = new RestSource(environment, client, sourceApiEndpointConfiguration);
+		restMethodeFileService = new RestContentSourceService(environment, client, sourceApiEndpointConfiguration);
 
 		//for cases where we want to control what the client does
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(Matchers.<GenericType<Map<String, EomAssetType>>>any())).thenReturn(new HashMap<String, EomAssetType>());
-		mockedClientRestMethodeFileService = new RestSource(environment, mockClient, sourceApiEndpointConfiguration);
+		mockedClientRestMethodeFileService = new RestContentSourceService(environment, mockClient, sourceApiEndpointConfiguration);
 	}
 
 

@@ -25,11 +25,11 @@ public class MethodeArticleTransformerResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
-    private final Source source;
+    private final ContentSourceService contentSourceService;
     private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
-    public MethodeArticleTransformerResource(Source source, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
-		this.source = source;
+    public MethodeArticleTransformerResource(ContentSourceService contentSourceService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+		this.contentSourceService = contentSourceService;
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}
 
@@ -54,7 +54,7 @@ public class MethodeArticleTransformerResource {
 		}
         
         try {
-        	EomFile eomFile = source.fileByUuid(uuid, transactionId);
+        	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
         } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)

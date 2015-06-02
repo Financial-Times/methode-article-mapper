@@ -30,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticletransformer.methode.Source;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -42,7 +42,7 @@ import com.sun.jersey.spi.MessageBodyWorkers;
 public class MethodeLinksBodyProcessorTest {
 	
 	@Mock
-	private Source source;
+	private ContentSourceService contentSourceService;
 	@Mock
 	private ResilientClient semanticStoreContentReaderClient;
 
@@ -107,7 +107,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldNotReplaceNodeWhenItsALinkThatWillNotBeInTheContentStore(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(source.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -119,7 +119,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldNotTransformAPDFLinkIntoAnInternalLink() {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put("add666f2-cd78-11e4-a15a-00144feab7de", new EomAssetType.Builder().type("Pdf").uuid("add666f2-cd78-11e4-a15a-00144feab7de").build());
-		when(source.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		String body = "<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -130,7 +130,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldStripIntlFromHrefValueWhenItsNotAValidInternalLink(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(source.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/intl/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -142,7 +142,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldStripParamFromHrefValueWhenItsNotAValidInternalLink(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(source.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html?param=5\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -172,7 +172,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldConvertNonArticlePathBasedInternalLinksToFullFledgedWebsiteLinks(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("EOM::MediaGallery").uuid(uuid).build());
-		when(source.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"/FT Production/Slideshows/gallery.xml;uuid=" + uuid + "\" title=\"Some absurd text here\"> Link Text</a></body>";

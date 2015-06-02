@@ -21,8 +21,8 @@ import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerC
 import com.ft.methodearticletransformer.configuration.SemanticReaderEndpointConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
-import com.ft.methodearticletransformer.methode.Source;
-import com.ft.methodearticletransformer.methode.rest.RestSource;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
+import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
 import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
@@ -62,13 +62,13 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
-        Source source = new RestSource(environment, sourceApiClient, sourceApiEndpointConfiguration);
-        environment.jersey().register(new MethodeArticleTransformerResource(source,
+        ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+        environment.jersey().register(new MethodeArticleTransformerResource(contentSourceService,
         		configureEomFileProcessorForContentStore(semanticReaderClient, uri,
                         configuration.getFinancialTimesBrand(), videoMatcher)));
         
-        environment.healthChecks().register("Source API ping", new RemoteDropWizardPingHealthCheck(
-                "source api ping",
+        environment.healthChecks().register("ContentSourceService API ping", new RemoteDropWizardPingHealthCheck(
+                "contentSourceService api ping",
                 sourceApiClient,
         		sourceApiEndpointConfiguration.getEndpointConfiguration())
         );

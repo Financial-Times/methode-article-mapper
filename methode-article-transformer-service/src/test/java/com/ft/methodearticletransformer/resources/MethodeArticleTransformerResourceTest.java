@@ -15,15 +15,8 @@ import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
-import com.ft.methodearticletransformer.methode.Source;
-import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
-import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
-import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
-import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.*;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import org.apache.http.HttpStatus;
@@ -35,16 +28,16 @@ public class MethodeArticleTransformerResourceTest {
 	private static final String TRANSACTION_ID = "tid_test";
 
 	private MethodeArticleTransformerResource methodeArticleTransformerResource;
-	private Source source;
+	private ContentSourceService contentSourceService;
 	private HttpHeaders httpHeaders;
 	private EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
 	@Before
 	public void setup() {
-		source = mock(Source.class);
+		contentSourceService = mock(ContentSourceService.class);
 		eomFileProcessorForContentStore = mock(EomFileProcessorForContentStore.class);
 
-		methodeArticleTransformerResource = new MethodeArticleTransformerResource(source, eomFileProcessorForContentStore);
+		methodeArticleTransformerResource = new MethodeArticleTransformerResource(contentSourceService, eomFileProcessorForContentStore);
 
 		httpHeaders = mock(HttpHeaders.class);
 		when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
@@ -55,7 +48,7 @@ public class MethodeArticleTransformerResourceTest {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
 		Content content = Content.builder().build();
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)). thenReturn(content);
 
 		assertThat(methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders), equalTo(content));
@@ -94,7 +87,7 @@ public class MethodeArticleTransformerResourceTest {
 	@Test
 	public void shouldThrow404ExceptionWhenContentNotFoundInMethode() {
 		UUID randomUuid = UUID.randomUUID();
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new ResourceNotFoundException(randomUuid));
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new ResourceNotFoundException(randomUuid));
 		try {
 			methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
 			fail("No exception was thrown, but expected one.");
@@ -111,7 +104,7 @@ public class MethodeArticleTransformerResourceTest {
     @Test
     public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
         UUID randomUuid = UUID.randomUUID();
-        when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new MethodeMarkedDeletedException(randomUuid));
+        when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenThrow(new MethodeMarkedDeletedException(randomUuid));
         try {
             methodeArticleTransformerResource.getByUuid(randomUuid.toString(), httpHeaders);
             fail("No exception was thrown, but expected one.");
@@ -129,7 +122,7 @@ public class MethodeArticleTransformerResourceTest {
 	public void shouldThrow404ExceptionWhenContentNotEligibleForPublishing() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new UnsupportedTypeException(randomUuid, "EOM::DistortedStory"));
 		try {
@@ -150,7 +143,7 @@ public class MethodeArticleTransformerResourceTest {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
 		Date embargoDate = new Date();
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new EmbargoDateInTheFutureException(randomUuid, embargoDate));
 		try {
@@ -170,7 +163,7 @@ public class MethodeArticleTransformerResourceTest {
 	public void shouldThrow404ExceptionWhenNotWebChannel() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new NotWebChannelException(randomUuid));
 		try {
@@ -190,7 +183,7 @@ public class MethodeArticleTransformerResourceTest {
 	public void shouldThrow404ExceptionWhenSourceNotFt() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String sourceOtherThanFt = "Pepsi";
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new SourceNotEligibleForPublishException(randomUuid, sourceOtherThanFt));
@@ -211,7 +204,7 @@ public class MethodeArticleTransformerResourceTest {
 	public void shouldThrow404ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String workflowStatusNotEligibleForPublishing = "Story/Edit";
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new WorkflowStatusNotEligibleForPublishException(randomUuid, workflowStatusNotEligibleForPublishing));
@@ -233,7 +226,7 @@ public class MethodeArticleTransformerResourceTest {
 	public void shouldThrow404ExceptionWhenMethodeFieldMissing() {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
-		when(source.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
+		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String missingField = "publishedDate";
 		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
 				thenThrow(new MethodeMissingFieldException(randomUuid, missingField));
