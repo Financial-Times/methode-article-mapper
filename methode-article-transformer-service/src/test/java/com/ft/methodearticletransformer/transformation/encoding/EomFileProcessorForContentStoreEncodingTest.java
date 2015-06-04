@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
-import com.ft.methodeapi.model.EomFile;
+import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
