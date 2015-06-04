@@ -213,7 +213,7 @@ public class RestContentSourceService implements ContentSourceService {
 
 	private UriBuilder fileUrlBuilder() {
 
-		return UriBuilder.fromPath("eom-file")
+		return UriBuilder.fromPath("methode")
 				.path("{uuid}")
 				.scheme("http")
 				.host(apiHost)

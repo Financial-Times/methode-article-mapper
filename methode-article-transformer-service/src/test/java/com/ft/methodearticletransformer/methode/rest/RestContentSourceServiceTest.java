@@ -263,7 +263,7 @@ public class RestContentSourceServiceTest {
     }
 
 	private UrlMatchingStrategy toFindEomFileUrl() {
-		return urlMatching("/eom-file/.*");
+		return urlMatching("/methode/.*");
 	}
 
 	private UrlMatchingStrategy toFindAssetTypesUrl() {
