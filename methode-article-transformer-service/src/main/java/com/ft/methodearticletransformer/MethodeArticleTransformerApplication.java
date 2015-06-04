@@ -16,14 +16,13 @@ import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
 import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
-import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
+import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
 import com.ft.methodearticletransformer.configuration.SemanticReaderEndpointConfiguration;
-import com.ft.methodearticletransformer.health.RemoteDependencyHealthCheck;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
-import com.ft.methodearticletransformer.methode.rest.RestMethodeFileService;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
+import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
 import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
@@ -58,54 +57,45 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
         SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration = configuration.getSemanticReaderEndpointConfiguration();
         ResilientClient semanticReaderClient = (ResilientClient) configureResilientClient(environment, semanticReaderEndpointConfiguration.getEndpointConfiguration(), semanticReaderEndpointConfiguration.getConnectionConfig());
-    	MethodeApiEndpointConfiguration methodeApiEndpointConfiguration = configuration.getMethodeApiConfiguration();
-        Client clientForMethodeApiClient = configureResilientClient(environment, methodeApiEndpointConfiguration.getEndpointConfiguration(), methodeApiEndpointConfiguration.getConnectionConfiguration());
-    	Client clientForMethodeApiClientOnAdminPort = getClientForMethodeApiClientOnAdminPort(environment, methodeApiEndpointConfiguration);
+    	SourceApiEndpointConfiguration sourceApiEndpointConfiguration = configuration.getSourceApiConfiguration();
+        Client sourceApiClient = configureResilientClient(environment, sourceApiEndpointConfiguration.getEndpointConfiguration(), sourceApiEndpointConfiguration.getConnectionConfiguration());
 
         VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
 
         EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
-        MethodeFileService methodeFileService = configureMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
-        environment.jersey().register(new MethodeArticleTransformerResource(methodeFileService,
-        		configureEomFileProcessorForContentStore(methodeFileService, semanticReaderClient, uri, configuration.getFinancialTimesBrand(), videoMatcher)));
+        ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+        environment.jersey().register(new MethodeArticleTransformerResource(contentSourceService,
+        		configureEomFileProcessorForContentStore(semanticReaderClient, uri,
+                        configuration.getFinancialTimesBrand(), videoMatcher)));
         
-        environment.healthChecks().register("MethodeAPI ping", new RemoteDropWizardPingHealthCheck("methode api ping",
-                clientForMethodeApiClientOnAdminPort,
-        		methodeApiEndpointConfiguration.getEndpointConfiguration()));
-        environment.healthChecks().register("MethodeAPI version", new RemoteDependencyHealthCheck("methode api version", 
-        		clientForMethodeApiClient, 
-        		methodeApiEndpointConfiguration.getEndpointConfiguration(), buildInfoResource, "build.minimum.methode.api.version"));
+        environment.healthChecks().register("ContentSourceService API ping", new RemoteDropWizardPingHealthCheck(
+                "contentSourceService api ping",
+                sourceApiClient,
+        		sourceApiEndpointConfiguration.getEndpointConfiguration())
+        );
         environment.jersey().register(RuntimeExceptionMapper.class);
         Errors.customise(new MethodeArticleTransformerErrorEntityFactory());
-
     }
-
-	private MethodeFileService configureMethodeFileService(Environment environment, Client clientForMethodeApiClient, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-        return new RestMethodeFileService(environment, clientForMethodeApiClient, methodeApiEndpointConfiguration);
-	}
 
     private Client configureResilientClient(Environment environment, EndpointConfiguration endpointConfiguration, ConnectionConfiguration connectionConfig) {
         return  ResilientClientBuilder.in(environment)
                 .using(endpointConfiguration)
-                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(connectionConfig.getNumberOfConnectionAttempts(), connectionConfig.getTimeoutMultiplier()))
+                .withContinuationPolicy(
+                        new ExponentialBackoffContinuationPolicy(
+                                connectionConfig.getNumberOfConnectionAttempts(),
+                                connectionConfig.getTimeoutMultiplier()
+                        )
+                )
                 .build();
     }
 
-	private Client getClientForMethodeApiClientOnAdminPort(Environment environment, MethodeApiEndpointConfiguration methodeApiEndpointConfiguration) {
-		return ResilientClientBuilder.in(environment)
-                .using(methodeApiEndpointConfiguration.getEndpointConfiguration())
-                .withContinuationPolicy(new ExponentialBackoffContinuationPolicy(methodeApiEndpointConfiguration.getConnectionConfiguration().getNumberOfConnectionAttempts(), methodeApiEndpointConfiguration.getConnectionConfiguration().getTimeoutMultiplier()))
-                .usingAdminPorts()
-                .build();
-	}
-
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(MethodeFileService methodeFileService, ResilientClient semanticStoreContentReaderClient, URI uri, Brand financialTimesBrand, VideoMatcher videoMatcher) {
+	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(ResilientClient semanticStoreContentReaderClient,
+                 URI uri, Brand financialTimesBrand, VideoMatcher videoMatcher) {
 		return new EomFileProcessorForContentStore(
 				new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}
-
 }

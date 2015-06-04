@@ -15,15 +15,9 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodeapi.model.EomFile;
-import com.ft.methodearticletransformer.methode.MethodeApiUnavailableException;
-import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
-import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
-import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
-import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
+import com.ft.methodearticletransformer.methode.*;
+import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
+import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
 
 @Path("/content")
@@ -31,11 +25,11 @@ public class MethodeArticleTransformerResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
-    private final MethodeFileService methodeFileService;
+    private final ContentSourceService contentSourceService;
     private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
-    public MethodeArticleTransformerResource(MethodeFileService methodeFileService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
-		this.methodeFileService = methodeFileService;
+    public MethodeArticleTransformerResource(ContentSourceService contentSourceService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+		this.contentSourceService = contentSourceService;
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}
 
@@ -60,13 +54,13 @@ public class MethodeArticleTransformerResource {
 		}
         
         try {
-        	EomFile eomFile = methodeFileService.fileByUuid(uuid, transactionId);
+        	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
-        } catch (MethodeApiUnavailableException e) {
+        } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)
                     .reason(ErrorMessage.METHODE_API_UNAVAILABLE)
                     .exception(e);
-        } catch (MethodeFileNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
 			throw ClientError.status(404)
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);

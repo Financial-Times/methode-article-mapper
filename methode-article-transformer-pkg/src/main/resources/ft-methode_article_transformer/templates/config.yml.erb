@@ -48,13 +48,13 @@ semanticContentStoreReader:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
-methodeApi:
+sourceApi:
     endpointConfiguration:
-        shortName: "methode"
+        shortName: "nativeStore"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: <%=scope.function_hiera('methodeApiReaderLocalNodes')%>
-        secondaryNodes: <%=scope.function_hiera('methodeApiReaderRemoteNodes','null')%>
+        primaryNodes: <%=scope.function_hiera('sourceApiReaderLocalNodes')%>
+        secondaryNodes: <%=scope.function_hiera('sourceApiReaderRemoteNodes','null')%>
     assetTypeRequestConfiguration:
         numberOfAssetIdsPerAssetTypeRequest: 3
         numberOfParallelAssetTypeRequests: 4

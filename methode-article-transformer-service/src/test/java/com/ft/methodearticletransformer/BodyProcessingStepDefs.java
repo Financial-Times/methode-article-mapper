@@ -9,9 +9,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -36,13 +33,10 @@ import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.bodyprocessing.xml.eventhandlers.TransformingEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
@@ -58,7 +52,6 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
 import org.codehaus.stax2.ri.evt.StartElementEventImpl;
 import org.custommonkey.xmlunit.Diff;
-import org.mockito.Mock;
 
 public class BodyProcessingStepDefs {
 

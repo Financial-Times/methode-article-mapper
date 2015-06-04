@@ -12,23 +12,23 @@ import java.util.List;
 public class MethodeArticleTransformerConfiguration extends Configuration {
 	
 	private final SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration;
-	private final MethodeApiEndpointConfiguration methodeApiConfiguration;
+	private final SourceApiEndpointConfiguration sourceApiConfiguration;
     private final Brand financialTimesBrand;
     private final List<VideoSiteConfiguration> videoSiteConfig;
 
-    public MethodeArticleTransformerConfiguration(@JsonProperty("methodeApi") MethodeApiEndpointConfiguration methodeApiConfiguration,
+    public MethodeArticleTransformerConfiguration(@JsonProperty("sourceApi") SourceApiEndpointConfiguration sourceApiConfiguration,
                                                   @JsonProperty("semanticContentStoreReader") SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration,
                                                   @JsonProperty("financialTimesBrandId") String financialTimesBrandId,
                                                   @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig) {
 
         this.semanticReaderEndpointConfiguration = semanticReaderEndpointConfiguration;
-		this.methodeApiConfiguration = methodeApiConfiguration;
+		this.sourceApiConfiguration = sourceApiConfiguration;
         this.financialTimesBrand = new Brand(financialTimesBrandId);
         this.videoSiteConfig = videoSiteConfig;
     }
 
-	public MethodeApiEndpointConfiguration getMethodeApiConfiguration() {
-		return methodeApiConfiguration;
+	public SourceApiEndpointConfiguration getSourceApiConfiguration() {
+		return sourceApiConfiguration;
 	}
 
 	@NotNull

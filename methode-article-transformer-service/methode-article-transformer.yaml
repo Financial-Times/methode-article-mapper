@@ -112,12 +112,12 @@ semanticContentStoreReader:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
-methodeApi:
+sourceApi:
     endpointConfiguration:
-        shortName: "methode"
+        shortName: "nativeStore"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: ["localhost:9080:9081", "localhost:9080:9081"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
     assetTypeRequestConfiguration:
         numberOfAssetIdsPerAssetTypeRequest: 3

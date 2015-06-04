@@ -32,14 +32,14 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfiguration;
-import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
+import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
-import com.ft.methodearticletransformer.methode.MethodeApiUnavailableException;
-import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
-import com.ft.methodearticletransformer.methode.UnexpectedMethodeApiException;
+import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
+import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
+import com.ft.methodearticletransformer.methode.UnexpectedSourceApiException;
+import com.ft.methodearticletransformer.model.EomAssetType;
+import com.ft.methodearticletransformer.model.EomFile;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
@@ -66,7 +66,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Matchers;
 
-public class RestMethodeFileServiceTest {
+public class RestContentSourceServiceTest {
 
 	private static final String TEST_HOST = "localhost";
 	private static final String ROOT = "/";
@@ -78,24 +78,24 @@ public class RestMethodeFileServiceTest {
     private static final Integer NUMBER_OF_PARALLEL_ASSET_TYPE_REQUESTS = 4;
 
 	@ClassRule
-	public static WireMockClassRule methodeApiWireMockRule = new WireMockClassRule(0); //will allocate a free port
+	public static WireMockClassRule sourceApiWireMockRule = new WireMockClassRule(0); //will allocate a free port
 
 	@Rule
-	public WireMockClassRule methodeApiInstanceRule = methodeApiWireMockRule;
+	public WireMockClassRule sourceApiInstanceRule = sourceApiWireMockRule;
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
 	private ObjectMapper objectMapper;
-	private MethodeApiEndpointConfiguration methodeApiEndpointConfiguration;
+	private SourceApiEndpointConfiguration sourceApiEndpointConfiguration;
 	private Environment environment;
 
 	private ClientHandler handler = mock(ClientHandler.class);
     private Client mockClient = new Client(handler);
     private ClientResponse clientResponse = mock(ClientResponse.class);
 
-	private RestMethodeFileService restMethodeFileService;
-	private RestMethodeFileService mockedClientRestMethodeFileService;
+	private RestContentSourceService restMethodeFileService;
+	private RestContentSourceService mockedClientRestMethodeFileService;
 
 	@Before
 	public void setup() {
@@ -105,7 +105,7 @@ public class RestMethodeFileServiceTest {
 		fastTimeOuts.setConnectionTimeout(Duration.milliseconds(100));
 		fastTimeOuts.setTimeout(Duration.milliseconds(100));
 
-		int port = methodeApiInstanceRule.port();
+		int port = sourceApiInstanceRule.port();
 
 		EndpointConfiguration endpointConfiguration = new EndpointConfiguration(
 				Optional.of("methode-file-service-test"),
@@ -119,20 +119,20 @@ public class RestMethodeFileServiceTest {
 
         ConnectionConfiguration connectionConfig = new ConnectionConfiguration(3, 1000);
 
-		methodeApiEndpointConfiguration =
-				new MethodeApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration, connectionConfig);
+		sourceApiEndpointConfiguration =
+				new SourceApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration, connectionConfig);
 
 		environment = new Environment("test-env", null, null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
 
 		HostAndPort endpoint = HostAndPort.fromParts("localhost", port);
 		Client client = ResilientClientBuilder.inTesting(endpoint).build();
 
-		restMethodeFileService = new RestMethodeFileService(environment, client, methodeApiEndpointConfiguration);
+		restMethodeFileService = new RestContentSourceService(environment, client, sourceApiEndpointConfiguration);
 
 		//for cases where we want to control what the client does
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(Matchers.<GenericType<Map<String, EomAssetType>>>any())).thenReturn(new HashMap<String, EomAssetType>());
-		mockedClientRestMethodeFileService = new RestMethodeFileService(environment, mockClient, methodeApiEndpointConfiguration);
+		mockedClientRestMethodeFileService = new RestContentSourceService(environment, mockClient, sourceApiEndpointConfiguration);
 	}
 
 
@@ -167,7 +167,7 @@ public class RestMethodeFileServiceTest {
     }
 
 	@Test
-	public void shouldReturnValidEomFileWhenFileFoundInMethode() {
+	public void shouldReturnValidEomFileWhenFileFound() {
 		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(200)));
 
 		EomFile eomFile = restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
@@ -181,55 +181,55 @@ public class RestMethodeFileServiceTest {
 	}
 
 	@Test
-	public void shouldThrowMethodeFileNotFoundExceptionWhen404FromMethodeApiRetrievingEomFile() {
+	public void shouldThrowFileNotFoundExceptionWhen404RetrievingEomFile() {
 	    stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(404)));
-	    expectedException.expect(MethodeFileNotFoundException.class);
+	    expectedException.expect(ResourceNotFoundException.class);
 	    expectedException.expect(hasProperty("uuid", equalTo(SAMPLE_UUID)));
 	    restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
 	}
 
 	@Test
-	public void shouldThrowMethodeApiUnavailableExceptionWhen503FromMethodeApiRetrievingEomFile() {
+	public void shouldThrowSourceApiUnavailableExceptionWhen503RetrievingEomFile() {
 		stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(503)));
-		expectedException.expect(MethodeApiUnavailableException.class);
+		expectedException.expect(SourceApiUnavailableException.class);
 		restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
 	}
 
     @Test
-    public void shouldThrowUnexpectedMethodeApiExceptionWhen500FromMethodeApiRetrievingEomFile() {
+    public void shouldThrowUnexpectedSourceApiExceptionWhen500RetrievingEomFile() {
         stubFor(get(toFindEomFileUrl()).willReturn(anEomFileResponse(500)));
-        expectedException.expect(UnexpectedMethodeApiException.class);
+        expectedException.expect(UnexpectedSourceApiException.class);
         restMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
 	@Test
     public void shouldThrowDistinctExceptionForSocketTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new SocketTimeoutException()));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
     @Test
     public void shouldThrowDistinctExceptionForAnyOtherIssueWithTheTcpSocket() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new SocketException()));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
     @Test
     public void shouldThrowDistinctExceptionForConnectionTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenThrow( new ClientHandlerException(new ConnectTimeoutException()));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
 
 
 	@Test
-    public void shouldThrowMethodeApiUnavailableExceptionWhen503FromMethodeApiRetrievingAssetTypes() throws Exception {
+    public void shouldThrowSourceApiUnavailableExceptionWhen503RetrievingAssetTypes() throws Exception {
 	    Map<String, EomAssetType> expectedAssetTypes = getExpectedAssetTypesForSlice(Lists.newArrayList("test1"));
         stubFor(post(toFindAssetTypesUrl()).willReturn(anAssetTypeResponseForExpectedOutput(expectedAssetTypes, 503)));
 
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
 
         restMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
@@ -239,7 +239,7 @@ public class RestMethodeFileServiceTest {
 	public void shouldThrowApiNetworkingExceptionForGetAssetTypesWhenOneRequestFailsWithSocketTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new SocketTimeoutException("socket timeout")));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
 
@@ -248,7 +248,7 @@ public class RestMethodeFileServiceTest {
     public void shouldThrowDistinctExceptionForGetAssetTypesWhenOneRequestFailsWithConnectTimeout() {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new ConnectTimeoutException("connect timeout")));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
 
@@ -258,7 +258,7 @@ public class RestMethodeFileServiceTest {
         when(handler.handle(any(ClientRequest.class))).thenReturn(clientResponse)
             .thenThrow( new ClientHandlerException(new SocketTimeoutException("socket timeout")))
             .thenThrow( new ClientHandlerException(new ConnectTimeoutException("connect timeout")));
-        expectedException.expect(MethodeApiUnavailableException.class);
+        expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.assetTypes(Sets.newHashSet("test1", "test2", "test3", "test4", "test5"), SAMPLE_TRANSACTION_ID);
     }
 

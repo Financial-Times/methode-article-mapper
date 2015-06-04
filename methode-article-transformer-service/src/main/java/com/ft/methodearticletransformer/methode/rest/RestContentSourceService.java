@@ -16,14 +16,14 @@ import javax.ws.rs.core.UriBuilder;
 import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.methodeapi.model.EomAssetType;
-import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfiguration;
-import com.ft.methodearticletransformer.configuration.MethodeApiEndpointConfiguration;
-import com.ft.methodearticletransformer.methode.MethodeApiUnavailableException;
-import com.ft.methodearticletransformer.methode.MethodeFileNotFoundException;
-import com.ft.methodearticletransformer.methode.MethodeFileService;
-import com.ft.methodearticletransformer.methode.UnexpectedMethodeApiException;
+import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
+import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
+import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
+import com.ft.methodearticletransformer.methode.UnexpectedSourceApiException;
+import com.ft.methodearticletransformer.model.EomAssetType;
+import com.ft.methodearticletransformer.model.EomFile;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.Client;
@@ -35,9 +35,9 @@ import io.dropwizard.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RestMethodeFileService implements MethodeFileService {
+public class RestContentSourceService implements ContentSourceService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RestMethodeFileService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RestContentSourceService.class);
 
 	private final int numberOfAssetIdsPerAssetTypeRequest;
 	private final Client jerseyClient;
@@ -46,14 +46,14 @@ public class RestMethodeFileService implements MethodeFileService {
 	private ExecutorService executorService;
 
 
-	public RestMethodeFileService(Environment environment, Client methodeApiClient, MethodeApiEndpointConfiguration methodeApiConfiguration) {
-		jerseyClient = methodeApiClient;
-		apiHost = methodeApiConfiguration.getEndpointConfiguration().getHost();
-		apiPort = methodeApiConfiguration.getEndpointConfiguration().getPort();
+	public RestContentSourceService(Environment environment, Client sourceApiClient, SourceApiEndpointConfiguration sourceApiConfiguration) {
+		jerseyClient = sourceApiClient;
+		apiHost = sourceApiConfiguration.getEndpointConfiguration().getHost();
+		apiPort = sourceApiConfiguration.getEndpointConfiguration().getPort();
 
-		this.executorService = buildExecutorService(environment, methodeApiConfiguration.getAssetTypeRequestConfiguration());
+		this.executorService = buildExecutorService(environment, sourceApiConfiguration.getAssetTypeRequestConfiguration());
 
-		AssetTypeRequestConfiguration assetTypeRequestConfiguration = methodeApiConfiguration.getAssetTypeRequestConfiguration();
+		AssetTypeRequestConfiguration assetTypeRequestConfiguration = sourceApiConfiguration.getAssetTypeRequestConfiguration();
 		if (assetTypeRequestConfiguration != null) {
 			this.numberOfAssetIdsPerAssetTypeRequest = assetTypeRequestConfiguration.getNumberOfAssetIdsPerAssetTypeRequest();
 		} else { // choose sensible defaults
@@ -69,11 +69,11 @@ public class RestMethodeFileService implements MethodeFileService {
 		} catch (RemoteApiException rae) {
 			switch (rae.getStatus()) {
 				case 404:
-					throw new MethodeFileNotFoundException(uuid);
+					throw new ResourceNotFoundException(uuid);
 				case 503:
-					throw new MethodeApiUnavailableException(rae);
+					throw new SourceApiUnavailableException(rae);
 				default:
-					throw new UnexpectedMethodeApiException(rae);
+					throw new UnexpectedSourceApiException(rae);
 			}
 		}
     }
@@ -93,7 +93,7 @@ public class RestMethodeFileService implements MethodeFileService {
 		} catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
 			if(cause instanceof IOException) {
-				throw new MethodeApiUnavailableException(cause);
+				throw new SourceApiUnavailableException(cause);
 			}
 			throw che;
 		}
@@ -148,16 +148,16 @@ public class RestMethodeFileService implements MethodeFileService {
 				Throwable cause = e.getCause();
 				if(cause instanceof ClientHandlerException) {
 					if (cause.getCause() instanceof IOException) {
-						throw new MethodeApiUnavailableException(assetTypeUri.toString(), e);
+						throw new SourceApiUnavailableException(assetTypeUri.toString(), e);
 					}
 					throw (ClientHandlerException) cause;
 				}
 			} catch (RemoteApiException rae) {
 			    switch (rae.getStatus()) {
                     case 503:
-                        throw new MethodeApiUnavailableException(rae);
+                        throw new SourceApiUnavailableException(rae);
                     default:
-                        throw new UnexpectedMethodeApiException(rae);
+                        throw new UnexpectedSourceApiException(rae);
 			    }
 			}
 		}

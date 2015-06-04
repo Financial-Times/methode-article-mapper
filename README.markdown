@@ -1,11 +1,10 @@
 # Methode Article Transformer
 Methode Article Transformer is a Dropwizard application which responds to a request for an article, 
-obtaining it from Methode and converting it into the canonical universal publishing json format.
+obtaining it from the Native Store and converting it into the canonical universal publishing json format.
 Currently only methode compound articles are supported.
 
 ## Introduction
-This application uses the following APIs:
- * Methode API
+This application uses the native-store-reader-writer.
 
 ## Running
 In order to run the project, please run com.ft.methodearticletransformer.MethodeArticleTransformerApplication with the following program

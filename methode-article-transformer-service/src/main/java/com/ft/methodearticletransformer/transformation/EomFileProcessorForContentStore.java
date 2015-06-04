@@ -30,7 +30,6 @@ import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
-import com.ft.methodeapi.model.EomFile;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
@@ -39,6 +38,7 @@ import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishExcep
 import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
