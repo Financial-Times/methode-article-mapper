@@ -20,7 +20,6 @@ import com.sun.jersey.api.client.ClientResponse;
  */
 public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
 
-	private static final String EXPECTED_RESPONSE = "pong";
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteDropWizardPingHealthCheck.class);
 
     private EndpointConfiguration endpointConfiguration;
@@ -44,25 +43,11 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
 		ClientResponse response = null;
         try {
             response = client.resource(pingUri).get(ClientResponse.class);
-
             if(response.getStatus()!=200) {
                 String message = String.format("Unexpected status : %s",response.getStatus());
                 return reportUnhealthy(message);
             }
-
-            String responseBody = response.getEntity(String.class);
-            
-            if (responseBody != null) {
-            	responseBody = responseBody.trim();
-            }
-
-            if(!EXPECTED_RESPONSE.equals(responseBody)) {
-                String message = String.format("Unexpected response : %s",responseBody) ;
-                return reportUnhealthy(message);
-            }
-
             return AdvancedResult.healthy();
-
         } catch (Throwable e) {
         	String message = getName() + ": " + "Exception during ping, " + e.getLocalizedMessage();
         	return reportUnhealthy(message);

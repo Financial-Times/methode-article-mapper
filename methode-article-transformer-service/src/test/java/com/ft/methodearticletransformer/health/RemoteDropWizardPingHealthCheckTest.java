@@ -99,19 +99,6 @@ public class RemoteDropWizardPingHealthCheckTest {
 	}
 
 	@Test
-	public void givenPingApiReturnsUnexpectedTextHealthCheckShouldFail() {
-
-		stubFor(get(toHealthcheckUrl()).willReturn(aResponse().withStatus(200).withBody("spong\n")));
-
-		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
-
-		HealthCheck.Result result = checkUnderTest.execute();
-
-		assertThat(result, hasProperty("healthy", is(false)));
-	}
-
-
-	@Test
 	public void givenPingApiReturnsUnexpectedStatusHealthCheckShouldFail() {
 
 		stubFor(get(toHealthcheckUrl()).willReturn(aResponse().withStatus(404).withBody("pong\n")));
