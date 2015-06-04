@@ -72,7 +72,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiIsUpHealthCheckShouldPass() {
 
-		stubFor(get(toPingUrl()).willReturn(aPongResponse()));
+		stubFor(get(toHealthcheckUrl()).willReturn(aPongResponse()));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -89,7 +89,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiIsDownHealthCheckShouldFail() {
 
-		stubFor(get(toPingUrl()).willReturn(aPongResponse().withFixedDelay(thatWill(TIMEOUT))));
+		stubFor(get(toHealthcheckUrl()).willReturn(aPongResponse().withFixedDelay(thatWill(TIMEOUT))));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -101,7 +101,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiReturnsUnexpectedTextHealthCheckShouldFail() {
 
-		stubFor(get(toPingUrl()).willReturn(aResponse().withStatus(200).withBody("spong\n")));
+		stubFor(get(toHealthcheckUrl()).willReturn(aResponse().withStatus(200).withBody("spong\n")));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -114,7 +114,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiReturnsUnexpectedStatusHealthCheckShouldFail() {
 
-		stubFor(get(toPingUrl()).willReturn(aResponse().withStatus(404).withBody("pong\n")));
+		stubFor(get(toHealthcheckUrl()).willReturn(aResponse().withStatus(404).withBody("pong\n")));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -123,8 +123,8 @@ public class RemoteDropWizardPingHealthCheckTest {
 		assertThat(result, hasProperty("healthy", is(false)));
 	}
 
-	private UrlMatchingStrategy toPingUrl() {
-		return urlMatching("/ping");
+	private UrlMatchingStrategy toHealthcheckUrl() {
+		return urlMatching("/__health");
 	}
 
 	private Integer thatWill(Integer n) {

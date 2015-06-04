@@ -35,7 +35,7 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
 	@Override
 	protected AdvancedResult checkAdvanced() throws Exception {
 
-    	URI pingUri = UriBuilder.fromPath("/ping")
+    	URI pingUri = UriBuilder.fromPath("/__health")
                                 .scheme("http")
                                 .host(endpointConfiguration.getHost())
                                 .port(endpointConfiguration.getAdminPort())
