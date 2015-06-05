@@ -34,7 +34,7 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
 	@Override
 	protected AdvancedResult checkAdvanced() throws Exception {
 
-    	URI pingUri = UriBuilder.fromPath("/__health")
+    	URI pingUri = UriBuilder.fromPath("/__gtg")
                                 .scheme("http")
                                 .host(endpointConfiguration.getHost())
                                 .port(endpointConfiguration.getAdminPort())
@@ -81,7 +81,7 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
 
 	@Override
 	protected String technicalSummary() {
-		return "Cannot ping Methode API. Check the service is up and running.";
+		return "Cannot ping Content Source API. Check the service is up and running.";
 	}
 
 }

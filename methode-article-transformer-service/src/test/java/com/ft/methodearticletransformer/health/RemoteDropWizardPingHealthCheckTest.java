@@ -72,7 +72,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiIsUpHealthCheckShouldPass() {
 
-		stubFor(get(toHealthcheckUrl()).willReturn(aPongResponse()));
+		stubFor(get(toGoodToGoUrl()).willReturn(aPongResponse()));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -89,7 +89,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiIsDownHealthCheckShouldFail() {
 
-		stubFor(get(toHealthcheckUrl()).willReturn(aPongResponse().withFixedDelay(thatWill(TIMEOUT))));
+		stubFor(get(toGoodToGoUrl()).willReturn(aPongResponse().withFixedDelay(thatWill(TIMEOUT))));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -101,7 +101,7 @@ public class RemoteDropWizardPingHealthCheckTest {
 	@Test
 	public void givenPingApiReturnsUnexpectedStatusHealthCheckShouldFail() {
 
-		stubFor(get(toHealthcheckUrl()).willReturn(aResponse().withStatus(404).withBody("pong\n")));
+		stubFor(get(toGoodToGoUrl()).willReturn(aResponse().withStatus(404).withBody("pong\n")));
 
 		RemoteDropWizardPingHealthCheck checkUnderTest = new RemoteDropWizardPingHealthCheck("test", client, endpointConfiguration);
 
@@ -110,8 +110,8 @@ public class RemoteDropWizardPingHealthCheckTest {
 		assertThat(result, hasProperty("healthy", is(false)));
 	}
 
-	private UrlMatchingStrategy toHealthcheckUrl() {
-		return urlMatching("/__health");
+	private UrlMatchingStrategy toGoodToGoUrl() {
+		return urlMatching("/__gtg");
 	}
 
 	private Integer thatWill(Integer n) {
