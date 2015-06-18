@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
@@ -46,8 +48,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	private static final String KITCHEN_SINK_ASSET2_UUID = "e78a8668-c997-11e1-aae2-002128161462";
 	private static final String KITCHEN_SINK_ASSET3_UUID = "9b9fed88-d986-11e2-bce1-002128161462";
 	private static final String KITCHEN_SINK_ASSET4_UUID = "f3b60ad0-acda-11e2-a7c4-002128161462";
-
-
+    private static final List<String> INTERACTIVE_GRAPHICS_URLS = Arrays.asList(
+            "http://ft.cartodb.com/viz/be9b3ea0-4fc3-11e4-8181-0e853d047bba/embed_map",
+            "http://ig.ft.com/features/2014-07-21_oilProd/v3/",
+            "http://www.ft.com/ig/widgets/profiles-tiled-layout/1.1.0/index.html?id=0AnE0wMr-SY-LdENVcHdXNDI5dkFKV1FicnZ0RUMweXc",
+            "http://www.ft.com/ig/widgets/sortable-table/v1/widget/index.html?key=1EbhZ99KsC8xd0Aj4UN6DnrZfjWAvsaaUn2AK4IGHC_o",
+            "http://interactive.ftdata.co.uk/features/2013-04-11_renminbiUpdate/index.html"
+    );
 
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -1056,6 +1063,21 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
+    @Test
+    public void shouldProcessInteractiveGraphics() {
+        for (final String url : INTERACTIVE_GRAPHICS_URLS) {
+            final String nativeText = "<body><p>The table below:</p><p><iframe allowTransparency=\"true\" frameborder=\"0\" scrolling=\"no\" src=\"" + url + "\"/></p></body>";
+            final String processedText = "<body><p>The table below:</p><p><a data-asset-type=\"interactive graphic\" href=\"" + url + "\"></a></p></body>";
+            checkTransformation(nativeText, processedText);
+        }
+    }
+
+    @Test
+    public void shouldProcessInteractiveGraphicsWidthAndHeight() {
+        final String nativeText = "<body><p>The table below:</p><p><iframe allowTransparency=\"true\" frameborder=\"0\" height=\"670\" scrolling=\"no\" src=\"http://www.ft.com/ig/widgets/profiles-tiled-layout/1.1.0/index.html?id=0AnE0wMr-SY-LdENVcHdXNDI5dkFKV1FicnZ0RUMweXc\" width=\"980\"/></p></body>";
+        final String processedText = "<body><p>The table below:</p><p><a data-asset-type=\"interactive graphic\" href=\"http://www.ft.com/ig/widgets/profiles-tiled-layout/1.1.0/index.html?id=0AnE0wMr-SY-LdENVcHdXNDI5dkFKV1FicnZ0RUMweXc\" data-width=\"980\" data-height=\"670\"></a></p></body>";
+        checkTransformation(nativeText, processedText);
+    }
 
     @Test
     public void shouldNotProcessOtherIframes() {

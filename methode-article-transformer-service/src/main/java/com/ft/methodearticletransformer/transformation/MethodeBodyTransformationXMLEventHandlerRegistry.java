@@ -6,16 +6,7 @@ import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
-import com.ft.bodyprocessing.xml.eventhandlers.LinkTagXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.PlainTextHtmlEntityReferenceEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainWithSpecificAttributesXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainWithoutAttributesXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformBlockElementEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.SimpleTransformTagXmlEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.StripElementAndContentsXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.StripXMLEventHandler;
-import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
+import com.ft.bodyprocessing.xml.eventhandlers.*;
 
 
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
@@ -34,7 +25,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
 
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new StripElementAndContentsXMLEventHandler(), videoMatcher), "iframe");
+        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new InteractiveGraphicHandler(new StripElementAndContentsXMLEventHandler()), videoMatcher), "iframe");
         registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
         registerStartAndEndElementEventHandler(new RetainWithSpecificAttributesXMLEventHandler("src", "alt", "width", "height"), "img");
 
