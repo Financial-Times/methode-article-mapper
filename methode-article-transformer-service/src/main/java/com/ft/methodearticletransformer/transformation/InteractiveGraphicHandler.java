@@ -20,7 +20,7 @@ public class InteractiveGraphicHandler extends BaseXMLEventHandler {
     private static final String HREF = "href";
     private static final String SRC = "src";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
-    private static final String INTERACTIVE_GRAPHIC = "interactive graphic";
+    private static final String INTERACTIVE_GRAPHIC = "interactive-graphic";
     private static final String WIDTH = "width";
     private static final String HEIGHT = "height";
     private static final String DATA_WIDTH = "data-width";

@@ -33,7 +33,7 @@ public class InteractiveGraphicHandlerTest extends BaseXMLEventHandlerTest {
     private static final String A = "a";
     private static final String HREF = "href";
     private static final String DATA_ASSET_TYPE = "data-asset-type";
-    private static final String INTERACTIVE_GRAPHIC = "interactive graphic";
+    private static final String INTERACTIVE_GRAPHIC = "interactive-graphic";
 
     @Test
     public void shouldFallbackWhenSrcNull() throws Exception {
