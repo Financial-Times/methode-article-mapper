@@ -8,10 +8,10 @@ import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.*;
 
-
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
-    public MethodeBodyTransformationXMLEventHandlerRegistry(VideoMatcher videoMatcher) {
+    public MethodeBodyTransformationXMLEventHandlerRegistry(final VideoMatcher videoMatcher,
+            final InteractiveGraphicsMatcher interactiveGraphicsMatcher) {
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -25,7 +25,16 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
 
         registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
-        registerStartAndEndElementEventHandler(new MethodeOtherVideoXmlEventHandler(new InteractiveGraphicHandler(new StripElementAndContentsXMLEventHandler()), videoMatcher), "iframe");
+        registerStartAndEndElementEventHandler(
+                new MethodeOtherVideoXmlEventHandler(
+                        new InteractiveGraphicHandler(
+                                interactiveGraphicsMatcher,
+                                new StripElementAndContentsXMLEventHandler()
+                        ),
+                        videoMatcher
+                ),
+                "iframe"
+        );
         registerStartAndEndElementEventHandler(new PodcastXMLEventHandler(new StripElementAndContentsXMLEventHandler()), "script");
         registerStartAndEndElementEventHandler(new RetainWithSpecificAttributesXMLEventHandler("src", "alt", "width", "height"), "img");
 

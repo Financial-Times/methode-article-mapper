@@ -27,6 +27,7 @@ import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResou
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.Application;
@@ -60,15 +61,20 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
     	SourceApiEndpointConfiguration sourceApiEndpointConfiguration = configuration.getSourceApiConfiguration();
         Client sourceApiClient = configureResilientClient(environment, sourceApiEndpointConfiguration.getEndpointConfiguration(), sourceApiEndpointConfiguration.getConnectionConfiguration());
 
-        VideoMatcher videoMatcher = new VideoMatcher(configuration.getVideoSiteConfig());
-
         EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
-        environment.jersey().register(new MethodeArticleTransformerResource(contentSourceService,
-        		configureEomFileProcessorForContentStore(semanticReaderClient, uri,
-                        configuration.getFinancialTimesBrand(), videoMatcher)));
+        environment.jersey().register(
+                new MethodeArticleTransformerResource(
+                        contentSourceService,
+                        configureEomFileProcessorForContentStore(
+                                semanticReaderClient,
+                                uri,
+                                configuration.getFinancialTimesBrand(), configuration
+                        )
+                )
+        );
         
         environment.healthChecks().register("ContentSourceService API ping", new RemoteDropWizardPingHealthCheck(
                 "contentSourceService api ping",
@@ -91,10 +97,17 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                 .build();
     }
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(ResilientClient semanticStoreContentReaderClient,
-                 URI uri, Brand financialTimesBrand, VideoMatcher videoMatcher) {
+	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(
+            final ResilientClient semanticStoreContentReaderClient,
+            final URI uri,
+            final Brand financialTimesBrand,
+            final MethodeArticleTransformerConfiguration configuration) {
 		return new EomFileProcessorForContentStore(
-				new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance(),
+				new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient,
+                        uri,
+                        new VideoMatcher(configuration.getVideoSiteConfig()),
+                        new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist())
+                ).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}

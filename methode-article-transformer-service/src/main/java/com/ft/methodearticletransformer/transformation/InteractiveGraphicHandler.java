@@ -11,8 +11,8 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InteractiveGraphicHandler extends BaseXMLEventHandler {
 
@@ -25,16 +25,13 @@ public class InteractiveGraphicHandler extends BaseXMLEventHandler {
     private static final String HEIGHT = "height";
     private static final String DATA_WIDTH = "data-width";
     private static final String DATA_HEIGHT = "data-height";
-    private static final List<Pattern> ALLOWED_PATTERNS = compile(Arrays.asList(
-            "http:\\/\\/interactive.ftdata.co.uk\\/(?!_other\\/ben\\/twitter).*",
-            "http:\\/\\/(www.)?ft.com\\/ig\\/(?!widgets\\/widgetBrowser\\/audio).*",
-            "http:\\/\\/ig.ft.com\\/features.*",
-            "http:\\/\\/ft.cartodb.com.*"
-    ));
 
+    private final InteractiveGraphicsMatcher matcher;
     private final XMLEventHandler fallbackHandler;
 
-    public InteractiveGraphicHandler(final XMLEventHandler fallbackHandler) {
+    public InteractiveGraphicHandler(final InteractiveGraphicsMatcher interactiveGraphicsMatcher,
+            final XMLEventHandler fallbackHandler) {
+        this.matcher = interactiveGraphicsMatcher;
         this.fallbackHandler = fallbackHandler;
     }
 
@@ -45,7 +42,7 @@ public class InteractiveGraphicHandler extends BaseXMLEventHandler {
                                         final BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
         final String url = extractUrl(event);
         if (Strings.isNullOrEmpty(url) ||
-                !matchesInteractiveGraphicFormat(url)) {
+                !matcher.matches(url)) {
             fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         }
@@ -65,15 +62,6 @@ public class InteractiveGraphicHandler extends BaseXMLEventHandler {
         eventWriter.writeEndTag(A);
     }
 
-    private boolean matchesInteractiveGraphicFormat(final String url) {
-        for (final Pattern pattern : ALLOWED_PATTERNS) {
-            if (pattern.matcher(url).matches()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private String extractUrl(StartElement event) {
         return extractAttribute(SRC, event);
     }
@@ -84,13 +72,5 @@ public class InteractiveGraphicHandler extends BaseXMLEventHandler {
             return null;
         }
         return attribute.getValue();
-    }
-
-    private static List<Pattern> compile(List<String> rules) {
-        List<Pattern> patterns = new LinkedList<>();
-        for (final String rule : rules) {
-            patterns.add(Pattern.compile(rule));
-        }
-        return patterns;
     }
 }

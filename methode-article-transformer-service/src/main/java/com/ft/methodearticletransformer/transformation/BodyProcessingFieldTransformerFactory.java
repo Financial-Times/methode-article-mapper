@@ -19,11 +19,16 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 	private ResilientClient semanticStoreContentReaderClient;
     private URI uri;
     private VideoMatcher videoMatcher;
+    private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
 
-	public BodyProcessingFieldTransformerFactory(ResilientClient semanticStoreContentReaderClient, URI uri, VideoMatcher videoMatcher) {
+	public BodyProcessingFieldTransformerFactory(final ResilientClient semanticStoreContentReaderClient,
+            final URI uri,
+            final VideoMatcher videoMatcher,
+            final InteractiveGraphicsMatcher interactiveGraphicsMatcher) {
 		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
         this.uri = uri;
         this.videoMatcher = videoMatcher;
+        this.interactiveGraphicsMatcher = interactiveGraphicsMatcher;
 	}
 
     @Override
@@ -47,7 +52,9 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     }
 
     private BodyProcessor stAXTransformingBodyProcessor() {
-        return new StAXTransformingBodyProcessor(new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher));
+        return new StAXTransformingBodyProcessor(
+                new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher)
+        );
     }
 
     private BodyProcessor stripByAttributesAndValuesBodyProcessor() {

@@ -63,6 +63,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Mock private ResilientClient semanticStoreContentReaderClient;
     @Mock private VideoMatcher videoMatcher;
+    @Mock private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     @Mock private WebResource webResourceNotFound;
     @Mock private ClientResponse clientResponseNotFound;
     @Mock private Builder builderNotFound;
@@ -88,7 +89,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient,
+                uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
         when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResourceNotFound);
         when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
@@ -968,12 +970,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(timelineFromMethode, processedTimeline);
     }
 
-
-    @Test
-    public void shouldRenameTagAndCloseOpenPtags() throws Exception {
-
-    }
-
     @Test
      public void shouldProcessPodcastsCorrectly() {
         String podcastFromMethode = "<body><script type=\"text/javascript\" src=\"http://podcast.ft.com/embed.js\">\n" +
@@ -1065,6 +1061,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldProcessInteractiveGraphics() {
+        when(interactiveGraphicsMatcher.matches(anyString())).thenReturn(true);
         for (final String url : INTERACTIVE_GRAPHICS_URLS) {
             final String nativeText = "<body><p>The table below:</p><p><iframe allowTransparency=\"true\" frameborder=\"0\" scrolling=\"no\" src=\"" + url + "\"/></p></body>";
             final String processedText = "<body><p>The table below:</p><p><a data-asset-type=\"interactive graphic\" href=\"" + url + "\"></a></p></body>";
@@ -1076,6 +1073,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     public void shouldProcessInteractiveGraphicsWidthAndHeight() {
         final String nativeText = "<body><p>The table below:</p><p><iframe allowTransparency=\"true\" frameborder=\"0\" height=\"670\" scrolling=\"no\" src=\"http://www.ft.com/ig/widgets/profiles-tiled-layout/1.1.0/index.html?id=0AnE0wMr-SY-LdENVcHdXNDI5dkFKV1FicnZ0RUMweXc\" width=\"980\"/></p></body>";
         final String processedText = "<body><p>The table below:</p><p><a data-asset-type=\"interactive graphic\" href=\"http://www.ft.com/ig/widgets/profiles-tiled-layout/1.1.0/index.html?id=0AnE0wMr-SY-LdENVcHdXNDI5dkFKV1FicnZ0RUMweXc\" data-width=\"980\" data-height=\"670\"></a></p></body>";
+        when(interactiveGraphicsMatcher.matches(anyString())).thenReturn(true);
         checkTransformation(nativeText, processedText);
     }
 
