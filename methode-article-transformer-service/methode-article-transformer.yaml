@@ -36,10 +36,10 @@ videoSiteConfig:
       template: null
       embedded: false
 
-interactiveGraphicsWhiteList: [ "http:\/\/interactive.ftdata.co.uk\/(?!_other\/ben\/twitter).*",
-    "http:\/\/(www.)?ft.com\/ig\/(?!widgets\/widgetBrowser\/audio).*",
-    "http:\/\/ig.ft.com\/features.*",
-    "http:\/\/ft.cartodb.com.*" ]
+interactiveGraphicsWhiteList: [ "http://interactive.ftdata.co.uk/(?!_other/ben/twitter).*",
+    "http://(www.)?ft.com/ig/(?!widgets/widgetBrowser/audio).*",
+    "http://ig.ft.com/features.*",
+    "http://ft.cartodb.com.*" ]
 
 server:
 
