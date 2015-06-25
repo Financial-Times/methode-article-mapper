@@ -35,6 +35,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
+import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.ClientResponse;
@@ -64,6 +65,7 @@ public class BodyProcessingStepDefs {
 
     private ResilientClient semanticStoreContentReaderClient;
     private VideoMatcher videoMatcher;
+    private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private URI uri;
 
     private InBoundHeaders headers;
@@ -85,13 +87,20 @@ public class BodyProcessingStepDefs {
     private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(CONVERT_FROM_PARAMETER, CONVERTED_TO_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
 
-    public static List<VideoSiteConfiguration> DEFAULTS = Arrays.asList(
+    public static List<VideoSiteConfiguration> VIDEO_CONFIGS = Arrays.asList(
             new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", true, T, null, true),
             new VideoSiteConfiguration("https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, NONE, CONVERT_PARAMETERS_LIST, true),
             new VideoSiteConfiguration("https?://youtu.be/(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", false, T, null, true),
             new VideoSiteConfiguration("https?://www.vimeo.com/(?<id>[0-9]+)", null, false, NONE, null, true),
             new VideoSiteConfiguration("//player.vimeo.com/video/(?<id>[0-9]+)", "https://www.vimeo.com/%s", true, NONE, null, true),
             new VideoSiteConfiguration("https?://video.ft.com/(?<id>[0-9]+)/", null, false, NONE, null, true)
+    );
+
+    private static final List<String> INTERACTIVE_GRAPHICS_RULES = Arrays.asList(
+            "http:\\/\\/interactive.ftdata.co.uk\\/(?!_other\\/ben\\/twitter).*",
+            "http:\\/\\/(www.)?ft.com\\/ig\\/(?!widgets\\/widgetBrowser\\/audio).*",
+            "http:\\/\\/ig.ft.com\\/features.*",
+            "http:\\/\\/ft.cartodb.com.*"
     );
 
     private static String randomChars(int howMany) {
@@ -103,15 +112,16 @@ public class BodyProcessingStepDefs {
         semanticStoreContentReaderClient = mock(ResilientClient.class);
 
         uri = new URI("www.anyuri.com");
-        videoMatcher = new VideoMatcher(DEFAULTS);
+        videoMatcher = new VideoMatcher(VIDEO_CONFIGS);
+        interactiveGraphicsMatcher = new InteractiveGraphicsMatcher(INTERACTIVE_GRAPHICS_RULES);
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
-        registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher);
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+        registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
 
         rulesAndHandlers = new HashMap<>();
         rulesAndHandlers.put( "STRIP ELEMENT AND CONTENTS" , "StripElementAndContentsXMLEventHandler");
@@ -127,6 +137,7 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES", "DataTableXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeBrightcoveVideoXmlEventHandler");
+        rulesAndHandlers.put( "TRANSFORM INTERACTIVE GRAPHICS", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
         rulesAndHandlers.put( "REPLACE BLOCK ELEMENT TAG", "SimpleTransformBlockElementEventHandler");
@@ -150,7 +161,7 @@ public class BodyProcessingStepDefs {
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
     }
 
 
