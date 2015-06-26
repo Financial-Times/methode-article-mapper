@@ -31,21 +31,22 @@ public class InteractiveGraphicsMatcherTest {
             "https://player.vimeo.com/video/120274054",
             "https://embed.spotify.com/?uri=spotify:user:ftinteractive:playlist:0zaZHGZ6Y5ordPYZGKFb7U",
             "http://pilot.touchcast.com/e/303",
-            "http://interactive.ftdata.co.uk/_other/ben/twitter1.1/get.html?tweet/411659536286883840"
+            "http://interactive.ftdata.co.uk/_other/ben/twitter1.1/get.html?tweet/411659536286883840",
+            "http://interactive.ftdata.co.uk/widgets/audioSidebarTiny/index.html#title=Audiobook,audioURL=http://interactive.ftdata.co.uk/audio/boardroombattles.mp3,about=Listen%20to%20Stephen%20Foley%20read%20this%20story",
+            "http://interactive.ftdata.co.uk/widgets/audioSidebarTiny2/index.html#$title=Podcast,$audioURL=http://ftmedia.podhoster.com/ft/branson.mp3,$about=Listen"
     );
 
     private static final List<String> RULES = Arrays.asList(
-            "http:\\/\\/interactive.ftdata.co.uk\\/(?!_other\\/ben\\/twitter).*",
-            "http:\\/\\/(www.)?ft.com\\/ig\\/(?!widgets\\/widgetBrowser\\/audio).*",
-            "http:\\/\\/ig.ft.com\\/features.*",
-            "http:\\/\\/ft.cartodb.com.*"
+            "http://interactive.ftdata.co.uk/(?!(_other/ben/twitter)|(widgets/audio)).*",
+            "http://(www.)?ft.com/ig/(?!widgets/widgetBrowser/audio).*",
+            "http://ig.ft.com/features.*",
+            "http://ft.cartodb.com.*"
     );
-
     @Test
     public void shouldTransformWhitelist() throws Exception {
         final InteractiveGraphicsMatcher matcher = new InteractiveGraphicsMatcher(RULES);
         for (final String url :WHITELIST) {
-            assertTrue(matcher.matches(url));
+            assertTrue(String.format("Url [%s] is not whitelisted", url), matcher.matches(url));
         }
     }
 
@@ -53,7 +54,7 @@ public class InteractiveGraphicsMatcherTest {
     public void shouldNotTransformBlacklist() throws Exception {
         final InteractiveGraphicsMatcher matcher = new InteractiveGraphicsMatcher(RULES);
         for (final String url :BLACKLIST) {
-            assertFalse(matcher.matches(url));
+            assertFalse(String.format("Url [%s] is not blacklisted", url),matcher.matches(url));
         }
     }
 }
