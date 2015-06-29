@@ -39,7 +39,7 @@ videoSiteConfig:
 interactiveGraphicsWhiteList: [ "http://interactive.ftdata.co.uk/(?!(_other/ben/twitter)|(widgets/audio)).*",
     "http://(www.)?ft.com/ig/(?!widgets/widgetBrowser/audio).*",
     "http://ig.ft.com/features.*",
-    "http://ft.cartodb.com.*" ]
+    "http://ft.cartodb.com/.*" ]
 
 server:
 

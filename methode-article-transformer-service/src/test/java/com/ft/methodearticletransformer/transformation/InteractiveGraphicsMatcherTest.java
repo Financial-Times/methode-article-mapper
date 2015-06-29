@@ -33,14 +33,15 @@ public class InteractiveGraphicsMatcherTest {
             "http://pilot.touchcast.com/e/303",
             "http://interactive.ftdata.co.uk/_other/ben/twitter1.1/get.html?tweet/411659536286883840",
             "http://interactive.ftdata.co.uk/widgets/audioSidebarTiny/index.html#title=Audiobook,audioURL=http://interactive.ftdata.co.uk/audio/boardroombattles.mp3,about=Listen%20to%20Stephen%20Foley%20read%20this%20story",
-            "http://interactive.ftdata.co.uk/widgets/audioSidebarTiny2/index.html#$title=Podcast,$audioURL=http://ftmedia.podhoster.com/ft/branson.mp3,$about=Listen"
+            "http://interactive.ftdata.co.uk/widgets/audioSidebarTiny2/index.html#$title=Podcast,$audioURL=http://ftmedia.podhoster.com/ft/branson.mp3,$about=Listen",
+            "http://ft.cartodb.com.malicous.site.com/viz/5a6fe70e-b072-11e4-8584-0e4fddd5de28/embed_map"
     );
 
     private static final List<String> RULES = Arrays.asList(
             "http://interactive.ftdata.co.uk/(?!(_other/ben/twitter)|(widgets/audio)).*",
             "http://(www.)?ft.com/ig/(?!widgets/widgetBrowser/audio).*",
             "http://ig.ft.com/features.*",
-            "http://ft.cartodb.com.*"
+            "http://ft.cartodb.com/.*"
     );
     @Test
     public void shouldTransformWhitelist() throws Exception {
