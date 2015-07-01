@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathFactory;
 
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.Brand;
+import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
@@ -112,6 +113,8 @@ public class EomFileProcessorForContentStore {
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
 
+        final boolean discussionEnabled = isDiscussionEnabled(xpath, attributesDocument);
+
 		final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
 
 		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
@@ -132,8 +135,13 @@ public class EomFileProcessorForContentStore {
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
+                .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .build();
 	}
+
+    private boolean isDiscussionEnabled(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
+        return Boolean.valueOf(xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomDiscussion", attributesDocument).toLowerCase());
+    }
 
     private String putMainImageReferenceInBodyXml(XPath xpath, Document attributesDocument, String mainImage, String body) throws XPathExpressionException,
             TransformerException, ParserConfigurationException, SAXException, IOException {
