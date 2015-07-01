@@ -56,7 +56,9 @@ import com.google.common.collect.ImmutableSortedSet;
 
 public class EomFileProcessorForContentStoreTest {
 
-	@Rule
+	private static final String FALSE = "False";
+
+    @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
 	private static final String lastPublicationDateAsString = "20130813145815";
@@ -308,7 +310,7 @@ public class EomFileProcessorForContentStoreTest {
     }
     
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True");
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True");
     }
 
     public static EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
@@ -316,34 +318,34 @@ public class EomFileProcessorForContentStoreTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(String.format(articleWithImagesXmlTemplate, mainImageUuid).getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, "False", articleImageMetadataFlag, "False", "", "FT"))
+                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "FT"))
                 .withSystemAttributes(String.format(articleSystemAttributesXml, "FTcom"))
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, "False");
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "False");
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "False");
+        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "False");
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, "False");
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, "", "False");
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", FALSE);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
