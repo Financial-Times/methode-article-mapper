@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -107,7 +107,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldNotReplaceNodeWhenItsALinkThatWillNotBeInTheContentStore(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySetOf(String.class), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -119,7 +119,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldNotTransformAPDFLinkIntoAnInternalLink() {
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put("add666f2-cd78-11e4-a15a-00144feab7de", new EomAssetType.Builder().type("Pdf").uuid("add666f2-cd78-11e4-a15a-00144feab7de").build());
-		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySetOf(String.class), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		String body = "<body><a href=\"http://im.ft-static.com/content/images/add666f2-cd78-11e4-a15a-00144feab7de.pdf\" title=\"im.ft-static.com\">Budget 2015</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
@@ -130,7 +130,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldStripIntlFromHrefValueWhenItsNotAValidInternalLink(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySetOf(String.class), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/intl/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -142,7 +142,7 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldStripParamFromHrefValueWhenItsNotAValidInternalLink(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("Slideshow").uuid(uuid).build());
-		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySetOf(String.class), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html?param=5\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -172,14 +172,54 @@ public class MethodeLinksBodyProcessorTest {
 	public void shouldConvertNonArticlePathBasedInternalLinksToFullFledgedWebsiteLinks(){
 		Map<String, EomAssetType> assetTypes = new HashMap<>();
 		assetTypes.put(uuid, new EomAssetType.Builder().type("EOM::MediaGallery").uuid(uuid).build());
-		when(contentSourceService.assetTypes(anySet(), anyString())).thenReturn(assetTypes);
+		when(contentSourceService.assetTypes(anySetOf(String.class), anyString())).thenReturn(assetTypes);
 		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
 		
 		String body = "<body><a href=\"/FT Production/Slideshows/gallery.xml;uuid=" + uuid + "\" title=\"Some absurd text here\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
         assertThat(processedBody, is(identicalXmlTo("<body><a href=\"http://www.ft.com/cms/s/" + uuid + ".html\" title=\"Some absurd text here\"> Link Text</a></body>")));
 	}
-
+    
+    @Test
+    public void thatWhitespaceOnlyLinksAreRemoved() {
+        bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
+        
+        String body = "<body>Foo <a href=\"http://www.ft.com/intl/cms/s/0/12345.html\" title=\"Test link containing only whitespace\">\n</a> bar</body>";
+        
+        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+        assertThat(processedBody, is(identicalXmlTo("<body>Foo \n bar</body>")));
+    }
+    
+    @Test
+    public void thatWhitespaceAndChildTagsOnlyLinksArePreserved() {
+        bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
+        
+        String body = "<body>Foo <a href=\"http://www.ft.com/intl/cms/s/0/12345.html\" title=\"Test link with tag content\"><img src=\"http://localhost/\"/>\n</a> bar</body>";
+        
+        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+        assertThat(processedBody, is(identicalXmlTo(body)));
+    }
+    
+    @Test
+    public void thatEmptyLinksWithDataAttributesArePreserved() {
+        bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
+        
+        String body = "<body>Foo <a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/intl/cms/s/0/12345.html\" title=\"Test link with tag content\"></a> bar</body>";
+        
+        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+        assertThat(processedBody, is(identicalXmlTo(body)));
+    }
+    
+    @Test
+    public void thatEmptyLinksWithinPromoBoxesArePreserved() {
+        bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
+        
+        String body = "<body>Foo <promo-box><promo-link><p><a title=\"Test Promo Link\" href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link></promo-box> bar</body>";
+        
+        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+        assertThat(processedBody, is(identicalXmlTo(body)));
+    }
+    
 	private ClientResponse clientResponseWithCode(int status) {
 		return new ClientResponse(status, headers, entity, workers);
 	}

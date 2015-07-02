@@ -1,7 +1,5 @@
 package com.ft.methodearticletransformer.transformation;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -84,16 +82,15 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             final List<Node> aTagsToCheck = new ArrayList<>();
             final XPath xpath = XPathFactory.newInstance().newXPath();
             try {
-                final NodeList aTags = (NodeList) xpath.evaluate("//a", document, XPathConstants.NODESET);
+                final NodeList aTags = (NodeList) xpath.evaluate("//a[count(ancestor::promo-link)=0]", document, XPathConstants.NODESET);
                 for (int i = 0; i < aTags.getLength(); i++) {
                     final Node aTag = aTags.item(i);
-                    final String href = getHref(aTag);
-                    if (isRemovable(href)) {
+                    
+                    if (isRemovable(aTag)) {
                     	removeATag(aTag);
-                    } else {
-                        if (containsUuid(href)) {
-                            aTagsToCheck.add(aTag);
-                        } 
+                    }
+                    else if (containsUuid(getHref(aTag))) {
+                        aTagsToCheck.add(aTag);
                     }
                 }
             } catch (XPathExpressionException e) {
@@ -121,20 +118,60 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     /**
-     * We remove blank hrefs (which are either invalid, or refer to the current document)
-     * and hrefs that contain only a fragment identifier (a part of the current document).
-     * @param href
+     * We remove <code>&lt;a&gt;</code> tags
+     * <ul>
+     * <li>with blank hrefs (which are either invalid, or refer to the current document);</li>
+     * <li>with hrefs that contain only a fragment identifier (a part of the current document);</li>
+     * <li>with no non-whitespace content <i>and</i> no <code>data-*</code> attributes.</li>
+     * </ul>
+     * @param aTag the tag
      * @return true if removable, otherwise false.
      */
-	private boolean isRemovable(final String href) {
-
-        if(isNullOrEmpty(href)) {
+	private boolean isRemovable(final Node aTag) {
+        final String href = getHref(aTag);
+        
+        if (href.isEmpty() || href.startsWith(ANCHOR_PREFIX)) {
             return true;
         }
-
-		return href.startsWith(ANCHOR_PREFIX);
+        
+        NodeList children = aTag.getChildNodes();
+        int len = children.getLength();
+        
+        StringBuilder textContent = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            Node n = children.item(i);
+            
+            switch (n.getNodeType()) {
+                case Node.TEXT_NODE:
+                case Node.CDATA_SECTION_NODE:
+                    textContent.append(n.getTextContent());
+                    break;
+                    
+                case Node.COMMENT_NODE:
+                    break;
+                    
+                default: // any other node type
+                    return false;
+                
+            }
+        }
+        
+        if (!textContent.toString().trim().isEmpty()) {
+            return false;
+        }
+        
+        NamedNodeMap attributes = aTag.getAttributes();
+        len = attributes.getLength();
+        
+        for (int i = 0; i < len; i++) {
+            if (attributes.item(i).getNodeName().startsWith("data-")) {
+                return false;
+            }
+        }
+        
+        return true;
 	}
-
+	
     private List<String> getUuidsPresentInContentStore(Set<String> uuidsToCheck, String transactionId) {
         if(uuidsToCheck.isEmpty()) {
             return Collections.emptyList();
@@ -327,18 +364,26 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     private String getHref(Node aTag) {
         final NamedNodeMap attributes = aTag.getAttributes();
         final Node hrefAttr = attributes.getNamedItem("href");
-        return hrefAttr == null ? null : hrefAttr.getNodeValue();
+        return hrefAttr == null ? "" : hrefAttr.getNodeValue();
     }
- 
+    
+    /** Strips out a tag, while preserving any child content of the tag.
+     *  @param aTag the tag
+     */
     private void removeATag(Node aTag) {
     	Node parentNode = aTag.getParentNode();
-    	if (aTag.hasChildNodes()) {
-    		parentNode.replaceChild(aTag.getFirstChild(), aTag);	
-    	} else {
-    		parentNode.removeChild(aTag);
+    	
+    	NodeList children = aTag.getChildNodes();
+    	int len = children.getLength();
+    	
+    	for (int i = 0; i < len; i++) {
+    	    Node n = children.item(i);
+    	    aTag.removeChild(n);
+    	    parentNode.insertBefore(n, aTag);
     	}
+        parentNode.removeChild(aTag);
 	}
-
+    
     private Set<String> extractUuids(List<Node> aTagsToCheck) {
         final List<String> uuids = new ArrayList<>(aTagsToCheck.size());
 
