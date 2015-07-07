@@ -1,20 +1,22 @@
 package com.ft.methodearticletransformer.transformation;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore.*;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore.METHODE;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,10 +30,16 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.UUID;
 import java.util.TreeSet;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.ft.content.model.Brand;
+import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
@@ -45,14 +53,12 @@ import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPubl
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.google.common.collect.ImmutableSortedSet;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class EomFileProcessorForContentStoreTest {
 
-	@Rule
+	private static final String FALSE = "False";
+
+    @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
 	private static final String lastPublicationDateAsString = "20130813145815";
@@ -281,6 +287,16 @@ public class EomFileProcessorForContentStoreTest {
         assertThat(content.getMainImage(), nullValue());
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
+    
+    @Test
+    public void testCommentsArePresent() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+
+        assertThat(content.getComments(), notNullValue());
+        assertThat(content.getComments().isEnabled(), is(true));
+    }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
         when(bodyTransformer.transform(anyString(), anyString())).then(returnsFirstArg());
@@ -294,7 +310,7 @@ public class EomFileProcessorForContentStoreTest {
     }
     
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True");
     }
 
     public static EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
@@ -302,38 +318,38 @@ public class EomFileProcessorForContentStoreTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(String.format(articleWithImagesXmlTemplate, mainImageUuid).getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, "False", articleImageMetadataFlag, "", "FT"))
+                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "FT"))
                 .withSystemAttributes(String.format(articleSystemAttributesXml, "FTcom"))
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString);
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, "False", true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString);
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, FALSE);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
-        return createStandardEomFile(uuid, "False", false, "FTcom", "FT", EomFile.WEB_READY, "");
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", FALSE);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
-                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString) {
+                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString, String commentsEnabled) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -344,7 +360,7 @@ public class EomFileProcessorForContentStoreTest {
         	.withUuid(uuid.toString())
         	.withType(EOMCompoundStory.getTypeName())
             .withValue(simpleArticleXmlTemplate.getBytes(UTF8))
-            .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, markedDeleted, "No picture", embargoDate, sourceCode))
+            .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, markedDeleted, "No picture", commentsEnabled, embargoDate, sourceCode))
             .withSystemAttributes(String.format(articleSystemAttributesXml, channel))
 			.withWorkflowStatus(workflowStatus)
                 .build();
@@ -407,6 +423,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
+                .withComments(new Comments(true))
                 .withUuid(uuid).build();
 	}
 
