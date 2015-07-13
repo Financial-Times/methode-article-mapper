@@ -84,7 +84,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             try {
                 final NodeList aTags = (NodeList) xpath.evaluate("//a[count(ancestor::promo-link)=0]", document, XPathConstants.NODESET);
                 for (int i = 0; i < aTags.getLength(); i++) {
-                    final Node aTag = aTags.item(i);
+                    final Element aTag = (Element)aTags.item(i);
                     
                     if (isRemovable(aTag)) {
                     	removeATag(aTag);
@@ -367,19 +367,23 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return hrefAttr == null ? "" : hrefAttr.getNodeValue();
     }
     
-    /** Strips out a tag, while preserving any child content of the tag.
+    /** Strips out a tag.
+     *  If the child content of the tag is empty or only whitespace, it is removed;
+     *  any other child content of the tag is preserved in place.
      *  @param aTag the tag
      */
-    private void removeATag(Node aTag) {
+    private void removeATag(Element aTag) {
     	Node parentNode = aTag.getParentNode();
     	
-    	NodeList children = aTag.getChildNodes();
-    	int len = children.getLength();
-    	
-    	for (int i = 0; i < len; i++) {
-    	    Node n = children.item(i);
-    	    aTag.removeChild(n);
-    	    parentNode.insertBefore(n, aTag);
+    	if (!aTag.getTextContent().trim().isEmpty()) {
+    	    NodeList children = aTag.getChildNodes();
+    	    int len = children.getLength();
+    	    
+    	    for (int i = 0; i < len; i++) {
+    	        Node n = children.item(i);
+    	        aTag.removeChild(n);
+    	        parentNode.insertBefore(n, aTag);
+    	    }
     	}
         parentNode.removeChild(aTag);
 	}

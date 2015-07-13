@@ -187,7 +187,7 @@ public class MethodeLinksBodyProcessorTest {
         String body = "<body>Foo <a href=\"http://www.ft.com/intl/cms/s/0/12345.html\" title=\"Test link containing only whitespace\">\n</a> bar</body>";
         
         String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
-        assertThat(processedBody, is(identicalXmlTo("<body>Foo \n bar</body>")));
+        assertThat(processedBody, is(identicalXmlTo("<body>Foo  bar</body>")));
     }
     
     @Test
