@@ -14,27 +14,9 @@ class methode_article_transformer {
 
     $jar_name = 'methode-article-transformer-service.jar'
     $dir_heap_dumps = "/var/log/apps/methode_article_transformer-heap-dumps"
-
-    class { 'content_platform_nagios::client': }
-    class { 'hosts::export': hostname => "$certname" }
-    class { "${module_name}::monitoring": }
-    class { 'sudoers_sudocont': }
-
-    content_runnablejar { "${module_name}_runnablejar":
-        service_name        => "${module_name}",
-        service_description => 'Methode Article Transformer',
-        jar_name            => "${jar_name}",
-        artifact_location   => "${module_name}/methode-article-transformer-service.jar",
-        config_file_content => template("${module_name}/config.yml.erb"),
-        status_check_url    => "http://localhost:8081/ping";
-    }
-
-    file { "sysconfig":
-        path    => "/etc/sysconfig/${module_name}",
-        ensure  => 'present',
-        content => template("${module_name}/sysconfig.erb"),
-        mode    => 644;
-    }
+    $maxHeap = hiera('max_heap_space', '1024m')
+    $memOpts = "-Xmx$maxHeap"
+    $heapDumpOpts = "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$dir_heap_dumps"
 
     file { "heap-dumps-dir":
         path    => "${dir_heap_dumps}",
@@ -44,9 +26,22 @@ class methode_article_transformer {
         mode    => 744;
     }
 
-    File['sysconfig']
-    -> Content_runnablejar["${module_name}_runnablejar"]
-    -> Class["${module_name}::monitoring"]
+    class { "common_pp_up": }
+    ->
+    class { "jdk":
+            version => "1.8.0"
+        }
+    ->
+    class { "dropwizard": }
+    ->
+    dropwizard::instance { "${module_name}":
+        dropwizard_jar_file_src      => "${module_name}/$jar_name",
+        dropwizard_conf_template_src => "${module_name}/config.yml.erb",
+        healthcheck_url              => "http://localhost:8081/healthcheck",
+        java_opts                    => $memOpts $heapDumpOpts,
+    }
+    ->
+    class { "${module_name}::monitoring": }
 
 }
 
