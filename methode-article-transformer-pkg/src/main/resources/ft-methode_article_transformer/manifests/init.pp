@@ -37,7 +37,7 @@ class methode_article_transformer {
         dropwizard_jar_file_src      => "${module_name}/$jar_name",
         dropwizard_conf_template_src => "${module_name}/config.yml.erb",
         healthcheck_url              => "http://localhost:8081/healthcheck",
-        java_opts                    => $memOpts $heapDumpOpts",
+        java_opts                    => $memOpts $heapDumpOpts,
     }
     ->
     class { "${module_name}::monitoring": }
