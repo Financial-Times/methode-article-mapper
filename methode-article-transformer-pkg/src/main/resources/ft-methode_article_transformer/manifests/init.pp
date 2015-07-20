@@ -14,7 +14,8 @@ class methode_article_transformer {
 
     $jar_name = 'methode-article-transformer-service.jar'
     $dir_heap_dumps = "/var/log/apps/methode_article_transformer-heap-dumps"
-    $memOpts="-Xmx"hiera('max_heap_space', '1024m')
+    $maxHeap = hiera('max_heap_space', '1024m')
+    $memOpts="-Xmx$maxHeap"
     $heapDumpOpts="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$dir_heap_dumps"
 
     file { "heap-dumps-dir":
