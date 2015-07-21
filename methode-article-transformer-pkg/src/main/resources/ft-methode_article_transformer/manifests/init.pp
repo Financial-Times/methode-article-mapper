@@ -26,6 +26,11 @@ class methode_article_transformer {
         mode    => 744;
     }
 
+    service {
+    "${module_name}":
+        ensure => 'stopped',
+    }
+    ->
     class { "common_pp_up": }
     ->
     class { "jdk":
@@ -35,7 +40,7 @@ class methode_article_transformer {
     class { "dropwizard": }
     ->
     dropwizard::instance {
-    "${module_name}":
+    "${module_name}_temp":
         dropwizard_jar_file_src      => "${module_name}/$jar_name",
         dropwizard_conf_template_src => "${module_name}/config.yml.erb",
         healthcheck_url              => "http://localhost:8081/healthcheck",
