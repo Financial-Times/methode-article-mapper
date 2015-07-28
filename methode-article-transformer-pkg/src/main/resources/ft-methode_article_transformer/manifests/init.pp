@@ -9,7 +9,7 @@
 # Requires:
 #
 # Sample Usage:
-#
+#  
 class methode_article_transformer {
 
     $jar_name = 'methode-article-transformer-service.jar'
