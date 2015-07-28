@@ -40,7 +40,7 @@ class methode_article_transformer {
     class { "dropwizard": }
     ->
     dropwizard::instance {
-    "${module_name}_temp":
+    "${module_name}":
         dropwizard_jar_file_src      => "${module_name}/$jar_name",
         dropwizard_conf_template_src => "${module_name}/config.yml.erb",
         healthcheck_url              => "http://localhost:8081/healthcheck",
