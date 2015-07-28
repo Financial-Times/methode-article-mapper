@@ -26,11 +26,6 @@ class methode_article_transformer {
         mode    => 744;
     }
 
-    service {
-    "${module_name}":
-        ensure => 'stopped',
-    }
-    ->
     class { "common_pp_up": }
     ->
     class { "jdk":
