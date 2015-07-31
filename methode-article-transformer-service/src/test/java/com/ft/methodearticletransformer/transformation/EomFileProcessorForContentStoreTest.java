@@ -191,7 +191,7 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     @Test
-    public void shouldAddTransactionIdToTransformedBody() {
+    public void shouldAddPublishReferenceToTransformedBody() {
 
         final String reference = "some unstructured reference";
 
