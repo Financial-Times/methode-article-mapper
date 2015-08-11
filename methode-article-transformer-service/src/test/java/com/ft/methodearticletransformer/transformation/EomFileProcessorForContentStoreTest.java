@@ -191,6 +191,25 @@ public class EomFileProcessorForContentStoreTest {
     }
 
     @Test
+    public void shouldAddPublishReferenceToTransformedBody() {
+
+        final String reference = "some unstructured reference";
+
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(standardEomFile)
+                .build();
+
+        final Content expectedContent = Content.builder()
+                .withValuesFrom(standardExpectedContent)
+                .withPublishReference(reference)
+                .withXmlBody(TRANSFORMED_BODY).build();
+
+        Content content = eomFileProcessorForContentStore.process(eomFile, reference);
+
+        assertThat(content, equalTo(expectedContent));
+    }
+
+    @Test
     public void shouldTransformBylineWhenPresentOnPublish() {
     	final EomFile eomFile = new EomFile.Builder()
         		.withValuesFrom(standardEomFile)
@@ -424,7 +443,8 @@ public class EomFileProcessorForContentStoreTest {
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))
-                .withUuid(uuid).build();
+                .withUuid(uuid)
+                .withPublishReference(TRANSACTION_ID).build();
 	}
 
 	private static Date toDate(String dateString, String format) {

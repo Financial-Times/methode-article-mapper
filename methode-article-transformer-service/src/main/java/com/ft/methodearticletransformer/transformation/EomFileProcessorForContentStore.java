@@ -136,6 +136,7 @@ public class EomFileProcessorForContentStore {
 				.withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
+                .withPublishReference(transactionId)
                 .build();
 	}
 
