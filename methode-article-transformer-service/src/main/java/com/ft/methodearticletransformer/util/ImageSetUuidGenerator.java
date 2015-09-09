@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.util;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.UUID;
 
@@ -18,7 +19,14 @@ public class ImageSetUuidGenerator {
     private static UUID otherUuid(UUID uuid) {
         BitSet uuidBits = BitSet.valueOf(leastSignificantUuidPartToBytes(uuid));
         uuidBits.xor(magic);
-        return bytesToUuid(uuid, uuidBits.toByteArray());
+        
+        // pad to the end of the array in case the bitset has shrunk by 8 bits or more
+        byte[] xor = uuidBits.toByteArray();
+        byte[] padded = new byte[8];
+        Arrays.fill(padded, (byte)0);
+        System.arraycopy(xor, 0, padded, 0, xor.length);
+        
+        return bytesToUuid(uuid, padded);
     }
 
     private static UUID bytesToUuid(UUID uuid, byte[] bytes) {
