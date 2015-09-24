@@ -1,4 +1,4 @@
-FROM coco/dropwizardbase
+FROM up-registry.ft.com/coco/dropwizardbase
 
 ADD .git/ /.git/
 ADD methode-article-transformer-service/ /methode-article-transformer-service/
