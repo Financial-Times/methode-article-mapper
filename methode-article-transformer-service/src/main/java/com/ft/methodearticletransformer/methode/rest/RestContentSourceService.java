@@ -89,6 +89,7 @@ public class RestContentSourceService implements ContentSourceService {
 					.resource(fileByUuidUri)
 					.accept(MediaType.APPLICATION_JSON_TYPE)
 					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
+					.header("Host", "nativerw")
 					.get(ClientResponse.class);
 		} catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
