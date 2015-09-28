@@ -195,6 +195,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 			clientResponse = semanticStoreContentReaderClient.resource(contentUrl)
 					.accept(MediaType.APPLICATION_JSON_TYPE)
 					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
+                    .header("Host", "document-store-api")
 					.get(ClientResponse.class);
             
             responseStatusCode = clientResponse.getStatus();
