@@ -158,6 +158,15 @@ public class MethodeLinksBodyProcessorTest {
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
         assertThat(processedBody, is(identicalXmlTo("<body>Link Text</body>")));
 	}
+
+	@Test
+	public void shouldRemoveNodeIfATagHasNoHrefAttributeForNonInternalLinksWithPreservingAllItsChildren() {
+		bodyProcessor = new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri);
+
+		String body = "<body><a title=\"Some absurd text here\"><strong>first child</strong> Second child</a></body>";
+		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+        assertThat(processedBody, is(identicalXmlTo("<body><strong>first child</strong> Second child</body>")));
+	}
 	
 	@Test
 	public void shouldRemoveNodeIfATagHasNoHrefAttributeForNonInternalLinksEvenIfNodeEmpty() {

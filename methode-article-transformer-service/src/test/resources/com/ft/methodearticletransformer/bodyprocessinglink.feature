@@ -59,6 +59,8 @@ Feature: Body processing links
     | <p><a id="top" type="boo">2. example.com</a></p>                              | <p>2. example.com</p>    |
     | <p><a id="top" type="slideshow">4. example.com</a><a name="foo">Foo</a></p>   | <p>Foo</p>               |
     | <p><a id="top">5. example.com</a><a name="foo">Foo</a></p>                    | <p>5. example.comFoo</p> |
+    # Multiple childes within the a tag are preserved:
+    | <p><a id="top"><b>strong child</b> text child</a></p>                         | <p><strong>strong child</strong> text child</p> |
 
 
   Scenario Outline: Links to anchors only are removed

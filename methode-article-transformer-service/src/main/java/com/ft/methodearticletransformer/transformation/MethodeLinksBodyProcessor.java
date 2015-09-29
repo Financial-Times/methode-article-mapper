@@ -378,12 +378,11 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     	
     	if (!aTag.getTextContent().trim().isEmpty()) {
     	    NodeList children = aTag.getChildNodes();
-    	    int len = children.getLength();
-    	    
-    	    for (int i = 0; i < len; i++) {
-    	        Node n = children.item(i);
+            Node n = children.item(0);
+    	    while (n != null) {
     	        aTag.removeChild(n);
     	        parentNode.insertBefore(n, aTag);
+                n = children.item(0);
     	    }
     	}
         parentNode.removeChild(aTag);
