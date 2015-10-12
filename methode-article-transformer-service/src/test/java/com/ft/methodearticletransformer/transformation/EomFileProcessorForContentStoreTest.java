@@ -43,6 +43,7 @@ import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
+import com.ft.methodearticletransformer.methode.MethodeContentInvalidException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
@@ -315,6 +316,19 @@ public class EomFileProcessorForContentStoreTest {
 
         assertThat(content.getComments(), notNullValue());
         assertThat(content.getComments().isEnabled(), is(true));
+    }
+    
+    @Test(expected = MethodeContentInvalidException.class)
+    public void thatTransformationFailsIfThereIsNoBody()
+            throws Exception {
+        
+        String value = readFile("article/article_value_with_no_body.xml");
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(standardEomFile)
+                .withValue(value.getBytes(UTF8))
+                .build();
+        
+        eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
