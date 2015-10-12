@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,6 +33,7 @@ import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
+import com.ft.methodearticletransformer.methode.MethodeContentInvalidException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
@@ -43,6 +45,7 @@ import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,8 +121,10 @@ public class EomFileProcessorForContentStore {
 		final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
 
 		verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
-
-        String transformedBody = transformField(retrieveField(xpath, "/doc/story/text/body", eomFileDocument), bodyTransformer, transactionId);
+		
+		String rawBody = retrieveField(xpath, "/doc/story/text/body", eomFileDocument);
+		verifyBodyPresent(uuid, rawBody);
+        String transformedBody = transformField(rawBody, bodyTransformer, transactionId);
 
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
 
@@ -210,7 +215,13 @@ public class EomFileProcessorForContentStore {
 			throw new MethodeMarkedDeletedException(uuid);
 		}
 	}
-
+	
+	private void verifyBodyPresent(UUID uuid, String body) {
+        if (Strings.isNullOrEmpty(body)) {
+            throw new MethodeContentInvalidException(uuid, "article has no body text");
+        }
+	}
+	
 	private boolean notWebChannel(String channel) {
 		return !EomFile.WEB_CHANNEL.equals(channel);
 	}
