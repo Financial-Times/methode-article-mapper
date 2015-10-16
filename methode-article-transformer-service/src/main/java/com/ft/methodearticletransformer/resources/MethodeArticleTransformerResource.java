@@ -1,6 +1,5 @@
 package com.ft.methodearticletransformer.resources;
 
-
 import java.util.UUID;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -77,8 +76,12 @@ public class MethodeArticleTransformerResource {
 			throw ClientError.status(404)
 					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
 					.exception(e);
+		} catch (MethodeMissingBodyException e) {
+		    throw ClientError.status(418)
+		            .error(e.getMessage())
+		            .exception(e);
 		} catch (MethodeContentNotEligibleForPublishException e) {
-        	throw ClientError.status(404)
+			throw ClientError.status(404)
 			.context(uuid)
 			.error(e.getMessage())
 			.exception(e);
