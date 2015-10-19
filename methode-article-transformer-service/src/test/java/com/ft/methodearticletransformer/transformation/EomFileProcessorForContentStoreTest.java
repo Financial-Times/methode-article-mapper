@@ -43,9 +43,9 @@ import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticletransformer.methode.MethodeContentInvalidException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
@@ -318,7 +318,7 @@ public class EomFileProcessorForContentStoreTest {
         assertThat(content.getComments().isEnabled(), is(true));
     }
     
-    @Test(expected = MethodeContentInvalidException.class)
+    @Test(expected = MethodeMissingBodyException.class)
     public void thatTransformationFailsIfThereIsNoBody()
             throws Exception {
         

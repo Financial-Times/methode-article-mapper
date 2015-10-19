@@ -1,5 +1,6 @@
 package com.ft.methodearticletransformer.resources;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -15,7 +16,15 @@ import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodearticletransformer.methode.*;
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
+import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
@@ -244,4 +253,20 @@ public class MethodeArticleTransformerResourceTest {
 		}
 	}
 
+    @Test
+    public void shouldThrow418ExceptionWhenMethodeBodyMissing() {
+        UUID uuid = UUID.randomUUID();
+        EomFile eomFile = mock(EomFile.class);
+        when(contentSourceService.fileByUuid(uuid, TRANSACTION_ID)).thenReturn(eomFile);
+        when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID)).
+                thenThrow(new MethodeMissingBodyException(uuid));
+        try {
+            methodeArticleTransformerResource.getByUuid(uuid.toString(), httpHeaders);
+            fail("No exception was thrown, but expected one.");
+        } catch (WebApplicationClientException e) {
+            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
+                    containsString(uuid.toString()));
+            assertThat(e.getResponse().getStatus(), equalTo(418));
+        }
+    }
 }

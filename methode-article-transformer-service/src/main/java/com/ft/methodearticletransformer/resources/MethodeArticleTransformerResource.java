@@ -1,6 +1,5 @@
 package com.ft.methodearticletransformer.resources;
 
-
 import java.util.UUID;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,7 +14,14 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodearticletransformer.methode.*;
+import com.ft.methodearticletransformer.methode.ContentSourceService;
+import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
+import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
+import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
 import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
@@ -77,8 +83,12 @@ public class MethodeArticleTransformerResource {
 			throw ClientError.status(404)
 					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
 					.exception(e);
+		} catch (MethodeMissingBodyException e) {
+		    throw ClientError.status(418)
+		            .error(e.getMessage())
+		            .exception(e);
 		} catch (MethodeContentNotEligibleForPublishException e) {
-        	throw ClientError.status(404)
+			throw ClientError.status(404)
 			.context(uuid)
 			.error(e.getMessage())
 			.exception(e);
