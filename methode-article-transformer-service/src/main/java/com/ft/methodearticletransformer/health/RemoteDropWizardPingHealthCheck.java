@@ -40,9 +40,10 @@ public class RemoteDropWizardPingHealthCheck extends AdvancedHealthCheck {
                                 .port(endpointConfiguration.getAdminPort())
                                 .build();
 
+
 		ClientResponse response = null;
         try {
-            response = client.resource(pingUri).get(ClientResponse.class);
+            response = client.resource(pingUri).header("Host", "nativerw").get(ClientResponse.class);
             if(response.getStatus()!=200) {
                 String message = String.format("Unexpected status : %s",response.getStatus());
                 return reportUnhealthy(message);
