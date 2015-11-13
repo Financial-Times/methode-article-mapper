@@ -8,8 +8,9 @@ ADD buildurl.txt /
 RUN apk --update add git \
  && cd methode-article-transformer-service \
  && HASH=$(git log -1 --pretty=format:%H) \
- && BUILD_NUMBER=`echo $(cat buildnum.txt)`\
- && BUILD_URL= `echo $(cat buildurl.txt)`\
+ && BUILD_NUMBER=$(cat buildnum.txt) \
+ && BUILD_URL=$(cat buildurl.txt) \
+ && echo "DEBUG Jenkins job url: ${BUILD_URL}" \
  && mvn install -Dbuild.git.revision=$HASH -Dbuild.number=${BUILD_NUMBER} -Dbuild.url=${BUILD_URL} -Djava.net.preferIPv4Stack=true \
  && rm -f target/methode-article-transformer-service-*sources.jar \
  && mv target/methode-article-transformer-service-*.jar /app.jar \
