@@ -3,10 +3,15 @@ FROM up-registry.ft.com/coco/dropwizardbase
 ADD .git/ /.git/
 ADD methode-article-transformer-service/ /methode-article-transformer-service/
 ADD pom.xml /
+ADD buildnum.txt /
+ADD buildurl.txt /
 RUN apk --update add git \
  && cd methode-article-transformer-service \
  && HASH=$(git log -1 --pretty=format:%H) \
- && mvn install -DskipTests -Dbuild.git.revision=$HASH -Djava.net.preferIPv4Stack=true \
+ && BUILD_NUMBER=$(cat ../buildnum.txt) \
+ && BUILD_URL=$(cat ../buildurl.txt) \
+ && echo "DEBUG Jenkins job url: $BUILD_URL" \
+ && mvn install -Dbuild.git.revision=$HASH -Dbuild.number=$BUILD_NUMBER -Dbuild.url=$BUILD_URL -Djava.net.preferIPv4Stack=true \
  && rm -f target/methode-article-transformer-service-*sources.jar \
  && mv target/methode-article-transformer-service-*.jar /app.jar \
  && mv methode-article-transformer.yaml /config.yaml \
