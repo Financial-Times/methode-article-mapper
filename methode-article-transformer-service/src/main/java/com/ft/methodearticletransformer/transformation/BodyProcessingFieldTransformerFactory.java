@@ -16,16 +16,16 @@ import com.ft.jerseyhttpwrapper.ResilientClient;
 
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
 
-	private ResilientClient semanticStoreContentReaderClient;
+	private ResilientClient documentStoreApiClient;
     private URI uri;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
 
-	public BodyProcessingFieldTransformerFactory(final ResilientClient semanticStoreContentReaderClient,
+	public BodyProcessingFieldTransformerFactory(final ResilientClient documentStoreApiClient,
             final URI uri,
             final VideoMatcher videoMatcher,
             final InteractiveGraphicsMatcher interactiveGraphicsMatcher) {
-		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
+		this.documentStoreApiClient = documentStoreApiClient;
         this.uri = uri;
         this.videoMatcher = videoMatcher;
         this.interactiveGraphicsMatcher = interactiveGraphicsMatcher;
@@ -46,7 +46,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
-                new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri),
+                new MethodeLinksBodyProcessor(documentStoreApiClient, uri),
                 new Html5SelfClosingTagBodyProcessor()
         );
     }

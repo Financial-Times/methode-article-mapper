@@ -41,14 +41,14 @@ interactiveGraphicsWhiteList: [ "http://interactive.ftdata.co.uk/(?!(_other/ben/
     "http://ig.ft.com/features.*",
     "http://ft.cartodb.com/.*" ]
 
-semanticContentStoreReader:
+documentStoreApi::
     endpointConfiguration:
-        shortName: "semanticReader"
+        shortName: "document store API"
         path: content/
         jerseyClient:
             timeout: 2000ms
-        primaryNodes: <%=scope.function_hiera('semanticReaderLocalNodes')%>
-        secondaryNodes: <%=scope.function_hiera('semanticReaderRemoteNodes','null')%>
+        primaryNodes: <%=scope.function_hiera('documentStoreApiLocalNodes')%>
+        secondaryNodes: <%=scope.function_hiera('documentStoreApi:RemoteNodes','null')%>
     connectionConfig:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000

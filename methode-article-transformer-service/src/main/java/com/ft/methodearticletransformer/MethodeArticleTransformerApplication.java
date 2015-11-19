@@ -16,9 +16,9 @@ import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
 import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
+import com.ft.methodearticletransformer.configuration.DocumentStoreApiConfiguration;
 import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
 import com.ft.methodearticletransformer.configuration.MethodeArticleTransformerConfiguration;
-import com.ft.methodearticletransformer.configuration.SemanticReaderEndpointConfiguration;
 import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticletransformer.methode.ContentSourceService;
@@ -56,12 +56,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
     	BuildInfoResource buildInfoResource = new BuildInfoResource();   	
     	environment.jersey().register(buildInfoResource);
 
-        SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration = configuration.getSemanticReaderEndpointConfiguration();
-        ResilientClient semanticReaderClient = (ResilientClient) configureResilientClient(environment, semanticReaderEndpointConfiguration.getEndpointConfiguration(), semanticReaderEndpointConfiguration.getConnectionConfig());
+        DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
+        ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
     	SourceApiEndpointConfiguration sourceApiEndpointConfiguration = configuration.getSourceApiConfiguration();
         Client sourceApiClient = configureResilientClient(environment, sourceApiEndpointConfiguration.getEndpointConfiguration(), sourceApiEndpointConfiguration.getConnectionConfiguration());
 
-        EndpointConfiguration endpointConfiguration = semanticReaderEndpointConfiguration.getEndpointConfiguration();
+        EndpointConfiguration endpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
@@ -69,7 +69,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                 new MethodeArticleTransformerResource(
                         contentSourceService,
                         configureEomFileProcessorForContentStore(
-                                semanticReaderClient,
+                                documentStoreApiClient,
                                 uri,
                                 configuration.getFinancialTimesBrand(), configuration
                         )
@@ -98,12 +98,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
     }
 
 	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(
-            final ResilientClient semanticStoreContentReaderClient,
+            final ResilientClient documentStoreApiClient,
             final URI uri,
             final Brand financialTimesBrand,
             final MethodeArticleTransformerConfiguration configuration) {
 		return new EomFileProcessorForContentStore(
-				new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient,
+				new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                         uri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
                         new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist())

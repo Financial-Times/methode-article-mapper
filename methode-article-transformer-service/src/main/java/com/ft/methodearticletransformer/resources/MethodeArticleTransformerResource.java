@@ -1,6 +1,14 @@
 package com.ft.methodearticletransformer.resources;
 
-import java.util.UUID;
+import com.codahale.metrics.annotation.Timed;
+import com.ft.api.jaxrs.errors.ClientError;
+import com.ft.api.jaxrs.errors.ServerError;
+import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.content.model.Content;
+import com.ft.methodearticletransformer.methode.*;
+import com.ft.methodearticletransformer.model.EomFile;
+import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -8,23 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
-import com.codahale.metrics.annotation.Timed;
-import com.ft.api.jaxrs.errors.ClientError;
-import com.ft.api.jaxrs.errors.ServerError;
-import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.content.model.Content;
-import com.ft.methodearticletransformer.methode.ContentSourceService;
-import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
-import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
-import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
-import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
-import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
-import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
-import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import java.util.UUID;
 
 @Path("/content")
 public class MethodeArticleTransformerResource {
@@ -92,9 +84,9 @@ public class MethodeArticleTransformerResource {
 			.context(uuid)
 			.error(e.getMessage())
 			.exception(e);
-        } catch (SemanticReaderUnavailableException e) {
+        } catch (DocumentStoreApiUnavailableException e) {
             throw ServerError.status(503)
-                  .reason(ErrorMessage.SEMANTIC_READER_API_UNAVAILABLE)
+                  .reason(ErrorMessage.DOCUMENT_STORE_API_UNAVAILABLE)
                   .exception(e);
         }
 		
@@ -107,7 +99,7 @@ public class MethodeArticleTransformerResource {
 		NOT_WEB_CHANNEL("This is not a web channel story"),
 		METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
         METHODE_API_UNAVAILABLE("Methode api was unavailable"),
-		SEMANTIC_READER_API_UNAVAILABLE("Semantic reader api was unavailable");
+		DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable");
 
 	    private final String text;
 
