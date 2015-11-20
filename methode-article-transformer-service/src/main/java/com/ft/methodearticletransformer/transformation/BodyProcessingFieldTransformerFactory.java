@@ -13,6 +13,8 @@ import com.ft.bodyprocessing.regex.RegexReplacerBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.transformation.xslt.ModularXsltBodyProcessor;
+import com.ft.methodearticletransformer.transformation.xslt.XsltFile;
 
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
 
@@ -46,14 +48,19 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
+                new ModularXsltBodyProcessor(xslts()),
                 new MethodeLinksBodyProcessor(semanticStoreContentReaderClient, uri),
                 new Html5SelfClosingTagBodyProcessor()
         );
     }
 
+    private XsltFile[] xslts() {
+        return new XsltFile[0];  //To change body of created methods use File | Settings | File Templates.
+    }
+
     private BodyProcessor stAXTransformingBodyProcessor() {
         return new StAXTransformingBodyProcessor(
-                new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher)
+            new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher)
         );
     }
 
