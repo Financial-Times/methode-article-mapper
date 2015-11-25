@@ -63,7 +63,7 @@ public class BodyProcessingStepDefs {
 
     private static final String TEXT = "Some text in between tags";
 
-    private ResilientClient semanticStoreContentReaderClient;
+    private ResilientClient documentStoreApiClient;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private URI uri;
@@ -109,7 +109,7 @@ public class BodyProcessingStepDefs {
 
     @Before
     public void setup() throws Exception {
-        semanticStoreContentReaderClient = mock(ResilientClient.class);
+        documentStoreApiClient = mock(ResilientClient.class);
 
         uri = new URI("www.anyuri.com");
         videoMatcher = new VideoMatcher(VIDEO_CONFIGS);
@@ -120,7 +120,7 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
 
         rulesAndHandlers = new HashMap<>();
@@ -144,14 +144,14 @@ public class BodyProcessingStepDefs {
 
 
         WebResource webResourceNotFound = mock(WebResource.class);
-        when(semanticStoreContentReaderClient.resource(any(URI.class))).thenReturn(webResourceNotFound);
+        when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResourceNotFound);
         WebResource.Builder builderNotFound = mock(WebResource.Builder.class);
         when(webResourceNotFound.accept(any(MediaType[].class))).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyObject())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
         
         WebResource webResource = mock(WebResource.class);
-        when(semanticStoreContentReaderClient.resource(UriBuilder.fromUri(uri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
+        when(documentStoreApiClient.resource(UriBuilder.fromUri(uri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         WebResource.Builder builder = mock(WebResource.Builder.class);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
@@ -161,7 +161,7 @@ public class BodyProcessingStepDefs {
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
     }
 
 

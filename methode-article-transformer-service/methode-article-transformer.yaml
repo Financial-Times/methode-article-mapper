@@ -105,13 +105,13 @@ logging:
       # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
       timeZone: UTC
       
-semanticContentStoreReader:
+documentStoreApi:
     endpointConfiguration:
-        shortName: "semanticReader"
+        shortName: "documentStoreApi"
         path: content/
         jerseyClient:
             timeout: 2000ms
-        primaryNodes: ["localhost:9090:9091"]
+        primaryNodes: ["localhost:14180:14181"]
         secondaryNodes: null
     connectionConfig:
         numberOfConnectionAttempts: 3

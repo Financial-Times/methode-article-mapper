@@ -1,16 +1,22 @@
 package com.ft.methodearticletransformer.transformation;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
+import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.methode.DocumentStoreApiUnavailableException;
+import com.google.common.base.Optional;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -26,25 +32,18 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URI;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
-import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticletransformer.methode.SemanticReaderUnavailableException;
-import com.google.common.base.Optional;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientResponse;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
@@ -59,11 +58,11 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 	private static final String ANCHOR_PREFIX = "#";
     public static final String FT_COM_WWW_URL = "http://www.ft.com/";
 	public static final String TYPE = "type";
-	private ResilientClient semanticStoreContentReaderClient;
+	private ResilientClient documentStoreApiClient;
     private URI uri;
 
-	public MethodeLinksBodyProcessor(ResilientClient semanticStoreContentReaderClient, URI uri) {
-		this.semanticStoreContentReaderClient = semanticStoreContentReaderClient;
+	public MethodeLinksBodyProcessor(ResilientClient documentStoreApiClient, URI uri) {
+		this.documentStoreApiClient = documentStoreApiClient;
         this.uri = uri;
 	}
 
@@ -180,19 +179,19 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         List<String> uuidsPresentInContentStore = new ArrayList<>();
         
         for (String uuidToCheck: uuidsToCheck) {
-            if (existsInSemanticStore(uuidToCheck, transactionId)) {
+            if (existsInDocumentStore(uuidToCheck, transactionId)) {
                 uuidsPresentInContentStore.add(uuidToCheck);
             }
         }
         return uuidsPresentInContentStore;
     }
 
-	private boolean existsInSemanticStore(String idToCheck, String transactionId) {
+	private boolean existsInDocumentStore(String idToCheck, String transactionId) {
         int responseStatusCode;
         ClientResponse clientResponse = null;
 		URI contentUrl = contentUrlBuilder().build(idToCheck);
 		try {
-			clientResponse = semanticStoreContentReaderClient.resource(contentUrl)
+			clientResponse = documentStoreApiClient.resource(contentUrl)
 					.accept(MediaType.APPLICATION_JSON_TYPE)
 					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
                     .header("Host", "document-store-api")
@@ -203,7 +202,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         catch (ClientHandlerException che) {
 			Throwable cause = che.getCause();
 			if(cause instanceof IOException) {
-				throw new SemanticReaderUnavailableException(che);
+				throw new DocumentStoreApiUnavailableException(che);
 			}
 			throw che;
 		}
@@ -217,8 +216,8 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         
         if (responseStatusFamily == 5) {
             // can't tell whether it exists
-            String msg = String.format("Semantic Reader returned %s", responseStatusCode);
-            throw new SemanticReaderUnavailableException(msg);
+            String msg = String.format("Document store API returned %s", responseStatusCode);
+            throw new DocumentStoreApiUnavailableException(msg);
         }
 
 		return responseStatusFamily == 2;
@@ -259,7 +258,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             if(assetUuid.isPresent()){
                 String uuid = assetUuid.get();
                 if (uuidsPresentInContentStore.contains(uuid)) {
-                    replaceLinkToContentPresentInSemanticStore(node, uuid);
+                    replaceLinkToContentPresentInDocumentStore(node, uuid);
                 } else if (isConvertableToAssetOnFtCom(node)){
                     transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
                 } else {
@@ -283,7 +282,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		
 	}
 
-	private void replaceLinkToContentPresentInSemanticStore(Node node, String uuid) {
+	private void replaceLinkToContentPresentInDocumentStore(Node node, String uuid) {
 		Element newElement = node.getOwnerDocument().createElement(CONTENT_TAG);
 		newElement.setAttribute("id", uuid);
 		newElement.setAttribute("type", ARTICLE_TYPE);
