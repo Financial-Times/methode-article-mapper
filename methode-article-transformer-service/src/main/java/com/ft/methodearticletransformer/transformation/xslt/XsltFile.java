@@ -1,5 +1,7 @@
 package com.ft.methodearticletransformer.transformation.xslt;
 
+import com.google.common.base.Preconditions;
+
 /**
  * @author Simon
  */
@@ -21,6 +23,10 @@ public class XsltFile {
 
 
     public XsltFile(String name, String content) {
+
+        Preconditions.checkNotNull(content);
+        Preconditions.checkNotNull(name);
+
         this.name = name;
         this.content = content;
     }

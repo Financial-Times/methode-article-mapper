@@ -20,17 +20,22 @@ import java.util.Map;
 
 
 /**
- * <p>Applies a list of XSLT files as if they were one large file, and includes the
+ * <p>Applies a list of XSLT files giving priority to templates in the files listed last. Also includes the
  * <a href="https://en.wikipedia.org/wiki/Identity_transform#Using_XSLT">identity transform</a> by default, without which
  * XSLT would strip all markup by default. Instead, all markup is retained.</p>
  *
- * <p>This also means that e.g. <code>&lt;xsl:apply-templates /&gt;</code> in the first file can trigger rules in earlier
- * files, but <i>later rules will have a greater tendency to fire</i>.</p>
+ * <p><code>&lt;xsl:apply-templates /&gt;</code> in any file can trigger rules in any XSLT, but <i>later rules will
+ * have a greater tendency to fire</i>.</p>
  *
- * <p>Component sheets are <code>import</code>ed into an empty top level stylesheet. The w3C has a detailed
- * <a href="http://www.w3.org/TR/xslt#import">explanation of import semantics</a>.</p>
+ * <p>How? Component sheets are <code>import</code>ed into an empty top level stylesheet. The w3C has a detailed
+ * <a href="http://www.w3.org/TR/xslt#import">explanation of import semantics</a> and this (and <code>mode</code>)
+ * provides all the template priority ordering behaviour you will ever want.</p>
  *
- * @author Simon
+ * <p>The identity transform is added first.</p>
+ *
+ * <p>Imports are resolved through the {@link URIResolver} interface.</p>
+ *
+ * @author Simon Gibbs
  */
 public class ModularXsltBodyProcessor implements BodyProcessor {
 
@@ -51,14 +56,13 @@ public class ModularXsltBodyProcessor implements BodyProcessor {
     @Override
     public String process(String body, BodyProcessingContext bodyProcessingContext) throws BodyProcessingException {
 
-        StringBuffer compositeXslt = new StringBuffer("<xsl:transform xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">");
-
-        // switch off boilerplate and pretty printing
+        StringBuilder compositeXslt = new StringBuilder("<xsl:transform xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">");
 
         for(Map.Entry<String,String> file : files.entrySet()) {
             String xslImport = String.format("<xsl:import href=\"%s\" />",file.getKey());
             compositeXslt.append(xslImport);
         }
+        // switch off boilerplate and pretty printing
         compositeXslt.append("<xsl:output method=\"xml\" indent=\"no\" omit-xml-declaration=\"yes\" />");
         compositeXslt.append("</xsl:transform>");
 
@@ -89,7 +93,19 @@ public class ModularXsltBodyProcessor implements BodyProcessor {
     }
 
 
+    /**
+     * Resolves keys from the map of "XSLT files" to the text of those files.
+     *
+     * Because there is a separation between the names used on disk and in the map
+     * this resolution amounts simply to retrieving from the map based on the key.
+     *
+     * Three XLST functions are routed through here: <code>document()</code>, <code>xsl:import</code>,
+     * and <code>xsl:include</code>. We use, and support, <code>xsl:import</code> only, but you could
+     * get XML from anywhere in theory.
+     *
+     */
     private class ModuleUriResolver implements URIResolver {
+
         private final Map<String, String> files;
 
         public ModuleUriResolver(Map<String, String> files) {
@@ -98,11 +114,8 @@ public class ModularXsltBodyProcessor implements BodyProcessor {
 
         @Override
         public Source resolve(String href, String base) throws TransformerException {
-
             String file = files.get(href);
-
             return asSource(file);
-
         }
     }
 
