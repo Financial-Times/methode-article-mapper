@@ -21,14 +21,6 @@
                         <xsl:apply-templates mode="related" />
                     </xsl:element>
                 </xsl:when>
-                <xsl:when test="count(descendant::a) = 1">
-                    <xsl:element name="related">
-                        <xsl:attribute name="url">
-                            <xsl:value-of select="descendant::a/@href" />
-                        </xsl:attribute>
-                        <xsl:apply-templates mode="related" />
-                    </xsl:element>
-                </xsl:when>
                 <xsl:otherwise>
                     <!-- Output Nothing -->
                 </xsl:otherwise>
