@@ -11,19 +11,19 @@ import java.util.List;
 
 public class MethodeArticleTransformerConfiguration extends Configuration {
 	
-	private final SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration;
+	private final DocumentStoreApiConfiguration documentStoreApiConfiguration;
 	private final SourceApiEndpointConfiguration sourceApiConfiguration;
     private final Brand financialTimesBrand;
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
 
     public MethodeArticleTransformerConfiguration(@JsonProperty("sourceApi") SourceApiEndpointConfiguration sourceApiConfiguration,
-                                                  @JsonProperty("semanticContentStoreReader") SemanticReaderEndpointConfiguration semanticReaderEndpointConfiguration,
+                                                  @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
                                                   @JsonProperty("financialTimesBrandId") String financialTimesBrandId,
                                                   @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                                   @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList) {
 
-        this.semanticReaderEndpointConfiguration = semanticReaderEndpointConfiguration;
+        this.documentStoreApiConfiguration = documentStoreApiConfiguration;
 		this.sourceApiConfiguration = sourceApiConfiguration;
         this.financialTimesBrand = new Brand(financialTimesBrandId);
         this.videoSiteConfig = videoSiteConfig;
@@ -35,7 +35,7 @@ public class MethodeArticleTransformerConfiguration extends Configuration {
 	}
 
 	@NotNull
-	public SemanticReaderEndpointConfiguration getSemanticReaderEndpointConfiguration() { return semanticReaderEndpointConfiguration; }
+	public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() { return documentStoreApiConfiguration; }
 
     @NotNull
     public Brand getFinancialTimesBrand() {

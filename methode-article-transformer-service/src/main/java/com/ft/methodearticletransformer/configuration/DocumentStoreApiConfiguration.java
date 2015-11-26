@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.google.common.base.Objects;
 
-public class SemanticReaderEndpointConfiguration {
+public class DocumentStoreApiConfiguration {
 
     private final EndpointConfiguration endpointConfiguration;
 
     private final ConnectionConfiguration connectionConfig;
 
-    public SemanticReaderEndpointConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
+    public DocumentStoreApiConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
                                                @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfig) {
         this.endpointConfiguration = endpointConfiguration;
         this.connectionConfig = connectionConfig;

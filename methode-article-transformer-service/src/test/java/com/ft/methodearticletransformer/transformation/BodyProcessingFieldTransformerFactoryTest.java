@@ -61,7 +61,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     private FieldTransformer bodyTransformer;
 
-    @Mock private ResilientClient semanticStoreContentReaderClient;
+    @Mock private ResilientClient documentStoreApiClient;
     @Mock private VideoMatcher videoMatcher;
     @Mock private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     @Mock private WebResource webResourceNotFound;
@@ -89,9 +89,9 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setUrl("https://www.youtube.com/watch?v=OTT5dQcarl0");
         exampleYouTubeVideo.setEmbedded(true);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(semanticStoreContentReaderClient,
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                 uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
-        when(semanticStoreContentReaderClient.resource((URI)any())).thenReturn(webResourceNotFound);
+        when(documentStoreApiClient.resource((URI)any())).thenReturn(webResourceNotFound);
         when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseNotFound);
@@ -108,7 +108,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET3_UUID).build(), 
     	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET4_UUID).build());
     	
-    	when(semanticStoreContentReaderClient.resource(argThat(isIn(setOfAssetIds)))).thenReturn(webResource);
+    	when(documentStoreApiClient.resource(argThat(isIn(setOfAssetIds)))).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
