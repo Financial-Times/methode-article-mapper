@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class PromoBoxData {
 
+    private String className;
 	private String headline;
 	private String intro;
 	private String link;
@@ -60,4 +61,12 @@ public class PromoBoxData {
 	public String getImageHtml() {
 		return imageHtml;
 	}
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
 }

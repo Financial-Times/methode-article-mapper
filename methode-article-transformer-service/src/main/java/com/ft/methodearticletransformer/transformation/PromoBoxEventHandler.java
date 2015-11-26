@@ -12,7 +12,10 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
+
+import static java.util.Collections.singletonMap;
 
 public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
@@ -75,7 +78,13 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
     }
 
     private void writePromoBox(BodyWriter eventWriter, PromoBoxData dataBean) {
-        eventWriter.writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
+
+        if(Strings.isNullOrEmpty(dataBean.getClassName())) {
+            eventWriter.writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
+        } else {
+            eventWriter.writeStartTag(PROMO_BOX_ELEMENT, singletonMap(PROMO_CLASS_ATTRIBUTE, dataBean.getClassName()));
+        }
+
         writePromoBoxElement(eventWriter, dataBean);
         eventWriter.writeEndTag(PROMO_BOX_ELEMENT);
     }
@@ -122,7 +131,15 @@ public class PromoBoxEventHandler extends BaseXMLEventHandler {
 
 	private PromoBoxData parseElementData(StartElement startElement, XMLEventReader xmlEventReader,
 										  BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-		return promoBoxXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
+        PromoBoxData result = promoBoxXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
+
+        Attribute attribute = startElement.getAttributeByName(QName.valueOf("class"));
+        if(attribute!=null) {
+            String className = attribute.getValue();
+            result.setClassName(className);
+        }
+
+        return result;
 	}
 
 	private boolean isNumbersComponent(Attribute classAttribute) {
