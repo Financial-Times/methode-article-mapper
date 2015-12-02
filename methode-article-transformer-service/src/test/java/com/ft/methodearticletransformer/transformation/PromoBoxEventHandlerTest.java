@@ -16,6 +16,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.singletonMap;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +26,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
 
+    public static final String RELATED_ARTICLE_CLASS = "related-article";
+    public static final String CLASS_ARTICLE = "class";
     private PromoBoxEventHandler eventHandler;
 
     private static final String BIG_NUMBER_ELEMENT = "big-number";
@@ -161,10 +166,23 @@ public class PromoBoxEventHandlerTest extends BaseXMLEventHandlerTest {
         when(mockPromoBoxData.getHeadline()).thenReturn(HEADLINE_VALUE);
         when(mockPromoBoxData.getIntro()).thenReturn(INTRO_VALUE);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(PROMO_BOX_ELEMENT, noAttributes());
+        verify(mockBodyWriter).writeStartTag(eq(PROMO_BOX_ELEMENT), anyMap());
         verify(mockBodyWriter).writeRaw(mockPromoBoxData.getHeadline());
         verify(mockBodyWriter).writeRaw(mockPromoBoxData.getIntro());
     }
+
+
+    @Test
+    public void shouldPassThroughClassAttributeOnPromoBox() throws Exception {
+        when(mockBodyWriter.isPTagCurrentlyOpen()).thenReturn(true);
+        when(mockPromoBoxData.getTitle()).thenReturn(TITLE_VALUE);
+        when(mockPromoBoxData.getLink()).thenReturn(LINK_VALUE);
+        when(mockPromoBoxData.getClassName()).thenReturn(RELATED_ARTICLE_CLASS);
+        shouldWriteTransformedPromoBoxElementsToWriter();
+
+        verify(mockBodyWriter).writeStartTag(PROMO_BOX_ELEMENT, singletonMap(CLASS_ARTICLE,RELATED_ARTICLE_CLASS));
+    }
+
 
     private Map<String, String> noAttributes() {
         return Collections.emptyMap();

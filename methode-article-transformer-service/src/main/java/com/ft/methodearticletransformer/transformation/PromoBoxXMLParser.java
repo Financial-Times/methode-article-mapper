@@ -27,6 +27,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 	private static final String PROMO_LINK = "promo-link";
 	private static final String PROMO_IMAGE = "promo-image";
 	private static final String PROMO_TITLE = "promo-title";
+
 	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 	private InlineImageXmlEventHandler inlineImageXmlEventHandler;
 
