@@ -9,7 +9,6 @@ public class EomFile {
     public static final String WEB_REVISE = "Stories/WebRevise";
     public static final String WEB_READY = "Stories/WebReady";
     public static final String WEB_CHANNEL = "FTcom";
-    public static final String NEWSPAPER_CHANNEL = "Financial Times";
 
     private final String uuid;
     private final String type;
