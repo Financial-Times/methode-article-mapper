@@ -36,6 +36,7 @@ import static org.mockito.Mockito.*;
 public class EomFileProcessorForContentStoreTest {
 
     private static final String FALSE = "False";
+    private static final Date LAST_MODIFIED = new Date();
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -374,6 +375,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, markedDeleted, "No picture", commentsEnabled, embargoDate, sourceCode))
                 .withSystemAttributes(String.format(articleSystemAttributesXml, channel))
                 .withWorkflowStatus(workflowStatus)
+                .withLastModified(LAST_MODIFIED)
                 .build();
     }
 
@@ -436,7 +438,9 @@ public class EomFileProcessorForContentStoreTest {
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))
                 .withUuid(uuid)
-                .withPublishReference(TRANSACTION_ID).build();
+                .withPublishReference(TRANSACTION_ID)
+                .withLastModified(LAST_MODIFIED)
+                .build();
     }
 
     private static Date toDate(String dateString, String format) {

@@ -123,11 +123,12 @@ public class EomFileProcessorForContentStore {
                 .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
                 .withMainImage(mainImage)
-                .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
+                .withBrands(new TreeSet<>(Collections.singletonList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withPublishReference(transactionId)
+                .withLastModified(eomFile.getLastModified())
                 .build();
     }
 
