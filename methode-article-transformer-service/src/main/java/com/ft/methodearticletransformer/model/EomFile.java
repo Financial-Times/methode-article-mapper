@@ -3,13 +3,14 @@ package com.ft.methodearticletransformer.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EomFile {
 
     public static final String WEB_REVISE = "Stories/WebRevise";
     public static final String WEB_READY = "Stories/WebReady";
     public static final String WEB_CHANNEL = "FTcom";
-    public static final String NEWSPAPER_CHANNEL = "Financial Times";
 
     private final String uuid;
     private final String type;
@@ -19,6 +20,7 @@ public class EomFile {
     private final String workflowStatus;
     private final String systemAttributes;
     private final String usageTickets;
+    private Date lastModified;
 
     public EomFile(@JsonProperty("uuid") String uuid,
                    @JsonProperty("type") String type,
@@ -26,7 +28,8 @@ public class EomFile {
                    @JsonProperty("attributes") String attributes,
                    @JsonProperty("workflowStatus") String workflowStatus,
                    @JsonProperty("systemAttributes") String systemAttributes,
-                   @JsonProperty("usageTickets") String usageTickets) {
+                   @JsonProperty("usageTickets") String usageTickets,
+                   @JsonProperty("lastModified") Date lastModified) {
         this.uuid = uuid;
         this.type = type;
         this.value = bytes;
@@ -34,6 +37,7 @@ public class EomFile {
         this.workflowStatus = workflowStatus;
         this.systemAttributes = systemAttributes;
         this.usageTickets = usageTickets;
+        this.lastModified = lastModified;
     }
 
     public String getUuid() {
@@ -65,6 +69,10 @@ public class EomFile {
         return usageTickets;
     }
 
+    public Date getLastModified() {
+        return lastModified;
+    }
+
     public static class Builder {
         private String uuid;
         private String type;
@@ -73,6 +81,7 @@ public class EomFile {
         private String workflowStatus;
         private String systemAttributes;
         private String usageTickets;
+        private Date lastModified;
 
         public Builder withUuid(String uuid) {
             this.uuid = uuid;
@@ -110,6 +119,11 @@ public class EomFile {
             return this;
         }
 
+        public Builder withLastModified(Date lastModified) {
+            this.lastModified = lastModified;
+            return this;
+        }
+
         public Builder withValuesFrom(EomFile eomFile) {
             return withUuid(eomFile.getUuid())
                     .withType(eomFile.getType())
@@ -117,11 +131,12 @@ public class EomFile {
                     .withAttributes(eomFile.getAttributes())
                     .withWorkflowStatus(eomFile.getWorkflowStatus())
                     .withSystemAttributes(eomFile.getSystemAttributes())
-                    .withUsageTickets(eomFile.getUsageTickets());
+                    .withUsageTickets(eomFile.getUsageTickets())
+                    .withLastModified(eomFile.getLastModified());
         }
 
         public EomFile build() {
-            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets);
+            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets, lastModified);
         }
     }
 }

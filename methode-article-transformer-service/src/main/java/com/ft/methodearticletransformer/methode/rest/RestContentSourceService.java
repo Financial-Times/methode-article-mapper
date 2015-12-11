@@ -80,7 +80,7 @@ public class RestContentSourceService implements ContentSourceService {
 
 	private EomFile findFileByUuid(String uuid, String transactionId) {
 		final URI fileByUuidUri = fileUrlBuilder().build(uuid);
-		LOGGER.debug("making GET request to methode api {}", fileByUuidUri);
+		LOGGER.debug("making GET request to: {}", fileByUuidUri);
 
 		ClientResponse clientResponse;
 
@@ -200,7 +200,7 @@ public class RestContentSourceService implements ContentSourceService {
 
 		@Override
 		public ClientResponse call() throws Exception {
-			LOGGER.debug("making POST request to methode api {}", assetTypeUri);
+			LOGGER.debug("making POST request to: {}", assetTypeUri);
 
 			return jerseyClient
 					.resource(assetTypeUri)
