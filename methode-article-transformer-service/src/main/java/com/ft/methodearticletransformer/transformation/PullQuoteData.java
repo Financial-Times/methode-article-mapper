@@ -6,8 +6,9 @@ public class PullQuoteData {
 
 	private String quoteText;
 	private String quoteSource;
+    private String imageHtml;
 
-	public String getQuoteText() {
+    public String getQuoteText() {
 		return quoteText;
 	}
 
@@ -23,7 +24,16 @@ public class PullQuoteData {
 		this.quoteSource = quoteSource;
 	}
 
-	public boolean isAllRequiredDataPresent() {
+    public void setImageHtml(String imageHtml) {
+        this.imageHtml = imageHtml;
+    }
+
+    public String getImageHtml() {
+        return imageHtml;
+    }
+
+
+    public boolean isAllRequiredDataPresent() {
 		return containsValidData(this.quoteText) || containsValidData(this.quoteSource);
 	}
 

@@ -17,6 +17,7 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
 	private static final String PULL_QUOTE_ELEMENT = "pull-quote";
 	private static final String PULL_QUOTE_TEXT = "pull-quote-text";
 	private static final String PULL_QUOTE_SOURCE = "pull-quote-source";
+    private static final String PULL_QUOTE_IMAGE = "pull-quote-image";
     private static final String PARAGRAPH_TAG = "p";
 
 	private final PullQuoteXMLParser pullQuoteXMLParser;
@@ -59,6 +60,12 @@ public class PullQuoteEventHandler extends BaseXMLEventHandler {
             eventWriter.writeStartTag(PULL_QUOTE_TEXT, noAttributes());
             eventWriter.writeRaw(dataBean.getQuoteText());
             eventWriter.writeEndTag(PULL_QUOTE_TEXT);
+        }
+
+        if(!Strings.isNullOrEmpty(dataBean.getImageHtml())) {
+            eventWriter.writeStartTag(PULL_QUOTE_IMAGE, noAttributes());
+            eventWriter.writeRaw(dataBean.getImageHtml());
+            eventWriter.writeEndTag(PULL_QUOTE_IMAGE);
         }
 
         if(!Strings.isNullOrEmpty(dataBean.getQuoteSource())) {
