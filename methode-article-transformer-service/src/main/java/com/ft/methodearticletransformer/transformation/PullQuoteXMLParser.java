@@ -2,26 +2,37 @@ package com.ft.methodearticletransformer.transformation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.bodyprocessing.writer.HTML5VoidElementHandlingXMLBodyWriter;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.stax2.XMLOutputFactory2;
+
+import java.io.IOException;
 
 public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements XmlParser<PullQuoteData> {
 
 	private static final String QUOTE_SOURCE = "web-pull-quote-source";
 	private static final String QUOTE_TEXT = "web-pull-quote-text";
 	private static final String PULL_QUOTE = "web-pull-quote";
+    private static final String WEB_MASTER = "web-master";
     private static final String DUMMY_SOURCE_TEXT = "EM-dummyText";
-	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
 
-	public PullQuoteXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor) {
+	private StAXTransformingBodyProcessor stAXTransformingBodyProcessor;
+    private InlineImageXmlEventHandler inlineImageXmlEventHandler;
+
+	public PullQuoteXMLParser(StAXTransformingBodyProcessor stAXTransformingBodyProcessor, InlineImageXmlEventHandler inlineImageXmlEventHandler) {
 		super(PULL_QUOTE);
-		checkNotNull(stAXTransformingBodyProcessor, "The StAXTransformingBodyProcessor cannot be null.");
+        this.inlineImageXmlEventHandler = inlineImageXmlEventHandler;
+        checkNotNull(stAXTransformingBodyProcessor, "The StAXTransformingBodyProcessor cannot be null.");
 		this.stAXTransformingBodyProcessor = stAXTransformingBodyProcessor;
 	}
 
@@ -46,13 +57,27 @@ public class PullQuoteXMLParser extends BaseXMLParser<PullQuoteData> implements 
 	@Override
 	protected void populateBean(PullQuoteData pullQuoteData, StartElement nextStartElement,
 								XMLEventReader xmlEventReader, BodyProcessingContext bodyProcessingContext) {
+
+        final QName elementName = nextStartElement.getName();
+
 		// look for either web-pull-quote-text or web-pull-quote-source
-		if (isElementNamed(nextStartElement.getName(), QUOTE_TEXT)) {
+		if (isElementNamed(elementName, QUOTE_TEXT)) {
 			pullQuoteData.setQuoteText(transformRawContentToStructuredFormat(parseRawContent(QUOTE_TEXT, xmlEventReader), bodyProcessingContext));
 		}
-		if (isElementNamed(nextStartElement.getName(), QUOTE_SOURCE)) {
+		if (isElementNamed(elementName, QUOTE_SOURCE)) {
 			pullQuoteData.setQuoteSource(transformRawContentToStructuredFormat(parseRawContent(QUOTE_SOURCE, xmlEventReader), bodyProcessingContext));
 		}
+
+        if(isElementNamed(elementName, WEB_MASTER)) {
+            try {
+                HTML5VoidElementHandlingXMLBodyWriter writer = new HTML5VoidElementHandlingXMLBodyWriter((XMLOutputFactory2) XMLOutputFactory2.newInstance());
+                inlineImageXmlEventHandler.handleStartElementEvent(nextStartElement, xmlEventReader, writer, bodyProcessingContext);
+                pullQuoteData.setImageHtml(writer.asString());
+            } catch (XMLStreamException | IOException e) {
+                throw new BodyProcessingException(e);
+            }
+        }
+
 	}
 
 	@Override

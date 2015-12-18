@@ -131,6 +131,7 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "CONVERT HTML ENTITY TO UNICODE", "PlainTextHtmlEntityReferenceEventHandler");
         rulesAndHandlers.put( "STRIP ELEMENT AND LEAVE CONTENT BY DEFAULT", "StripXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE WEB-PULL-QUOTE TO PULL-QUOTE", "PullQuoteEventHandler");
+        rulesAndHandlers.put( "TRANSFORM WEB-PULL-QUOTE W/ IMAGE TO PULL-QUOTE", "PullQuoteEventHandler");
         rulesAndHandlers.put( "TRANSFORM TAG IF BIG NUMBER", "PromoBoxEventHandler");
 		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX", "PromoBoxEventHandler");
 		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX WITH MASTER IMAGE", "PromoBoxEventHandler");
