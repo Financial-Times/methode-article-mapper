@@ -24,6 +24,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Path("/content")
@@ -47,7 +50,7 @@ public class MethodeArticleTransformerResource {
 		
 		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuidString, "Publish request");
         if (uuidString == null) {
-            throw ClientError.status(400).context(uuidString).reason(ErrorMessage.UUID_REQUIRED).exception();
+            throw ClientError.status(400).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
 
 		UUID uuid;
@@ -58,9 +61,11 @@ public class MethodeArticleTransformerResource {
 					.reason(ErrorMessage.INVALID_UUID)
 					.exception(iae);
 		}
-        
+
+        Date lastModifiedDate = null;
         try {
         	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
+            lastModifiedDate = eomFile.getLastModified();
     		return eomFileProcessorForContentStore.process(eomFile, transactionId);
         } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)
@@ -71,8 +76,8 @@ public class MethodeArticleTransformerResource {
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
         } catch (MethodeMarkedDeletedException e) {
-			throw ClientError.status(404)
-            .context(uuid)
+            throw ClientError.status(404)
+            .context(buildContext(uuid, lastModifiedDate))
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
 		} catch (NotWebChannelException e) {
@@ -89,7 +94,7 @@ public class MethodeArticleTransformerResource {
 		            .exception(e);
 		} catch (MethodeContentNotEligibleForPublishException e) {
 			throw ClientError.status(404)
-			.context(uuid)
+			.context(buildContext(uuid, lastModifiedDate))
 			.error(e.getMessage())
 			.exception(e);
         } catch (DocumentStoreApiUnavailableException e) {
@@ -99,7 +104,15 @@ public class MethodeArticleTransformerResource {
         }
 		
     }
-	public enum ErrorMessage {
+
+    private Map<String, Object> buildContext(UUID uuid, Date messageTimestamp) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("uuid", uuid);
+        context.put("lastModified", messageTimestamp);
+        return context;
+    }
+
+    public enum ErrorMessage {
 		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
 		UUID_REQUIRED("No UUID was passed"),
 		INVALID_UUID("The UUID passed was invalid"),
