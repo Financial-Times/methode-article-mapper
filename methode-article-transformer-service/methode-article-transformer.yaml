@@ -111,7 +111,7 @@ documentStoreApi:
         path: content/
         jerseyClient:
             timeout: 2000ms
-        primaryNodes: ["ftapp07686-lvpr-uk-t:8080:8081"]
+        primaryNodes: ["localhost:14180:14181"]
         secondaryNodes: null
     connectionConfig:
         numberOfConnectionAttempts: 3
@@ -122,7 +122,7 @@ sourceApi:
         shortName: "nativeStore"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: ["ftapp08078-lvpr-uk-t:8080:8080"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
     assetTypeRequestConfiguration:
         numberOfAssetIdsPerAssetTypeRequest: 3
