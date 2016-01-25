@@ -23,6 +23,7 @@ import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
+import com.ft.methodearticletransformer.resources.ContentPreviewResource;
 import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
@@ -65,14 +66,22 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+
+        EomFileProcessorForContentStore eomFileProcessorForContentStore = configureEomFileProcessorForContentStore(
+                documentStoreApiClient,
+                uri,
+                configuration.getFinancialTimesBrand(), configuration
+        );
+
         environment.jersey().register(
                 new MethodeArticleTransformerResource(
                         contentSourceService,
-                        configureEomFileProcessorForContentStore(
-                                documentStoreApiClient,
-                                uri,
-                                configuration.getFinancialTimesBrand(), configuration
-                        )
+                        eomFileProcessorForContentStore
+                )
+        );
+        environment.jersey().register(
+                new ContentPreviewResource(
+                        eomFileProcessorForContentStore
                 )
         );
         
