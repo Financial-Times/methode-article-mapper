@@ -5,7 +5,6 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodearticletransformer.methode.DocumentStoreApiUnavailableException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
@@ -65,13 +64,12 @@ public class PostContentToTransformResource {
 	@Path("/{uuidString}")
 	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content getPreviewWithQP(@PathParam("uuidString") String uuidString,  @QueryParam("preview") boolean preview, EomFile eomFile,  @Context HttpHeaders httpHeaders) {
+	public final Content doTransform(@PathParam("uuidString") String uuidString, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
 
 		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuidString, "Publish request");
 		if (uuidString == null) {
 			throw ClientError.status(400).context(uuidString).reason(ErrorMessage.UUID_REQUIRED).exception();
 		}
-
 		UUID uuid;
 		try {
 			uuid = UUID.fromString(uuidString);
@@ -80,19 +78,18 @@ public class PostContentToTransformResource {
 					.reason(ErrorMessage.INVALID_UUID)
 					.exception(iae);
 		}
-
 		try {
-
 			if(preview) {
-				return processPreview(uuid, eomFile, transactionId);
+				return transformForPreview(eomFile, transactionId);
 			}
-			return processPublication(uuid, eomFile, transactionId);
+			return transformForPublication(eomFile, transactionId);
 
 		}catch(SourceApiUnavailableException e){
 			throw ServerError.status(503)
 					.reason(ErrorMessage.METHODE_API_UNAVAILABLE)
 					.exception(e);
-		}catch(ResourceNotFoundException e){			throw ClientError.status(404)
+		}catch(ResourceNotFoundException e){
+			throw ClientError.status(404)
 					.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 					.exception(e);
 		}catch(MethodeMarkedDeletedException e){
@@ -117,21 +114,15 @@ public class PostContentToTransformResource {
 					.context(uuid)
 					.error(e.getMessage())
 					.exception(e);
-		}catch(DocumentStoreApiUnavailableException e){
-			throw ServerError.status(503)
-					.reason(ErrorMessage.DOCUMENT_STORE_API_UNAVAILABLE)
-					.exception(e);
 		}
-
 	}
 
-	private Content processPublication(UUID uuid, EomFile eomFile, String transactionId) {
-		return eomFileProcessorForContentStore.process(eomFile, transactionId);
+	private Content transformForPublication(EomFile eomFile, String transactionId) {
+		return eomFileProcessorForContentStore.process(eomFile, transactionId, false);
 	}
 
-	private Content processPreview(UUID uuid, EomFile eomFile, String transactionId) {
-		Content content = new Content(uuid, "title", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-		return content;
+	private Content transformForPreview(EomFile eomFile, String transactionId) {
+		return eomFileProcessorForContentStore.process(eomFile, transactionId, true);
 	}
 }
 

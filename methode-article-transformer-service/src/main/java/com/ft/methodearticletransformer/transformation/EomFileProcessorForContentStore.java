@@ -74,25 +74,25 @@ public class EomFileProcessorForContentStore {
         this.financialTimesBrand = financialTimesBrand;
     }
 
-    public Content process(EomFile eomFile, String transactionId) {
+    public Content process(EomFile eomFile, String transactionId, boolean preview) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
 
         if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
             throw new UnsupportedTypeException(uuid, eomFile.getType());
         }
 
-        if (!workflowStatusEligibleForPublishing(eomFile)) {
+        if (!preview && !workflowStatusEligibleForPublishing(eomFile)) {
             throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
         }
 
         try {
-            return transformEomFileToContent(uuid, eomFile, transactionId);
+            return transformEomFileToContent(uuid, eomFile, transactionId, preview);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
     }
 
-    private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId)
+    private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId, boolean preview)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final DocumentBuilder documentBuilder = getDocumentBuilder();
@@ -104,7 +104,10 @@ public class EomFileProcessorForContentStore {
         verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
         final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
-        verifyChannel(uuid, xpath, systemAttributesDocument);
+
+        if(!preview) {
+            verifyChannel(uuid, xpath, systemAttributesDocument);
+        }
 
         final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
 
@@ -118,7 +121,9 @@ public class EomFileProcessorForContentStore {
 
         final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
 
-        verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
+        if(!preview) {
+            verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
+        }
 
         String rawBody = retrieveField(xpath, "/doc/story/text/body", eomFileDocument);
         verifyBodyPresent(uuid, rawBody);

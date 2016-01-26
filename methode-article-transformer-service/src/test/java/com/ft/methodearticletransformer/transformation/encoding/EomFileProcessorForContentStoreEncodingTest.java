@@ -55,7 +55,7 @@ public class EomFileProcessorForContentStoreEncodingTest {
                 expectedMainImageUuid, "http://www.ft.com/ontology/content/ImageSet", bodyText);
         
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false);
         
         assertThat(String.format("body content using JVM encoding %s", System.getProperty("file.encoding")),
                 content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
