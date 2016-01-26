@@ -23,7 +23,7 @@ import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
-import com.ft.methodearticletransformer.resources.ContentPreviewResource;
+import com.ft.methodearticletransformer.resources.PostContentToTransformResource;
 import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
@@ -80,7 +80,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                 )
         );
         environment.jersey().register(
-                new ContentPreviewResource(
+                new PostContentToTransformResource(
                         eomFileProcessorForContentStore
                 )
         );
