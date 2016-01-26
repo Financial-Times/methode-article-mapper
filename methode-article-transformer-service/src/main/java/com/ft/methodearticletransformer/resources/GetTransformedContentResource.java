@@ -35,14 +35,14 @@ import java.util.Map;
 import java.util.UUID;
 
 @Path("/content")
-public class MethodeArticleTransformerResource {
+public class GetTransformedContentResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
     private final ContentSourceService contentSourceService;
     private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
 
-    public MethodeArticleTransformerResource(ContentSourceService contentSourceService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+    public GetTransformedContentResource(ContentSourceService contentSourceService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
 		this.contentSourceService = contentSourceService;
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}

@@ -24,7 +24,7 @@ import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEn
 import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
 import com.ft.methodearticletransformer.resources.PostContentToTransformResource;
-import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
+import com.ft.methodearticletransformer.resources.GetTransformedContentResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
@@ -74,7 +74,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         );
 
         environment.jersey().register(
-                new MethodeArticleTransformerResource(
+                new GetTransformedContentResource(
                         contentSourceService,
                         eomFileProcessorForContentStore
                 )
