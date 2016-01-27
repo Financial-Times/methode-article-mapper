@@ -80,9 +80,9 @@ public class PostContentToTransformResource {
 		}
 		try {
 			if(preview) {
-				return transformForPreview(eomFile, transactionId);
+				return eomFileProcessorForContentStore.processPreview(eomFile, transactionId);
 			}
-			return transformForPublication(eomFile, transactionId);
+			return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
 
 		}catch(SourceApiUnavailableException e){
 			throw ServerError.status(503)
@@ -115,14 +115,6 @@ public class PostContentToTransformResource {
 					.error(e.getMessage())
 					.exception(e);
 		}
-	}
-
-	private Content transformForPublication(EomFile eomFile, String transactionId) {
-		return eomFileProcessorForContentStore.process(eomFile, transactionId, false);
-	}
-
-	private Content transformForPreview(EomFile eomFile, String transactionId) {
-		return eomFileProcessorForContentStore.process(eomFile, transactionId, true);
 	}
 }
 

@@ -71,7 +71,7 @@ public class GetTransformedContentResource {
         try {
         	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
             lastModifiedDate = eomFile.getLastModified();
-    		return eomFileProcessorForContentStore.process(eomFile, transactionId, false);
+    		return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
         } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)
                     .reason(ErrorMessage.METHODE_API_UNAVAILABLE)
@@ -141,7 +141,7 @@ public class GetTransformedContentResource {
 					.exception(iae);
 		}
 		try {
-			return eomFileProcessorForContentStore.process(eomFile, transactionId);
+			return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
 
 		} catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)

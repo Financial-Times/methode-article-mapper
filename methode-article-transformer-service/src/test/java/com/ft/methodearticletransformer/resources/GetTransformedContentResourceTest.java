@@ -67,7 +67,7 @@ public class GetTransformedContentResourceTest {
 		EomFile eomFile = mock(EomFile.class);
 		Content content = Content.builder().build();
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)). thenReturn(content);
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)). thenReturn(content);
 
 		assertThat(getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders), equalTo(content));
 	}
@@ -135,7 +135,7 @@ public class GetTransformedContentResourceTest {
 		when(eomFile.getLastModified()).thenReturn(date);
 
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new MethodeMarkedDeletedException(randomUuid));
         try {
             getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -156,7 +156,7 @@ public class GetTransformedContentResourceTest {
 		EomFile eomFile = mock(EomFile.class);
 		when(eomFile.getLastModified()).thenReturn(new Date());
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new UnsupportedTypeException(randomUuid, "EOM::DistortedStory"));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -178,7 +178,7 @@ public class GetTransformedContentResourceTest {
 		when(eomFile.getLastModified()).thenReturn(new Date());
 		Date embargoDate = new Date();
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new EmbargoDateInTheFutureException(randomUuid, embargoDate));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -198,7 +198,7 @@ public class GetTransformedContentResourceTest {
 		UUID randomUuid = UUID.randomUUID();
 		EomFile eomFile = mock(EomFile.class);
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new NotWebChannelException(randomUuid));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -220,7 +220,7 @@ public class GetTransformedContentResourceTest {
 		when(eomFile.getLastModified()).thenReturn(new Date());
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String sourceOtherThanFt = "Pepsi";
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new SourceNotEligibleForPublishException(randomUuid, sourceOtherThanFt));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -242,7 +242,7 @@ public class GetTransformedContentResourceTest {
 		when(eomFile.getLastModified()).thenReturn(new Date());
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String workflowStatusNotEligibleForPublishing = "Story/Edit";
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new WorkflowStatusNotEligibleForPublishException(randomUuid, workflowStatusNotEligibleForPublishing));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -264,7 +264,7 @@ public class GetTransformedContentResourceTest {
 		EomFile eomFile = mock(EomFile.class);
 		when(contentSourceService.fileByUuid(randomUuid, TRANSACTION_ID)).thenReturn(eomFile);
 		final String missingField = "publishedDate";
-		when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+		when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
 				thenThrow(new MethodeMissingFieldException(randomUuid, missingField));
 		try {
 			getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
@@ -285,7 +285,7 @@ public class GetTransformedContentResourceTest {
         UUID uuid = UUID.randomUUID();
         EomFile eomFile = mock(EomFile.class);
         when(contentSourceService.fileByUuid(uuid, TRANSACTION_ID)).thenReturn(eomFile);
-        when(eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID, false)).
+        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new MethodeMissingBodyException(uuid));
         try {
             getTransformedContentResource.getByUuid(uuid.toString(), httpHeaders);

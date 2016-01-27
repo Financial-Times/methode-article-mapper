@@ -63,6 +63,10 @@ public class EomFileProcessorForContentStore {
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String NO_PICTURE_FLAG = "No picture";
 
+    private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
+    private static final String BYLINE_XPATH = "/doc/story/text/byline";
+    private static final String BODY_TAG_XPATH = "/doc/story/text/body";
+
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
@@ -74,25 +78,70 @@ public class EomFileProcessorForContentStore {
         this.financialTimesBrand = financialTimesBrand;
     }
 
-    public Content process(EomFile eomFile, String transactionId, boolean preview) {
+    public Content processPreview(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
 
         if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
             throw new UnsupportedTypeException(uuid, eomFile.getType());
         }
 
-        if (!preview && !workflowStatusEligibleForPublishing(eomFile)) {
-            throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
-        }
-
         try {
-            return transformEomFileToContent(uuid, eomFile, transactionId, preview);
+            final DocumentBuilder documentBuilder = getDocumentBuilder();
+            final XPath xpath = XPathFactory.newInstance().newXPath();
+            final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+            final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+            final String headline = xpath.evaluate(HEADLINE_XPATH, eomFileDocument);
+            final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFileDocument),
+                    bylineTransformer, transactionId); //byline is optional
+
+            //body transformation
+            String postProcessedBody = "<body></body>";
+            String transformedBody = postProcessedBody;
+
+            String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+            if (!Strings.isNullOrEmpty(rawBody)) {
+                transformedBody = transformField(rawBody, bodyTransformer, transactionId);
+            }
+            final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
+            postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
+
+            return Content.builder()
+                    .withUuid(uuid)
+                    .withTitle(headline)
+                    .withXmlBody(postProcessedBody)
+                    .withByline(transformedByline)
+                    .withMainImage(mainImage)
+                    .withBrands(new TreeSet<>(Collections.singletonList(financialTimesBrand)))
+                    .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
+                    .withComments(Comments.builder().withEnabled(isDiscussionEnabled(xpath, attributesDocument)).build())
+                    .withPublishReference(transactionId)
+                    .withLastModified(eomFile.getLastModified())
+                    .build();
+
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
     }
 
-    private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId, boolean preview)
+    public Content processPublication(EomFile eomFile, String transactionId) {
+        UUID uuid = UUID.fromString(eomFile.getUuid());
+
+        if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
+            throw new UnsupportedTypeException(uuid, eomFile.getType());
+        }
+
+        if (!workflowStatusEligibleForPublishing(eomFile)) {
+            throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
+        }
+
+        try {
+            return transformEomFileToContent(uuid, eomFile, transactionId);
+        } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
+            throw new TransformationException(e);
+        }
+    }
+
+    private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final DocumentBuilder documentBuilder = getDocumentBuilder();
@@ -105,14 +154,11 @@ public class EomFileProcessorForContentStore {
 
         final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
 
-        if(!preview) {
-            verifyChannel(uuid, xpath, systemAttributesDocument);
-        }
+        verifyChannel(uuid, xpath, systemAttributesDocument);
 
         final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
 
-        final String headline = xpath
-                .evaluate("/doc/lead/lead-headline/headline/ln", eomFileDocument);
+        final String headline = xpath.evaluate(HEADLINE_XPATH, eomFileDocument);
 
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
@@ -121,17 +167,15 @@ public class EomFileProcessorForContentStore {
 
         final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
 
-        if(!preview) {
-            verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
-        }
+        verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
 
-        String rawBody = retrieveField(xpath, "/doc/story/text/body", eomFileDocument);
+        String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
         verifyBodyPresent(uuid, rawBody);
         String transformedBody = transformField(rawBody, bodyTransformer, transactionId);
 
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
 
-        final String transformedByline = transformField(retrieveField(xpath, "/doc/story/text/byline", eomFileDocument),
+        final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFileDocument),
                 bylineTransformer, transactionId); //byline is optional
 
         return Content.builder()
