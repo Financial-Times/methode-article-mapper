@@ -6,6 +6,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import com.ft.api.jaxrs.errors.ErrorEntity;
@@ -27,11 +31,16 @@ public class MethodeArticleTransformerErrorEntityFactoryTest{
     @Test
     public void shouldReturnAnIdentifiableErrorEntity() throws Exception {
         UUID uuid = UUID.fromString(UUID_STR);
+        OffsetDateTime lastModified = OffsetDateTime.now();
+        Map<String, Object> context = new HashMap<>();
+        context.put("uuid", uuid);
+        context.put("lastModified", lastModified);
 
-        ErrorEntity errorEntity = factory.entity(MESSAGE, uuid);
+        ErrorEntity errorEntity = factory.entity(MESSAGE, context);
         assertThat("The Error Entity is incorrect", errorEntity, is(instanceOf(IdentifiableErrorEntity.class)));
         assertThat("The Message does not match", errorEntity.getMessage(), is(MESSAGE));
         assertThat(((IdentifiableErrorEntity) errorEntity).getUuid().toString(), is(equalTo(UUID_STR)));
+        assertThat(((IdentifiableErrorEntity) errorEntity).getLastModified(), is(equalTo(lastModified)));
     }
 
     @Test
