@@ -37,42 +37,19 @@ public class PostContentToTransformResource {
 		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
 	}
 
-	public enum ErrorMessage {
-		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
-		UUID_REQUIRED("No UUID was passed"),
-		INVALID_UUID("The UUID passed was invalid"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
-		NOT_WEB_CHANNEL("This is not a web channel story"),
-		METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
-		METHODE_API_UNAVAILABLE("Methode api was unavailable"),
-		DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable");
-
-		private final String text;
-
-		ErrorMessage(String text) {
-			this.text = text;
-		}
-
-		@Override
-		public String toString() {
-			return text;
-		}
-	}
-
 	@POST
 	@Timed
 	@Path("/{uuidString}")
 	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content doTransform(@PathParam("uuidString") String uuidString, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
+	public final Content doTransform(@PathParam("uuidString") UUID uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
 
-		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuidString, "Publish request");
-		if (uuidString == null) {
-			throw ClientError.status(400).context(uuidString).reason(ErrorMessage.UUID_REQUIRED).exception();
+		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
+		if (uuid == null) {
+			throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
 		}
-		UUID uuid;
+
 		try {
-			uuid = UUID.fromString(uuidString);
 		} catch (IllegalArgumentException iae) {
 			throw ClientError.status(400)
 					.reason(ErrorMessage.INVALID_UUID)
@@ -111,7 +88,7 @@ public class PostContentToTransformResource {
 					.exception(e);
 		}catch(MethodeContentNotEligibleForPublishException e){
 			throw ClientError.status(404)
-					.context(uuid)
+					.context(uuid.toString())
 					.error(e.getMessage())
 					.exception(e);
 		}

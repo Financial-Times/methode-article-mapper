@@ -52,9 +52,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
             .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
         
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
-    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*");
+    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*", "/content-transform/*");
 
-    	BuildInfoResource buildInfoResource = new BuildInfoResource();   	
+    	BuildInfoResource buildInfoResource = new BuildInfoResource();
     	environment.jersey().register(buildInfoResource);
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();

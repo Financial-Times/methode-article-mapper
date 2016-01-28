@@ -79,7 +79,7 @@ public class GetTransformedContentResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(GetTransformedContentResource.ErrorMessage.UUID_REQUIRED.toString()));
+					equalTo(ErrorMessage.UUID_REQUIRED.toString()));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -94,7 +94,7 @@ public class GetTransformedContentResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(GetTransformedContentResource.ErrorMessage.INVALID_UUID.toString()));
+					equalTo(ErrorMessage.INVALID_UUID.toString()));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -111,7 +111,7 @@ public class GetTransformedContentResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(GetTransformedContentResource.ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
+					equalTo(ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -141,8 +141,8 @@ public class GetTransformedContentResourceTest {
             getTransformedContentResource.getByUuid(randomUuid.toString(), httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
-           assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(GetTransformedContentResource.ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
+            assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
+                    equalTo(ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
         } catch (Throwable throwable) {
             fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -205,7 +205,7 @@ public class GetTransformedContentResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(GetTransformedContentResource.ErrorMessage.NOT_WEB_CHANNEL.toString()));
+					equalTo(ErrorMessage.NOT_WEB_CHANNEL.toString()));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
 			fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
@@ -271,7 +271,7 @@ public class GetTransformedContentResourceTest {
 			fail("No exception was thrown, but expected one.");
 		} catch (WebApplicationClientException wace) {
 			assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-					equalTo(String.format(GetTransformedContentResource.ErrorMessage.METHODE_FIELD_MISSING.toString(),
+					equalTo(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(),
 							missingField)));
 			assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
 		} catch (Throwable throwable) {
