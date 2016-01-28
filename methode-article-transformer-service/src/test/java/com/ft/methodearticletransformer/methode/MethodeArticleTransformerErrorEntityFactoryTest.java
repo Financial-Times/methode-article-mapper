@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class MethodeArticleTransformerErrorEntityFactoryTest{
     @Test
     public void shouldReturnAnIdentifiableErrorEntity() throws Exception {
         UUID uuid = UUID.fromString(UUID_STR);
-        Date lastModified = new Date();
+        OffsetDateTime lastModified = OffsetDateTime.now();
         Map<String, Object> context = new HashMap<>();
         context.put("uuid", uuid);
         context.put("lastModified", lastModified);

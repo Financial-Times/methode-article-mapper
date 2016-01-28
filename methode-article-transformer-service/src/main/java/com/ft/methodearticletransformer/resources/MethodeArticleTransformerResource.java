@@ -24,6 +24,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,9 +110,13 @@ public class MethodeArticleTransformerResource {
     }
 
     private Map<String, Object> buildContext(UUID uuid, Date messageTimestamp) {
+        OffsetDateTime lastModified = OffsetDateTime.of(
+            LocalDateTime.ofInstant(messageTimestamp.toInstant(), ZoneId.of(ZoneOffset.UTC.getId())),
+            ZoneOffset.UTC
+        );
         Map<String, Object> context = new HashMap<>();
         context.put("uuid", uuid);
-        context.put("lastModified", messageTimestamp);
+        context.put("lastModified", lastModified);
         return context;
     }
 
