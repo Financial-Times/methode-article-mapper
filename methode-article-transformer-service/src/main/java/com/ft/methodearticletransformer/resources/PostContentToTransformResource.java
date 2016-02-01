@@ -42,19 +42,19 @@ public class PostContentToTransformResource {
 	@Path("/{uuidString}")
 	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content doTransform(@PathParam("uuidString") UUID uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
+	public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
 
 		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
 		if (uuid == null) {
 			throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
 		}
-
-		try {
-		} catch (IllegalArgumentException iae) {
-			throw ClientError.status(400)
-					.reason(ErrorMessage.INVALID_UUID)
-					.exception(iae);
-		}
+        try {
+            UUID.fromString(uuid);
+        }catch (IllegalArgumentException iae) {
+            throw ClientError.status(400)
+                    .reason(ErrorMessage.INVALID_UUID)
+                    .exception(iae);
+        }
 		try {
 			if(preview) {
 				return eomFileProcessorForContentStore.processPreview(eomFile, transactionId);
@@ -64,10 +64,6 @@ public class PostContentToTransformResource {
 		}catch(SourceApiUnavailableException e){
 			throw ServerError.status(503)
 					.reason(ErrorMessage.METHODE_API_UNAVAILABLE)
-					.exception(e);
-		}catch(ResourceNotFoundException e){
-			throw ClientError.status(404)
-					.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 					.exception(e);
 		}catch(MethodeMarkedDeletedException e){
 			throw ClientError.status(404)
