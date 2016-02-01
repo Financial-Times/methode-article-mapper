@@ -1,5 +1,6 @@
 package com.ft.methodearticletransformer.transformation;
 
+import com.ft.common.FileReader;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -82,10 +83,10 @@ public class EomFileProcessorForContentStoreTest {
 
     private EomFileProcessorForContentStore eomFileProcessorForContentStore;
     private static final String TRANSACTION_ID = "tid_test";
-    private static final String simpleArticleXmlTemplate = readFile("article/simple_article_value.xml");
-    private static final String articleWithImagesXmlTemplate = readFile("article/article_value_with_image.xml");
-    private static final String articleAttributesXml = readFile("article/article_attributes.xml");
-    private static final String articleSystemAttributesXml = readFile("article/article_system_attributes.xml");
+    private static final String simpleArticleXmlTemplate = FileReader.readFile("article/simple_article_value.xml");
+    private static final String articleWithImagesXmlTemplate = FileReader.readFile("article/article_value_with_image.xml");
+    private static final String articleAttributesXml = FileReader.readFile("article/article_attributes.xml");
+    private static final String articleSystemAttributesXml = FileReader.readFile("article/article_system_attributes.xml");
 
     public EomFileProcessorForContentStoreTest() {
     }
@@ -323,7 +324,7 @@ public class EomFileProcessorForContentStoreTest {
     public void thatTransformationFailsIfThereIsNoBody()
             throws Exception {
 
-        String value = readFile("article/article_value_with_no_body.xml");
+        String value = FileReader.readFile("article/article_value_with_no_body.xml");
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .withValue(value.getBytes(UTF8))
@@ -475,14 +476,6 @@ public class EomFileProcessorForContentStoreTest {
             return dateFormat.parse(dateString);
         } catch (ParseException e) {
             return null;
-        }
-    }
-
-    private static String readFile(final String path) {
-        try {
-            return new String(Files.readAllBytes(Paths.get(EomFileProcessorForContentStoreTest.class.getClassLoader().getResource(path).toURI())), "UTF-8");
-        } catch (IOException | URISyntaxException ex) {
-            throw new RuntimeException(ex);
         }
     }
 }
