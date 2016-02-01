@@ -15,7 +15,7 @@ import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
 import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,11 +40,11 @@ public class GetTransformedContentResource {
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     
     private final ContentSourceService contentSourceService;
-    private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
+    private final EomFileProcessor eomFileProcessor;
 
-    public GetTransformedContentResource(ContentSourceService contentSourceService, EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+    public GetTransformedContentResource(ContentSourceService contentSourceService, EomFileProcessor eomFileProcessor) {
 		this.contentSourceService = contentSourceService;
-		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
+		this.eomFileProcessor = eomFileProcessor;
 	}
 
 	@GET
@@ -71,7 +71,8 @@ public class GetTransformedContentResource {
         try {
         	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
             lastModifiedDate = eomFile.getLastModified();
-    		return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
+    		return eomFileProcessor.processPublication(eomFile, transactionId);
+
         } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)
                     .reason(ErrorMessage.METHODE_API_UNAVAILABLE)
@@ -141,7 +142,7 @@ public class GetTransformedContentResource {
 					.exception(iae);
 		}
 		try {
-			return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
+			return eomFileProcessor.processPublication(eomFile, transactionId);
 
 		} catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)

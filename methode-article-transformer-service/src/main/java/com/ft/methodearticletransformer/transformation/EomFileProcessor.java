@@ -53,11 +53,11 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
 
-public class EomFileProcessorForContentStore {
+public class EomFileProcessor {
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
-    private static final Logger log = LoggerFactory.getLogger(EomFileProcessorForContentStore.class);
+    private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -71,8 +71,8 @@ public class EomFileProcessorForContentStore {
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
 
-    public EomFileProcessorForContentStore(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
-                                           Brand financialTimesBrand) {
+    public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
+                            Brand financialTimesBrand) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.financialTimesBrand = financialTimesBrand;

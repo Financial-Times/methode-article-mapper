@@ -12,7 +12,7 @@ import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishExcep
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,13 +40,13 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     private static final boolean IS_PREVIEW_FALSE = false;
     private static final String INVALID_TYPE = "EOM::DistortedStory";
 
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore = mock(EomFileProcessorForContentStore.class);
+    private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
     private HttpHeaders httpHeaders = mock(HttpHeaders.class);
     private EomFile eomFile = mock(EomFile.class);;
     private UUID uuid = UUID.randomUUID();;
 
     /*Class under test*/
-    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessorForContentStore);
+    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);
 
     @Before
     public void preconditions() {
@@ -86,7 +86,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
 
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).thenThrow(new MethodeMarkedDeletedException(uuid));
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).thenThrow(new MethodeMarkedDeletedException(uuid));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), false, eomFile, httpHeaders);
             fail("No exception was thrown, but expected one.");
@@ -103,7 +103,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenPublicationNotEligibleForPublishing() {
 
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new UnsupportedTypeException(uuid, "EOM::DistortedStory"));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), false,  eomFile, httpHeaders);
@@ -122,7 +122,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     public void shouldThrow404ExceptionWhenEmbargoDateInTheFuture() {
         Date embargoDate = new Date();
 
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new EmbargoDateInTheFutureException(uuid, embargoDate));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE,  eomFile, httpHeaders);
@@ -140,7 +140,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenNotWebChannel() {
 
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new NotWebChannelException(uuid));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
@@ -158,7 +158,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenSourceNotFt() {
         final String sourceOtherThanFt = "Pepsi";
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new SourceNotEligibleForPublishException(uuid, sourceOtherThanFt));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
@@ -177,7 +177,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     public void shouldThrow404ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
 
         final String workflowStatusNotEligibleForPublishing = "Story/Edit";
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new WorkflowStatusNotEligibleForPublishException(uuid, workflowStatusNotEligibleForPublishing));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
@@ -196,7 +196,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenMethodeFieldMissing() {
         final String missingField = "publishedDate";
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new MethodeMissingFieldException(uuid, missingField));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile,  httpHeaders);
@@ -214,7 +214,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
 
     @Test
     public void shouldThrow418ExceptionWhenMethodeBodyMissing() {
-        when(eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
                 thenThrow(new MethodeMissingBodyException(uuid));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);

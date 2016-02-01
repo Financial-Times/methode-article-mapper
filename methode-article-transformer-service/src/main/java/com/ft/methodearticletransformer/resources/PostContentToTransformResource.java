@@ -10,10 +10,9 @@ import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
-import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
 import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -30,11 +29,11 @@ public class PostContentToTransformResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
 
-    private final EomFileProcessorForContentStore eomFileProcessorForContentStore;
+    private final EomFileProcessor eomFileProcessor;
 
-    public PostContentToTransformResource(EomFileProcessorForContentStore eomFileProcessorForContentStore) {
+    public PostContentToTransformResource(EomFileProcessor eomFileProcessor) {
 
-		this.eomFileProcessorForContentStore = eomFileProcessorForContentStore;
+		this.eomFileProcessor = eomFileProcessor;
 	}
 
 	@POST
@@ -57,9 +56,9 @@ public class PostContentToTransformResource {
         }
 		try {
 			if(preview) {
-				return eomFileProcessorForContentStore.processPreview(eomFile, transactionId);
+				return eomFileProcessor.processPreview(eomFile, transactionId);
 			}
-			return eomFileProcessorForContentStore.processPublication(eomFile, transactionId);
+			return eomFileProcessor.processPublication(eomFile, transactionId);
 
 		}catch(SourceApiUnavailableException e){
 			throw ServerError.status(503)

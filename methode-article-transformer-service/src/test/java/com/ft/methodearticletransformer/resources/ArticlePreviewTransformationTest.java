@@ -6,7 +6,7 @@ import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -20,7 +20,6 @@ import static com.jcabi.matchers.RegexMatchers.matchesPattern;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -46,8 +45,8 @@ public class ArticlePreviewTransformationTest {
     private Brand brand= new Brand(ARBITRARY_BRAND);
 
     /** Classes under test - validation for successful transformation of an article preview occurs in both classes*/
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore= new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer, brand);
-    private PostContentToTransformResource postContentToTransformResource= new PostContentToTransformResource(eomFileProcessorForContentStore);
+    private EomFileProcessor eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, brand);
+    private PostContentToTransformResource postContentToTransformResource= new PostContentToTransformResource(eomFileProcessor);
 
     @Before
     public void setupPreconditions() throws Exception {
@@ -82,7 +81,7 @@ public class ArticlePreviewTransformationTest {
 
         when(eomFile.getType()).thenReturn(INVALID_EOM_FILE_TYPE);
         when(eomFile.getUuid()).thenReturn(randomUuid);
-        eomFileProcessorForContentStore.processPreview(eomFile, TRANSACTION_ID);
+        eomFileProcessor.processPreview(eomFile, TRANSACTION_ID);
     }
 
     /* In article preview we don't care about systemAttributes, usageTickets & lastModified date */

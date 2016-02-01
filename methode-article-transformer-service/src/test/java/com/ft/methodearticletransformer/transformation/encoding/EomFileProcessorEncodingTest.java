@@ -1,7 +1,7 @@
 package com.ft.methodearticletransformer.transformation.encoding;
 
-import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStoreTest.createStandardEomFileWithMainImage;
-import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStoreTest.FINANCIAL_TIMES_BRAND;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessorTest.createStandardEomFileWithMainImage;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessorTest.FINANCIAL_TIMES_BRAND;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -13,14 +13,14 @@ import java.util.UUID;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import org.junit.Before;
 import org.junit.Test;
 
 
-public class EomFileProcessorForContentStoreEncodingTest {
+public class EomFileProcessorEncodingTest {
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
     private static final String TRANSACTION_ID = "tid_test";
     
@@ -30,8 +30,8 @@ public class EomFileProcessorForContentStoreEncodingTest {
     
     private final UUID uuid = UUID.randomUUID();
     
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore =
-            new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer, financialTimesBrand);
+    private EomFileProcessor eomFileProcessor =
+            new EomFileProcessor(bodyTransformer, bylineTransformer, financialTimesBrand);
     
     @Before
     public void setUp() throws Exception {
@@ -55,7 +55,7 @@ public class EomFileProcessorForContentStoreEncodingTest {
                 expectedMainImageUuid, "http://www.ft.com/ontology/content/ImageSet", bodyText);
         
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
-        Content content = eomFileProcessorForContentStore.processPublication(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         
         assertThat(String.format("body content using JVM encoding %s", System.getProperty("file.encoding")),
                 content.getBody(), equalToIgnoringWhiteSpace(expectedBody));

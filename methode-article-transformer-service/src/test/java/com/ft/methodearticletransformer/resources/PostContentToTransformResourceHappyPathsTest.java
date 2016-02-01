@@ -2,7 +2,7 @@ package com.ft.methodearticletransformer.resources;
 
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,11 +25,11 @@ public class PostContentToTransformResourceHappyPathsTest {
     private static final String TRANSACTION_ID = "tid_test";
 
     private HttpHeaders httpHeaders = mock(HttpHeaders.class);
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore  = mock(EomFileProcessorForContentStore.class);
+    private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
     private EomFile eomFile = mock(EomFile.class);
 
     /* Class upder test. */
-    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessorForContentStore);
+    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);
 
     @Before
     public void preconditions() throws Exception {
@@ -42,7 +42,7 @@ public class PostContentToTransformResourceHappyPathsTest {
     @Test
     public void previewProcessedOk() {
         postContentToTransformResource.doTransform(UUID.randomUUID().toString(), true, eomFile, httpHeaders);
-        verify(eomFileProcessorForContentStore, times(1)).processPreview(eomFile, TRANSACTION_ID);
+        verify(eomFileProcessor, times(1)).processPreview(eomFile, TRANSACTION_ID);
     }
 
     /**
@@ -51,7 +51,7 @@ public class PostContentToTransformResourceHappyPathsTest {
     @Test
     public void publicationProcessedOk() {
         postContentToTransformResource.doTransform(UUID.randomUUID().toString(), false, eomFile, httpHeaders);
-        verify(eomFileProcessorForContentStore, times(1)).processPublication(eomFile, TRANSACTION_ID);
+        verify(eomFileProcessor, times(1)).processPublication(eomFile, TRANSACTION_ID);
     }
 
 }

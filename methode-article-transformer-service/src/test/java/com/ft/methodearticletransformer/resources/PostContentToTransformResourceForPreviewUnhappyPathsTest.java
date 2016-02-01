@@ -5,7 +5,7 @@ import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,12 +31,12 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     private static final String TRANSACTION_ID = "tid_test";
     private static final String INVALID_TYPE = "NOT_COMPOUND_STORY";
 
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore = mock(EomFileProcessorForContentStore.class);
+    private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
     private HttpHeaders httpHeaders = mock(HttpHeaders.class);
     private EomFile eomFile = mock(EomFile.class);
 
     /*Class under test*/
-    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessorForContentStore);;
+    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);;
 
     @Before
     public void preconditions() {
@@ -76,7 +76,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     @Test
     public void shouldThrow404ExceptionWhenPrviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
-        when(eomFileProcessorForContentStore.processPreview(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
                 thenThrow(new UnsupportedTypeException(randomUuid, INVALID_TYPE));
         try {
             postContentToTransformResource.doTransform(randomUuid.toString(), IS_PREVIEW_TRUE, eomFile, httpHeaders);

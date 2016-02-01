@@ -27,7 +27,7 @@ import com.ft.methodearticletransformer.resources.PostContentToTransformResource
 import com.ft.methodearticletransformer.resources.GetTransformedContentResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
@@ -67,7 +67,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         URI uri = builder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
 
-        EomFileProcessorForContentStore eomFileProcessorForContentStore = configureEomFileProcessorForContentStore(
+        EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
                 uri,
                 configuration.getFinancialTimesBrand(), configuration
@@ -76,12 +76,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         environment.jersey().register(
                 new GetTransformedContentResource(
                         contentSourceService,
-                        eomFileProcessorForContentStore
+                        eomFileProcessor
                 )
         );
         environment.jersey().register(
                 new PostContentToTransformResource(
-                        eomFileProcessorForContentStore
+                        eomFileProcessor
                 )
         );
         
@@ -106,12 +106,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                 .build();
     }
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(
+	private EomFileProcessor configureEomFileProcessorForContentStore(
             final ResilientClient documentStoreApiClient,
             final URI uri,
             final Brand financialTimesBrand,
             final MethodeArticleTransformerConfiguration configuration) {
-		return new EomFileProcessorForContentStore(
+		return new EomFileProcessor(
 				new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                         uri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
