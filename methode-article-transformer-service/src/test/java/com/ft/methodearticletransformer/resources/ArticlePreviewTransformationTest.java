@@ -1,7 +1,7 @@
 package com.ft.methodearticletransformer.resources;
 
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.common.FileReader;
+import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
@@ -35,8 +35,8 @@ public class ArticlePreviewTransformationTest {
     private static String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
     public static final String ARBITRARY_BRAND = "any brand";
 
-    private static final String VALUE_PROPERTY = FileReader.readFile("preview/article_preview_value.xml");
-    private static final String ATTRIBUTES_PROPERTY = FileReader.readFile("preview/article_preview_attributes.xml");
+    private static final String VALUE_PROPERTY = FileUtils.readFile("preview/article_preview_value.xml");
+    private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
     private static final String[] WORFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
 
     private HttpHeaders httpHeaders= mock(HttpHeaders.class);

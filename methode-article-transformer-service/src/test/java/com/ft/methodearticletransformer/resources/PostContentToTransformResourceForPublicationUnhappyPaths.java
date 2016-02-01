@@ -62,9 +62,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(ErrorMessage.UUID_REQUIRED.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -77,9 +74,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(ErrorMessage.INVALID_UUID.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -94,9 +88,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -112,9 +103,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("[%s] not an EOM::CompoundStory.", INVALID_TYPE)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -131,9 +119,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("Embargo date [%s] is in the future", embargoDate)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -149,9 +134,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(ErrorMessage.NOT_WEB_CHANNEL.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -167,9 +149,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("Source [%s] not eligible for publishing", sourceOtherThanFt)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -187,9 +166,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
                     equalTo(String.format("Workflow status [%s] not eligible for publishing",
                             workflowStatusNotEligibleForPublishing)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -206,9 +182,6 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
                     equalTo(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(),
                             missingField)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 

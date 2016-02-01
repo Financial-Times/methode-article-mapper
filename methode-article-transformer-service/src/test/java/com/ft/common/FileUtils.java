@@ -8,11 +8,11 @@ import java.nio.file.Paths;
 /**
  * Created by julia.fernee on 29/01/2016.
  */
-public class FileReader {
+public class FileUtils {
 
     public static String readFile(final String path) {
         try {
-            return new String(Files.readAllBytes(Paths.get(FileReader.class.getClassLoader().getResource(path).toURI())), "UTF-8");
+            return new String(Files.readAllBytes(Paths.get(FileUtils.class.getClassLoader().getResource(path).toURI())), "UTF-8");
         } catch (IOException | URISyntaxException ex) {
             throw new RuntimeException(ex);
         }

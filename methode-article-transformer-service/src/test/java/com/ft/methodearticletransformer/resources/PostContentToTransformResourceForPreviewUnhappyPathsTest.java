@@ -52,9 +52,6 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(ErrorMessage.UUID_REQUIRED.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
-        } catch (Throwable throwable) {
-            fail(String.format("The thrown exception was not of expected type. It was [%s] instead.",
-                    throwable.getClass().getCanonicalName()));
         }
     }
 
@@ -74,7 +71,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     }
 
     @Test
-    public void shouldThrow404ExceptionWhenPrviewNotEligibleForPublishing() {
+    public void shouldThrow404ExceptionWhenPreviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
         when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
                 thenThrow(new UnsupportedTypeException(randomUuid, INVALID_TYPE));
