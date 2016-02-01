@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE doc SYSTEM "/SysConfig/Rules/ftpsi.dtd">
+<doc>
+    <lead>
+        <lead-images id="U2701877253086gfF">
+            <web-master width="2048" height="1152" id="U2701877253086TGC"
+                        fileref="/FT/Graphics/Online/Master_2048x1152/dummy.jpg?uuid=10839606-2bea-11e5-acfb-cbd2e1c81cca"/>
+            <web-skybox-picture/>
+            <web-alt-picture/>
+            <web-popup-preview width="167" height="96"/>
+            <web-popup/>
+        </lead-images>
+        <lead-headline>
+            <headline>
+
+            </headline>
+        </lead-headline>
+    </lead>
+    <story>
+        <text>
+            <p>random text for now</p>
+        </text>
+    </story>
+</doc>
