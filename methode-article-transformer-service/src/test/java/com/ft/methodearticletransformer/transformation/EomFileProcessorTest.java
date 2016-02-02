@@ -1,5 +1,6 @@
 package com.ft.methodearticletransformer.transformation;
 
+import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -21,11 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,7 +34,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
-import static com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore.METHODE;
+import static com.ft.methodearticletransformer.transformation.EomFileProcessor.METHODE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.hamcrest.Matchers.hasProperty;
@@ -55,7 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class EomFileProcessorForContentStoreTest {
+public class EomFileProcessorTest {
 
     private static final String FALSE = "False";
     private static final Date LAST_MODIFIED = new Date();
@@ -80,14 +77,14 @@ public class EomFileProcessorForContentStoreTest {
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
-    private EomFileProcessorForContentStore eomFileProcessorForContentStore;
+    private EomFileProcessor eomFileProcessor;
     private static final String TRANSACTION_ID = "tid_test";
-    private static final String simpleArticleXmlTemplate = readFile("article/simple_article_value.xml");
-    private static final String articleWithImagesXmlTemplate = readFile("article/article_value_with_image.xml");
-    private static final String articleAttributesXml = readFile("article/article_attributes.xml");
-    private static final String articleSystemAttributesXml = readFile("article/article_system_attributes.xml");
+    private static final String simpleArticleXmlTemplate = FileUtils.readFile("article/simple_article_value.xml");
+    private static final String articleWithImagesXmlTemplate = FileUtils.readFile("article/article_value_with_image.xml");
+    private static final String articleAttributesXml = FileUtils.readFile("article/article_attributes.xml");
+    private static final String articleSystemAttributesXml = FileUtils.readFile("article/article_system_attributes.xml");
 
-    public EomFileProcessorForContentStoreTest() {
+    public EomFileProcessorTest() {
     }
 
     @Before
@@ -103,7 +100,7 @@ public class EomFileProcessorForContentStoreTest {
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedContent();
 
-        eomFileProcessorForContentStore = new EomFileProcessorForContentStore(bodyTransformer, bylineTransformer, financialTimesBrand);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, financialTimesBrand);
     }
 
     @Test(expected = MethodeMarkedDeletedException.class)
@@ -111,7 +108,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFile(uuid, "True"))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -120,7 +117,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithEmbargoDateInTheFuture(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -129,7 +126,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithNoFtChannel(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -138,7 +135,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileNonFtSource(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -147,7 +144,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWorkflowStatusNotEligible(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -156,7 +153,7 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createDwcComponentFile(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
@@ -165,13 +162,13 @@ public class EomFileProcessorForContentStoreTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithNoLastPublicationDate(uuid))
                 .build();
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
 
     @Test
     public void shouldNotBarfOnExternalDtd() {
-        Content content = eomFileProcessorForContentStore.process(standardEomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(standardEomFile, TRANSACTION_ID);
         Content expectedContent = createStandardExpectedContent();
         assertThat(content, equalTo(expectedContent));
     }
@@ -186,7 +183,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withValuesFrom(standardExpectedContent)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
         verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
         assertThat(content, equalTo(expectedContent));
@@ -206,7 +203,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withPublishReference(reference)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, reference);
+        Content content = eomFileProcessor.processPublication(eomFile, reference);
 
         assertThat(content, equalTo(expectedContent));
     }
@@ -230,7 +227,7 @@ public class EomFileProcessorForContentStoreTest {
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withByline(TRANSFORMED_BYLINE).build();
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
         verify(bylineTransformer).transform("<byline>By <author-name>Gillian Tett</author-name></byline>",
                 TRANSACTION_ID);
@@ -248,7 +245,7 @@ public class EomFileProcessorForContentStoreTest {
         expectedException.expect(MethodeContentNotEligibleForPublishException.class);
         expectedException.expect(hasProperty("message", equalTo("[EOM::SomethingElse] not an EOM::CompoundStory.")));
 
-        eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test
@@ -257,7 +254,7 @@ public class EomFileProcessorForContentStoreTest {
         final UUID expectedMainImageUuid = ImageSetUuidGenerator.fromImageUuid(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         assertThat(content.getMainImage(), equalTo(expectedMainImageUuid.toString()));
     }
 
@@ -265,7 +262,7 @@ public class EomFileProcessorForContentStoreTest {
     public void testMainImageIsNullIfMissing() throws Exception {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         assertThat(content.getMainImage(), nullValue());
     }
 
@@ -300,7 +297,7 @@ public class EomFileProcessorForContentStoreTest {
         when(bodyTransformer.transform(anyString(), anyString())).then(returnsFirstArg());
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
         String expectedBody = "<body>" +
                 "                <p>random text for now</p>" +
@@ -313,7 +310,7 @@ public class EomFileProcessorForContentStoreTest {
     public void testCommentsArePresent() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
         assertThat(content.getComments(), notNullValue());
         assertThat(content.getComments().isEnabled(), is(true));
@@ -323,13 +320,13 @@ public class EomFileProcessorForContentStoreTest {
     public void thatTransformationFailsIfThereIsNoBody()
             throws Exception {
 
-        String value = readFile("article/article_value_with_no_body.xml");
+        String value = FileUtils.readFile("article/article_value_with_no_body.xml");
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .withValue(value.getBytes(UTF8))
                 .build();
 
-        eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
@@ -337,7 +334,7 @@ public class EomFileProcessorForContentStoreTest {
         final UUID imageUuid = UUID.randomUUID();
         final UUID expectedMainImageUuid = ImageSetUuidGenerator.fromImageUuid(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, articleImageMetadataFlag);
-        Content content = eomFileProcessorForContentStore.process(eomFile, TRANSACTION_ID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
@@ -475,14 +472,6 @@ public class EomFileProcessorForContentStoreTest {
             return dateFormat.parse(dateString);
         } catch (ParseException e) {
             return null;
-        }
-    }
-
-    private static String readFile(final String path) {
-        try {
-            return new String(Files.readAllBytes(Paths.get(EomFileProcessorForContentStoreTest.class.getClassLoader().getResource(path).toURI())), "UTF-8");
-        } catch (IOException | URISyntaxException ex) {
-            throw new RuntimeException(ex);
         }
     }
 }

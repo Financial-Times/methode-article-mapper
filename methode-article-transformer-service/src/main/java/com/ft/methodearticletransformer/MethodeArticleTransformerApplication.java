@@ -23,10 +23,11 @@ import com.ft.methodearticletransformer.health.RemoteDropWizardPingHealthCheck;
 import com.ft.methodearticletransformer.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticletransformer.methode.ContentSourceService;
 import com.ft.methodearticletransformer.methode.rest.RestContentSourceService;
-import com.ft.methodearticletransformer.resources.MethodeArticleTransformerResource;
+import com.ft.methodearticletransformer.resources.PostContentToTransformResource;
+import com.ft.methodearticletransformer.resources.GetTransformedContentResource;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.BylineProcessingFieldTransformerFactory;
-import com.ft.methodearticletransformer.transformation.EomFileProcessorForContentStore;
+import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
@@ -51,9 +52,9 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
             .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
         
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
-    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*");
+    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*", "/content-transform/*");
 
-    	BuildInfoResource buildInfoResource = new BuildInfoResource();   	
+    	BuildInfoResource buildInfoResource = new BuildInfoResource();
     	environment.jersey().register(buildInfoResource);
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
@@ -65,14 +66,22 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
         URI uri = builder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+
+        EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
+                documentStoreApiClient,
+                uri,
+                configuration.getFinancialTimesBrand(), configuration
+        );
+
         environment.jersey().register(
-                new MethodeArticleTransformerResource(
+                new GetTransformedContentResource(
                         contentSourceService,
-                        configureEomFileProcessorForContentStore(
-                                documentStoreApiClient,
-                                uri,
-                                configuration.getFinancialTimesBrand(), configuration
-                        )
+                        eomFileProcessor
+                )
+        );
+        environment.jersey().register(
+                new PostContentToTransformResource(
+                        eomFileProcessor
                 )
         );
         
@@ -97,12 +106,12 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                 .build();
     }
 
-	private EomFileProcessorForContentStore configureEomFileProcessorForContentStore(
+	private EomFileProcessor configureEomFileProcessorForContentStore(
             final ResilientClient documentStoreApiClient,
             final URI uri,
             final Brand financialTimesBrand,
             final MethodeArticleTransformerConfiguration configuration) {
-		return new EomFileProcessorForContentStore(
+		return new EomFileProcessor(
 				new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                         uri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
