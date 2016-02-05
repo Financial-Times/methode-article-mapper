@@ -5,6 +5,7 @@ import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
+import com.ft.methodearticletransformer.methode.MethodeContentInvalidException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
@@ -44,16 +45,9 @@ public class PostContentToTransformResource {
 	public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
 
 		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
-		if (uuid == null) {
-			throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
-		}
-        try {
-            UUID.fromString(uuid);
-        }catch (IllegalArgumentException iae) {
-            throw ClientError.status(400)
-                    .reason(ErrorMessage.INVALID_UUID)
-                    .exception(iae);
-        }
+
+		validateUuid(uuid, eomFile);
+
 		try {
 			if(preview) {
 				return eomFileProcessor.processPreview(eomFile, transactionId);
@@ -86,6 +80,27 @@ public class PostContentToTransformResource {
 					.context(uuid.toString())
 					.error(e.getMessage())
 					.exception(e);
+		}
+	}
+
+	private void validateUuid(String uuid, EomFile eomFile) {
+		if (uuid == null) {
+			throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
+		}
+		try {
+
+			UUID resourceId = UUID.fromString(uuid);
+
+			if(!uuid.equals(eomFile.getUuid())) {
+				String errorMessage = String.format(ErrorMessage.CONFLICTING_UUID.toString(), uuid, eomFile.getUuid());
+				throw ClientError.status(409)
+						.error(errorMessage)
+						.exception(new MethodeContentInvalidException(resourceId, errorMessage));
+			}
+		}catch (IllegalArgumentException iae) {
+			throw ClientError.status(400)
+					.reason(ErrorMessage.INVALID_UUID)
+					.exception(iae);
 		}
 	}
 }

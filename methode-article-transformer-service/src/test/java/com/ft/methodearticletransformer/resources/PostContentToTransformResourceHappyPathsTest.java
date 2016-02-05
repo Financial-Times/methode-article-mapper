@@ -27,12 +27,14 @@ public class PostContentToTransformResourceHappyPathsTest {
     private HttpHeaders httpHeaders = mock(HttpHeaders.class);
     private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
     private EomFile eomFile = mock(EomFile.class);
+    private String uuid = UUID.randomUUID().toString();
 
     /* Class upder test. */
     private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);
 
     @Before
     public void preconditions() throws Exception {
+        when(eomFile.getUuid()).thenReturn(uuid);
         when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
     }
 
@@ -41,7 +43,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void previewProcessedOk() {
-        postContentToTransformResource.doTransform(UUID.randomUUID().toString(), true, eomFile, httpHeaders);
+        postContentToTransformResource.doTransform(uuid, true, eomFile, httpHeaders);
         verify(eomFileProcessor, times(1)).processPreview(eomFile, TRANSACTION_ID);
     }
 
@@ -50,7 +52,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void publicationProcessedOk() {
-        postContentToTransformResource.doTransform(UUID.randomUUID().toString(), false, eomFile, httpHeaders);
+        postContentToTransformResource.doTransform(uuid, false, eomFile, httpHeaders);
         verify(eomFileProcessor, times(1)).processPublication(eomFile, TRANSACTION_ID);
     }
 

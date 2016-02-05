@@ -11,7 +11,8 @@ enum ErrorMessage {
     NOT_WEB_CHANNEL("This is not a web channel story"),
     METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
     METHODE_API_UNAVAILABLE("Methode api was unavailable"),
-    DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable");
+    DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable"),
+    CONFLICTING_UUID("UUID in the url [%s] and uuid in the payload [%s] are not the same");
 
     private final String text;
 
