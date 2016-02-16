@@ -20,7 +20,7 @@ RUN apk --update add git \
  && rm -rf /root/.m2/*
 EXPOSE 8080 8081
 
-CMD java -Ddw.server.applicationConnectors[0].port=8080 \
+CMD exec java -Ddw.server.applicationConnectors[0].port=8080 \
      -Ddw.server.adminConnectors[0].port=8081 \
      -Ddw.sourceApi.endpointConfiguration.primaryNodes=$VULCAN_HOST \
      -Ddw.documentStoreApi.endpointConfiguration.primaryNodes=$VULCAN_HOST \
