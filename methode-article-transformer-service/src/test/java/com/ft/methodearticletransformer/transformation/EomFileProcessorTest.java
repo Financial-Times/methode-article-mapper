@@ -5,6 +5,7 @@ import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
+import com.ft.content.model.Standout;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
@@ -316,6 +317,16 @@ public class EomFileProcessorTest {
         assertThat(content.getComments().isEnabled(), is(true));
     }
 
+    @Test
+    public void testStandoutFieldsArePresent() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        assertThat(content.getStandout().isEditorsChoice(), is(true));
+        assertThat(content.getStandout().isExclusive(), is(true));
+        assertThat(content.getStandout().isScoop(), is(true));
+    }
+
     @Test(expected = MethodeMissingBodyException.class)
     public void thatTransformationFailsIfThereIsNoBody()
             throws Exception {
@@ -341,7 +352,7 @@ public class EomFileProcessorTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True");
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True", "Yes", "Yes", "Yes");
     }
 
     public static EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
@@ -349,38 +360,40 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(String.format(articleWithImagesXmlTemplate, mainImageUuid).getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "FT"))
+                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "", "", "", "FT"))
                 .withSystemAttributes(String.format(articleSystemAttributesXml, "FTcom"))
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
+        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE);
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, FALSE);
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", FALSE);
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", FALSE, "", "", "");
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
-                                          String channel, String sourceCode, String workflowStatus, String lastPublicationDateAsString, String commentsEnabled) {
+                                          String channel, String sourceCode, String workflowStatus,
+                                          String lastPublicationDateAsString, String commentsEnabled,
+                                          String editorsPick, String exclusive, String scoop) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -391,7 +404,11 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(simpleArticleXmlTemplate.getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, markedDeleted, "No picture", commentsEnabled, embargoDate, sourceCode))
+                .withAttributes(
+                        String.format(articleAttributesXml,
+                                lastPublicationDateAsString, markedDeleted, "No picture", commentsEnabled,
+                                editorsPick, exclusive, scoop, embargoDate, sourceCode)
+                )
                 .withSystemAttributes(String.format(articleSystemAttributesXml, channel))
                 .withWorkflowStatus(workflowStatus)
                 .withLastModified(LAST_MODIFIED)
@@ -456,6 +473,7 @@ public class EomFileProcessorTest {
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))
+                .withStandout(new Standout(true, true, true))
                 .withUuid(uuid)
                 .withPublishReference(TRANSACTION_ID)
                 .withLastModified(LAST_MODIFIED)

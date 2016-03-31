@@ -7,6 +7,9 @@
             <DIFTcomMarkDeleted>%s</DIFTcomMarkDeleted>
             <DIFTcomArticleImage>%s</DIFTcomArticleImage>
             <DIFTcomDiscussion>%s</DIFTcomDiscussion>
+            <editorsPick>%s</editorsPick>
+            <exclusive>%s</exclusive>
+            <scoop>%s</scoop>
         </DIFTcom>
     </OutputChannels>
     <EditorialNotes>

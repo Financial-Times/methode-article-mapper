@@ -5,6 +5,7 @@ import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
+import com.ft.content.model.Standout;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
@@ -188,9 +189,17 @@ public class EomFileProcessor {
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
+                .withStandout(buildStandoutSection(xpath, attributesDocument))
                 .withPublishReference(transactionId)
                 .withLastModified(eomFile.getLastModified())
                 .build();
+    }
+
+    private Standout buildStandoutSection(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
+        boolean editorsChoice = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/editorsPick", attributesDocument).toLowerCase().equals("yes");
+        boolean exclusive = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/exclusive", attributesDocument).toLowerCase().equals("yes");
+        boolean scoop = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/scoop", attributesDocument).toLowerCase().equals("yes");
+        return new Standout(editorsChoice, exclusive, scoop);
     }
 
     private boolean isDiscussionEnabled(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
