@@ -7,6 +7,7 @@ import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
+import com.ft.methodearticletransformer.methode.EomFileType;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
@@ -53,6 +54,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
+
+import static com.ft.methodearticletransformer.methode.EomFileType.EOMStory;
 
 public class EomFileProcessor {
 
@@ -150,7 +153,8 @@ public class EomFileProcessor {
 
         final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
         verifyEmbargoDate(xpath, attributesDocument, uuid);
-        verifySource(uuid, xpath, attributesDocument);
+        verifySource(uuid, xpath, attributesDocument, eomFile.getType());
+
         verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
         final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
@@ -252,9 +256,14 @@ public class EomFileProcessor {
         return EomFile.WEB_REVISE.equals(eomFile.getWorkflowStatus()) || EomFile.WEB_READY.equals(eomFile.getWorkflowStatus());
     }
 
-    private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
+    private void verifySource(UUID uuid, XPath xpath, Document attributesDocument, String eomType) throws XPathExpressionException {
         final String sourceCode = xpath.evaluate("/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode", attributesDocument);
-        if (!"FT".equals(sourceCode)) {
+
+        if ("FT".equals(sourceCode)) {
+            return;
+        } if("FTTI".equals(sourceCode) && eomType.equals(EomFileType.EOMStory.getTypeName())) {
+            return;
+        } else {
             throw new SourceNotEligibleForPublishException(uuid, sourceCode);
         }
     }
