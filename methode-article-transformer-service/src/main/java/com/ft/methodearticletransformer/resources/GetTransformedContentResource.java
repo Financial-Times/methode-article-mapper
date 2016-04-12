@@ -83,7 +83,7 @@ public class GetTransformedContentResource {
 			.exception(e);
         } catch (MethodeMarkedDeletedException e) {
             throw ClientError.status(404)
-            .context(buildContext(uuid, lastModifiedDate))
+            .context(buildContext(uuid, lastModifiedDateOrNow(lastModifiedDate)))
 			.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 			.exception(e);
 		} catch (NotWebChannelException e) {
@@ -100,7 +100,7 @@ public class GetTransformedContentResource {
 		            .exception(e);
 		} catch (MethodeContentNotEligibleForPublishException e) {
 			throw ClientError.status(404)
-			.context(buildContext(uuid, lastModifiedDate))
+			.context(buildContext(uuid, lastModifiedDateOrNow(lastModifiedDate)))
 			.error(e.getMessage())
 			.exception(e);
         } catch (DocumentStoreApiUnavailableException e) {
@@ -121,4 +121,12 @@ public class GetTransformedContentResource {
         context.put("lastModified", lastModified);
         return context;
     }
+
+	private Date lastModifiedDateOrNow(Date lastModifiedDate) {
+		if (lastModifiedDate == null) {
+			return new Date();
+		} else {
+			return lastModifiedDate;
+		}
+	}
 }

@@ -1,6 +1,7 @@
 package com.ft.methodearticletransformer.methode;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
+import static com.ft.methodearticletransformer.methode.EomFileType.EOMStory;
 
 public class SupportedTypeResolver {
 	
@@ -16,7 +17,7 @@ public class SupportedTypeResolver {
 	}
 	
 	private boolean isAStory(){
-        return EOMCompoundStory.getTypeName().equals(fileType);
+        return (EOMCompoundStory.getTypeName().equals(fileType) || EOMStory.getTypeName().equals(fileType));
 	}
 
 }

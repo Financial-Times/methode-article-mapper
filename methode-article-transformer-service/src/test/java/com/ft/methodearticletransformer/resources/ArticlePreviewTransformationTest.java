@@ -74,7 +74,7 @@ public class ArticlePreviewTransformationTest {
      * Tests that validation fails for an article preview when the EomFile type is not an EOM::CompoundStory.
      */
     @Test (expected = UnsupportedTypeException.class)
-    public void failWhenEnavalidEomFileType() {
+    public void failWhenInvalidEomFileType() {
         EomFile eomFile = mock(EomFile.class);
 
         String  randomUuid = UUID.randomUUID().toString();
