@@ -261,7 +261,7 @@ public class EomFileProcessor {
 
         if ("FT".equals(sourceCode)) {
             return;
-        } if("FTTI".equals(sourceCode) && eomType.equals(EomFileType.EOMStory.getTypeName())) {
+        } if("TFTI".equals(sourceCode) && eomType.equals(EomFileType.EOMStory.getTypeName())) {
             return;
         } else {
             throw new SourceNotEligibleForPublishException(uuid, sourceCode);
