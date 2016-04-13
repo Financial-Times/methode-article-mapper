@@ -65,7 +65,7 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 		
 		if (isElementNamed(elementName, PROMO_HEADLINE)) {
 			promoBoxData.setHeadline(transformRawContentToStructuredFormat(
-					parseRawContent(PROMO_HEADLINE, xmlEventReader), bodyProcessingContext));
+			        parseRawContent(PROMO_HEADLINE, xmlEventReader), bodyProcessingContext));
 		}
 		if (isElementNamed(elementName, PROMO_INTRO)) {
 			promoBoxData.setIntro(transformRawContentToStructuredFormat(
@@ -84,7 +84,8 @@ public class PromoBoxXMLParser extends BaseXMLParser<PromoBoxData> implements Xm
 			}
 		}
 		if (isElementNamed(elementName, PROMO_TITLE)) {
-			promoBoxData.setTitle(parseRawContent(PROMO_TITLE, xmlEventReader));
+			promoBoxData.setTitle(transformRawContentToStructuredFormat(
+			        parseRawContent(PROMO_TITLE, xmlEventReader), bodyProcessingContext));
 		}
 	}
 
