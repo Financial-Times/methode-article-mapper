@@ -344,7 +344,7 @@ public class EomFileProcessorTest {
     }
 
     /**
-     * Tests that a non-standard old type EOM::Story is also a valid type and that it can also have TFTI as a SourceCode.
+     * Tests that a non-standard old type EOM::Story is also a valid type.
      * If the test fails exception will be thrown.
      */
     @Test
@@ -372,7 +372,7 @@ public class EomFileProcessorTest {
      * @return EomFile
      */
     private EomFile createEomStoryFile(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "TFTI", EomFile.WEB_READY, lastPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
