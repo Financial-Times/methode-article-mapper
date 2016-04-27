@@ -46,4 +46,3 @@ class methode_article_transformer {
 
 }
 
-
