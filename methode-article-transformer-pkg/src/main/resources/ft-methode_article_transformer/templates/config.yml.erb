@@ -1,4 +1,4 @@
-financialTimesBrandId: <%=scope.function_hiera('financialTimesBrandId')%>
+financialTimesBrandId: <%=scope.function_hiera(['financialTimesBrandId'])%>
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
@@ -47,8 +47,8 @@ documentStoreApi:
         path: content/
         jerseyClient:
             timeout: 2000ms
-        primaryNodes: <%=scope.function_hiera('documentStoreApiLocalNodes')%>
-        secondaryNodes: <%=scope.function_hiera('documentStoreApi:RemoteNodes','null')%>
+        primaryNodes: <%=scope.function_hiera(['documentStoreApiLocalNodes'])%>
+        secondaryNodes: <%=scope.function_hiera(['documentStoreApi:RemoteNodes','null'])%>
     connectionConfig:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
@@ -58,8 +58,8 @@ sourceApi:
         shortName: "nativeStore"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: <%=scope.function_hiera('sourceApiReaderLocalNodes')%>
-        secondaryNodes: <%=scope.function_hiera('sourceApiReaderRemoteNodes','null')%>
+        primaryNodes: <%=scope.function_hiera(['sourceApiReaderLocalNodes'])%>
+        secondaryNodes: <%=scope.function_hiera(['sourceApiReaderRemoteNodes','null'])%>
     assetTypeRequestConfiguration:
         numberOfAssetIdsPerAssetTypeRequest: 3
         numberOfParallelAssetTypeRequests: 4
