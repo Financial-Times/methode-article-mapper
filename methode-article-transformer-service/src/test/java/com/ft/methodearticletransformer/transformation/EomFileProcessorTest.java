@@ -7,7 +7,6 @@ import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticletransformer.methode.EomFileType;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
@@ -15,6 +14,7 @@ import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
+import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
@@ -66,7 +66,7 @@ public class EomFileProcessorTest {
     private static final String lastPublicationDateAsString = "20130813145815";
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
-    private static final String TRANSFORMED_BODY = "<p>some other random text</p>";
+    private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
     public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
 
@@ -191,6 +191,32 @@ public class EomFileProcessorTest {
         verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
         assertThat(content, equalTo(expectedContent));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionIfBodyTagisMissingFromTransformedBody() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<p>some other random text</p>");
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        fail("should not transform body without body tag" + content.toString());
+    }
+        
+    
+    @Test(expected = UntransformableMethodeContentException.class)
+    public void shouldThrowExceptionIfTransformedBodyIsBlank() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body> \n \n \n </body>");
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        fail("should not transform body without body tag" + content.toString());
+    }
+    
+    @Test(expected = UntransformableMethodeContentException.class)
+    public void shouldThrowExceptionIfTransformedBodyIsEmpty() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body></body>");
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        fail("should not transform body without body tag" + content.toString());
+    }
+ 
 
     @Test
     public void shouldAddPublishReferenceToTransformedBody() {
@@ -491,7 +517,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent() {
         return Content.builder()
                 .withTitle("And sacked chimney-sweep pumps boss full of mayonnaise.")
-                .withXmlBody("<p>some other random text</p>")
+                .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
