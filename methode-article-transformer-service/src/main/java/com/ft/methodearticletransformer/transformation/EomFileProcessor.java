@@ -14,6 +14,7 @@ import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
+import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
@@ -67,6 +68,8 @@ public class EomFileProcessor {
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String BODY_TAG_XPATH = "/doc/story/text/body";
+    private static final String START_BODY = "<body>";
+    private static final String END_BODY = "</body>";
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
@@ -173,6 +176,11 @@ public class EomFileProcessor {
         String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
         verifyBodyPresent(uuid, rawBody);
         String transformedBody = transformField(rawBody, bodyTransformer, transactionId);
+        
+        if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
+            throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
+          }
+        
 
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
 
@@ -347,5 +355,13 @@ public class EomFileProcessor {
             }
         }
     }
+    
+    private String unwrapBody(String wrappedBody) {
+        if (!(wrappedBody.startsWith(START_BODY) && wrappedBody.endsWith(END_BODY))) {
+          throw new IllegalArgumentException("can't unwrap a string that is not a wrapped body");
+        }
+        
+        return wrappedBody.substring(START_BODY.length(), wrappedBody.length() - END_BODY.length()).trim();
+      }
 
 }

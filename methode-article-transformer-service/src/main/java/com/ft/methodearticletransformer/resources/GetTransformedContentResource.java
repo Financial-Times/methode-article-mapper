@@ -14,6 +14,7 @@ import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
 import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
+import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 
@@ -94,7 +95,7 @@ public class GetTransformedContentResource {
 			throw ClientError.status(404)
 					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
 					.exception(e);
-		} catch (MethodeMissingBodyException e) {
+		} catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
 		    throw ClientError.status(418)
 		            .error(e.getMessage())
 		            .exception(e);
