@@ -32,7 +32,7 @@ public class MethodeBrightcoveVideoXmlEventHandlerTest extends BaseXMLEventHandl
     private static final String VIDEO_ID_ATTRIBUTE_NAME = "videoID";
     private static final String VIDEO_ID = "3920663836001";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/Video";
+    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
     private static final String CONTENT_TAG = "content";
     private static final String ID="id";
     private static final String TYPE="type";
