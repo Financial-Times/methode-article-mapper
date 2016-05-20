@@ -191,6 +191,25 @@ public class EomFileProcessorTest {
         verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
         assertThat(content, equalTo(expectedContent));
     }
+
+    @Test
+    public void shouldAllowBodyWithAttributes() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(standardEomFile)
+                .build();
+        
+        String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(expectedBody);
+        
+        final Content expectedContent = Content.builder()
+                .withValuesFrom(standardExpectedContent)
+                .withXmlBody(expectedBody).build();
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+
+        verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
+        assertThat(content, equalTo(expectedContent));
+    }
     
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfBodyTagisMissingFromTransformedBody() {
