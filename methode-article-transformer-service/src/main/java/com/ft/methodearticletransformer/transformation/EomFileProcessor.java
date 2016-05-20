@@ -68,7 +68,7 @@ public class EomFileProcessor {
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String BODY_TAG_XPATH = "/doc/story/text/body";
-    private static final String START_BODY = "<body>";
+    private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
 
     private final FieldTransformer bodyTransformer;
@@ -361,7 +361,7 @@ public class EomFileProcessor {
           throw new IllegalArgumentException("can't unwrap a string that is not a wrapped body");
         }
         
-        return wrappedBody.substring(START_BODY.length(), wrappedBody.length() - END_BODY.length()).trim();
+        int index = wrappedBody.indexOf('>', START_BODY.length()) + 1;
+        return wrappedBody.substring(index, wrappedBody.length() - END_BODY.length()).trim();
       }
-
 }
