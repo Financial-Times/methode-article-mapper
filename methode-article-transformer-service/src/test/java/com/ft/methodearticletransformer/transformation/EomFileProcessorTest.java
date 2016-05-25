@@ -64,6 +64,8 @@ public class EomFileProcessorTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     private static final String lastPublicationDateAsString = "20130813145815";
+    private static final String initialPublicationDateAsString = "20120813145815";
+    private static final String initialPublicationDateAsStringPreWfsEnforce = "20110513145815";
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
@@ -150,7 +152,37 @@ public class EomFileProcessorTest {
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
+   
+    
+    @Test
+    public void shouldAllowEOMStoryWithNonEligbleWorkflowStatusBeforeEnforceDate() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createEomStoryFileInvalidWfsPreEnforce(uuid))
+                .build();
+        
+        String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(expectedBody);
+        
+        final Content expectedContent = Content.builder()
+                .withValuesFrom(standardExpectedContent)
+                .withXmlBody(expectedBody).build();
 
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+
+        verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
+        assertThat(content, equalTo(expectedContent));
+    }
+    
+    @Test(expected = WorkflowStatusNotEligibleForPublishException.class)
+    public void shouldNotAllowEOMStoryWithNonEligbleWorkflowStatusAfterEnforceDate() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createEomStoryFileInvalidWfsPostEnforce(uuid))
+                .build();
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        fail("Content should not be returned" + content.toString());
+    }
+    
+    
     @Test(expected = UnsupportedTypeException.class)
     public void shouldThrowUnsupportedTypeExceptionIfPublishingDwc() {
         final EomFile eomFile = new EomFile.Builder()
@@ -191,6 +223,7 @@ public class EomFileProcessorTest {
         verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
         assertThat(content, equalTo(expectedContent));
     }
+    
 
     @Test
     public void shouldAllowBodyWithAttributes() {
@@ -417,11 +450,11 @@ public class EomFileProcessorTest {
      * @return EomFile
      */
     private EomFile createEomStoryFile(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, initialPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName());
     }
 
     public static EomFile createStandardEomFileWithMainImage(UUID uuid, UUID mainImageUuid, String articleImageMetadataFlag) {
@@ -429,39 +462,49 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(String.format(articleWithImagesXmlTemplate, mainImageUuid).getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "", "", "", "FT"))
+                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, initialPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "", "", "", "FT"))
                 .withSystemAttributes(String.format(articleSystemAttributesXml, "FTcom"))
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
     }
+    
+    
+    private EomFile createEomStoryFileInvalidWfsPreEnforce(UUID uuid) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", "FTContentMove/Ready", lastPublicationDateAsString,initialPublicationDateAsStringPreWfsEnforce, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
+    }
+   
+
+    private EomFile createEomStoryFileInvalidWfsPostEnforce(UUID uuid) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", "FTContentMove/Ready", lastPublicationDateAsString,initialPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
+    }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
-        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, initialPublicationDateAsString,FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", FALSE, "", "", "", EOMCompoundStory.getTypeName());
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "",initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
                                           String channel, String sourceCode, String workflowStatus,
-                                          String lastPublicationDateAsString, String commentsEnabled,
+                                          String lastPublicationDateAsString, String initialPublicationDateAsString, String commentsEnabled,
                                           String editorsPick, String exclusive, String scoop, String eomType) {
 
         String embargoDate = "";
@@ -475,7 +518,7 @@ public class EomFileProcessorTest {
                 .withValue(simpleArticleXmlTemplate.getBytes(UTF8))
                 .withAttributes(
                         String.format(articleAttributesXml,
-                                lastPublicationDateAsString, markedDeleted, "No picture", commentsEnabled,
+                                lastPublicationDateAsString,initialPublicationDateAsString, markedDeleted, "No picture", commentsEnabled,
                                 editorsPick, exclusive, scoop, embargoDate, sourceCode)
                 )
                 .withSystemAttributes(String.format(articleSystemAttributesXml, channel))

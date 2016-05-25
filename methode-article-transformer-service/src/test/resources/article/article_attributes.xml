@@ -4,6 +4,7 @@
     <OutputChannels>
         <DIFTcom>
             <DIFTcomLastPublication>%s</DIFTcomLastPublication>
+            <DIFTcomInitialPublication>%s</DIFTcomInitialPublication>
             <DIFTcomMarkDeleted>%s</DIFTcomMarkDeleted>
             <DIFTcomArticleImage>%s</DIFTcomArticleImage>
             <DIFTcomDiscussion>%s</DIFTcomDiscussion>
