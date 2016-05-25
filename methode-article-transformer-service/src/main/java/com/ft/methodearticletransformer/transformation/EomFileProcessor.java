@@ -76,7 +76,7 @@ public class EomFileProcessor {
     private static final String EOM_STORY_TYPE ="EOM::Story";
     private static final String WORKFLOW_STATUS_ENFORCE_DATE_AS_STRING ="20110601000000";
     
-   private static final List<String> allowedWorkflowsPreEnforeceDate=Arrays.asList("",EomFile.WEB_READY, EomFile.WEB_REVISE, "FTContentMove/Ready", "FTContentMove/Editing_Methode", "FTContentMove/Revise", "FTContentMove/Subbing_Methode", "FTContentMove/Released", "Stories/Ready", "Stories/Released", "Stories/Revise", "Stories/Sub");
+    private static final List<String> allowedWorkflowsPreEnforeceDate=Arrays.asList("",EomFile.WEB_READY, EomFile.WEB_REVISE, "FTContentMove/Ready", "FTContentMove/Editing_Methode", "FTContentMove/Revise", "FTContentMove/Subbing_Methode", "FTContentMove/Released", "Stories/Ready", "Stories/Released", "Stories/Revise", "Stories/Sub");
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
@@ -265,16 +265,9 @@ public class EomFileProcessor {
 	private boolean workflowStatusEligibleForPublishing(EomFile eomFile) {
 		String workflowStatus = eomFile.getWorkflowStatus();
 		if (EOM_STORY_TYPE.equals(eomFile.getType()) && isBeforeWorkflowStatusEnforced(eomFile)) {
-			return isWorkflowStatusEligiblePreEnforceDate(workflowStatus);
+			return allowedWorkflowsPreEnforeceDate.contains(workflowStatus);
 		}
 		return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
-	}
-
-	private boolean isWorkflowStatusEligiblePreEnforceDate(String workflowStatus) {
-		if (allowedWorkflowsPreEnforeceDate.contains(workflowStatus)) {
-			return true;
-		}
-		return false;
 	}
 
 	private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
