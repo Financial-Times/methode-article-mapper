@@ -49,8 +49,10 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -70,6 +72,11 @@ public class EomFileProcessor {
     private static final String BODY_TAG_XPATH = "/doc/story/text/body";
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
+    private static final String EOM_STORY_INITIAL_PUBLISH_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
+    private static final String EOM_STORY_TYPE ="EOM::Story";
+    private static final String WORKFLOW_STATUS_ENFORCE_DATE_AS_STRING ="20110601000000";
+    
+    private static final List<String> allowedWorkflowsPreEnforeceDate=Arrays.asList("",EomFile.WEB_READY, EomFile.WEB_REVISE, "FTContentMove/Ready", "FTContentMove/Editing_Methode", "FTContentMove/Revise", "FTContentMove/Subbing_Methode", "FTContentMove/Released", "Stories/Ready", "Stories/Released", "Stories/Revise", "Stories/Sub");
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
@@ -134,10 +141,10 @@ public class EomFileProcessor {
             throw new UnsupportedTypeException(uuid, eomFile.getType());
         }
 
-        if (!workflowStatusEligibleForPublishing(eomFile)) {
-            throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
-        }
-
+		if (!workflowStatusEligibleForPublishing(eomFile)) {
+			    throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
+		}
+	
         try {
             return transformEomFileToContent(uuid, eomFile, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
@@ -150,7 +157,6 @@ public class EomFileProcessor {
 
         final DocumentBuilder documentBuilder = getDocumentBuilder();
         final XPath xpath = XPathFactory.newInstance().newXPath();
-
         final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
         verifyEmbargoDate(xpath, attributesDocument, uuid);
         verifySource(uuid, xpath, attributesDocument);
@@ -256,11 +262,15 @@ public class EomFileProcessor {
         }
     }
 
-    private boolean workflowStatusEligibleForPublishing(EomFile eomFile) {
-        return EomFile.WEB_REVISE.equals(eomFile.getWorkflowStatus()) || EomFile.WEB_READY.equals(eomFile.getWorkflowStatus());
-    }
+	private boolean workflowStatusEligibleForPublishing(EomFile eomFile) {
+		String workflowStatus = eomFile.getWorkflowStatus();
+		if (EOM_STORY_TYPE.equals(eomFile.getType()) && isBeforeWorkflowStatusEnforced(eomFile)) {
+			return allowedWorkflowsPreEnforeceDate.contains(workflowStatus);
+		}
+		return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
+	}
 
-    private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
+	private void verifySource(UUID uuid, XPath xpath, Document attributesDocument) throws XPathExpressionException {
         final String sourceCode = xpath.evaluate("/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode", attributesDocument);
         if (!"FT".equals(sourceCode)) {
             throw new SourceNotEligibleForPublishException(uuid, sourceCode);
@@ -355,6 +365,30 @@ public class EomFileProcessor {
             }
         }
     }
+    
+        
+	private boolean isBeforeWorkflowStatusEnforced(EomFile eomFile) {
+		final String initialPublicationDateAsAString;
+		final Date workFlowStatusEnforceDate;
+		try {
+			final DocumentBuilder documentBuilder = getDocumentBuilder();
+			final XPath xpath = XPathFactory.newInstance().newXPath();
+			final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+			workFlowStatusEnforceDate= toDate(WORKFLOW_STATUS_ENFORCE_DATE_AS_STRING, DATE_TIME_FORMAT);
+			initialPublicationDateAsAString = xpath.evaluate(EOM_STORY_INITIAL_PUBLISH_DATE_XPATH,attributesDocument);
+		} catch (ParserConfigurationException | SAXException | XPathExpressionException | IOException e) {
+			throw new TransformationException(e);
+		}
+			if (!Strings.isNullOrEmpty(initialPublicationDateAsAString)) {
+				Date initialPublicationDate = toDate(initialPublicationDateAsAString, DATE_TIME_FORMAT);
+				if (initialPublicationDate.before(workFlowStatusEnforceDate)) {
+					return true;
+				}
+			}
+		
+		return false;
+	}
+    
     
     private String unwrapBody(String wrappedBody) {
         if (!(wrappedBody.startsWith(START_BODY) && wrappedBody.endsWith(END_BODY))) {
