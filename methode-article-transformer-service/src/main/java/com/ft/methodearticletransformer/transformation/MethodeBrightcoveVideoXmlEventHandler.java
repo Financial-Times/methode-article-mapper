@@ -2,6 +2,7 @@ package com.ft.methodearticletransformer.transformation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -16,13 +17,11 @@ import com.google.common.base.Strings;
 
 public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
 
-    private static final String NEW_ELEMENT = "a";
-    private static final String NEW_ELEMENT_ATTRIBUTE = "href";
-    private static final String VIDEO_URL = "http://video.ft.com/%s";
+    private static final String CONTENT_TAG = "content";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String TRUE = "true";
-    private static final String DATA_ASSET_TYPE = "data-asset-type";
-    private static final String VIDEO = "video";
+    private static final String ID = "id";
+    private static final String TYPE = "type";
+    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
 
     private final XMLEventHandler fallbackHandler;
     private final String videoIdAttributeName;
@@ -35,19 +34,18 @@ public class MethodeBrightcoveVideoXmlEventHandler extends BaseXMLEventHandler {
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        String id = extractVideoId(event);
-        if(Strings.isNullOrEmpty(id)){
+        String videoId = extractVideoId(event);
+        if(Strings.isNullOrEmpty(videoId)){
             fallbackHandler.handleStartElementEvent(event, xmlEventReader, eventWriter, bodyProcessingContext);
             return;
         }
-        String videoUrl = String.format(VIDEO_URL, id);
         Map<String, String> attributesToAdd = new HashMap<>();
-        attributesToAdd.put(NEW_ELEMENT_ATTRIBUTE, videoUrl);
-        attributesToAdd.put(DATA_EMBEDDED, TRUE);
-        attributesToAdd.put(DATA_ASSET_TYPE, VIDEO);
+        attributesToAdd.put(ID, UUID.nameUUIDFromBytes(videoId.getBytes()).toString());
+        attributesToAdd.put(DATA_EMBEDDED, Boolean.TRUE.toString());
+        attributesToAdd.put(TYPE, VIDEO_TYPE);
         skipUntilMatchingEndTag(event.getName().toString(), xmlEventReader);
-        eventWriter.writeStartTag(NEW_ELEMENT, attributesToAdd);
-        eventWriter.writeEndTag(NEW_ELEMENT);
+        eventWriter.writeStartTag(CONTENT_TAG, attributesToAdd);
+        eventWriter.writeEndTag(CONTENT_TAG);
     }
 
     private String extractVideoId(StartElement event) {

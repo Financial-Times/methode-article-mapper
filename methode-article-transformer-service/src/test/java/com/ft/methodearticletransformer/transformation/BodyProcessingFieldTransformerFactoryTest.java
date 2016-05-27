@@ -998,7 +998,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<web-inline-picture id=\"U2113113643377jlC\" width=\"150\" fileref=\"/FT/Graphics/Online/Z_Undefined/FT-video-story.jpg?uuid=91b39ae8-ccff-11e1-92c1-00144feabdc0\" tmx=\"150 100 150 100\"/>\n" +
                 "</videoPlayer>" +
                 "</body>";
-        String processedVideoText = "<body><a href=\"http://video.ft.com/3920663836001\" data-embedded=\"true\" data-asset-type=\"video\"></a></body>";
+        String processedVideoText = "<body><content id=\"28533356-911a-3352-a3cf-06f688157c58\" data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/MediaResource\"></content></body>";
         checkTransformation(videoTextfromMethode, processedVideoText);
     }
 
