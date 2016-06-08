@@ -10,6 +10,7 @@ import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
+import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessor;
@@ -258,4 +259,23 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
             assertThat(e.getResponse().getStatus(), equalTo(418));
         }
     }
+    
+    
+   /* Tests that response contains 418 error code and the correct message
+    * when eom-file with missing or empty value property or its value property translates into
+    * an blank content body post transformation is attempted to be published.
+    */
+   @Test
+   public void shouldThrow418ExceptionWhenMethodeBodyBlankAfterTransformation() {
+       when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID)).
+               thenThrow(new UntransformableMethodeContentException(uuid.toString(), "it's blank"));
+       try {
+           postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+           fail("No exception was thrown, but expected one.");
+       } catch (WebApplicationClientException e) {
+           assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
+                   containsString(uuid.toString()));
+           assertThat(e.getResponse().getStatus(), equalTo(418));
+       }
+   }
 }
