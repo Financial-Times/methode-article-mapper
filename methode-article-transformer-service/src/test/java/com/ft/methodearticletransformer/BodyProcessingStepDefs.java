@@ -38,6 +38,7 @@ import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.google.common.collect.ImmutableList;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
@@ -64,9 +65,11 @@ public class BodyProcessingStepDefs {
     private static final String TEXT = "Some text in between tags";
 
     private ResilientClient documentStoreApiClient;
+    private Client concordacneApiClient;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
-    private URI uri;
+    private URI documentStoreUri;
+    private URI concordanceUri;
 
     private InBoundHeaders headers;
     private MessageBodyWorkers workers;
@@ -110,8 +113,9 @@ public class BodyProcessingStepDefs {
     @Before
     public void setup() throws Exception {
         documentStoreApiClient = mock(ResilientClient.class);
-
-        uri = new URI("www.anyuri.com");
+        concordacneApiClient=mock(Client.class);
+        documentStoreUri = new URI("www.anyuri.com");
+        concordanceUri = new URI("www.concordacneuri.com");
         videoMatcher = new VideoMatcher(VIDEO_CONFIGS);
         interactiveGraphicsMatcher = new InteractiveGraphicsMatcher(INTERACTIVE_GRAPHICS_RULES);
         headers = mock(InBoundHeaders.class);
@@ -120,7 +124,7 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+      //  bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordacneApiClient, concordanceUri).newInstance();
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
 
         rulesAndHandlers = new HashMap<>();
@@ -152,7 +156,7 @@ public class BodyProcessingStepDefs {
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
         
         WebResource webResource = mock(WebResource.class);
-        when(documentStoreApiClient.resource(UriBuilder.fromUri(uri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
+        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         WebResource.Builder builder = mock(WebResource.Builder.class);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
@@ -162,7 +166,7 @@ public class BodyProcessingStepDefs {
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordacneApiClient, concordanceUri).newInstance();
     }
 
 

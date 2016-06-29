@@ -15,6 +15,7 @@ import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
+import com.ft.methodearticletransformer.configuration.ConcordanceApiConfiguration;
 import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
 import com.ft.methodearticletransformer.configuration.DocumentStoreApiConfiguration;
 import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
@@ -61,19 +62,29 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
         ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
     	SourceApiEndpointConfiguration sourceApiEndpointConfiguration = configuration.getSourceApiConfiguration();
         Client sourceApiClient = configureResilientClient(environment, sourceApiEndpointConfiguration.getEndpointConfiguration(), sourceApiEndpointConfiguration.getConnectionConfiguration());
-
-        EndpointConfiguration endpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
-        UriBuilder builder = UriBuilder.fromPath(endpointConfiguration.getPath()).scheme("http").host(endpointConfiguration.getHost()).port(endpointConfiguration.getPort());
-        URI uri = builder.build();
+        
+        EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
+        UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
+        URI documentStoreUri = documentStoreApiBuilder.build();
         ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+        
+        ConcordanceApiConfiguration concordanceApiConfiguration=configuration.getConcordanceApiConfiguration();
+        Client concordanceApiClient = configureResilientClient(environment, concordanceApiConfiguration.getEndpointConfiguration(), concordanceApiConfiguration.getConnectionConfiguration());
+        EndpointConfiguration concordanceApiEndpointConfiguration = concordanceApiConfiguration.getEndpointConfiguration();
+        UriBuilder concordanceApiBuilder = UriBuilder.fromPath(concordanceApiEndpointConfiguration.getPath()).scheme("http").host(concordanceApiEndpointConfiguration.getHost()).port(concordanceApiEndpointConfiguration.getPort());
+        URI concordanceUri = concordanceApiBuilder.build();
 
         EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
-                uri,
-                configuration.getFinancialTimesBrand(), configuration
+                documentStoreUri,
+                configuration.getFinancialTimesBrand(), 
+                configuration,
+                concordanceApiClient,
+                concordanceUri
         );
 
         environment.jersey().register(
+        		
                 new GetTransformedContentResource(
                         contentSourceService,
                         eomFileProcessor
@@ -108,14 +119,18 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
 
 	private EomFileProcessor configureEomFileProcessorForContentStore(
             final ResilientClient documentStoreApiClient,
-            final URI uri,
+            final URI documentStoreUri,
             final Brand financialTimesBrand,
-            final MethodeArticleTransformerConfiguration configuration) {
+            final MethodeArticleTransformerConfiguration configuration,
+            final Client concordanceApiClient,
+            final URI concordanceUri) {
 		return new EomFileProcessor(
 				new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
-                        uri,
+                        documentStoreUri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
-                        new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist())
+                        new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist()),
+                        concordanceApiClient,
+                        concordanceUri
                 ).newInstance(),
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
