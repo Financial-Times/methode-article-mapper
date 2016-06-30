@@ -3,11 +3,13 @@ package com.ft.methodearticletransformer.transformation;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -40,26 +42,38 @@ public class TearSheetLinksTransformer implements XPathHandler {
 		if (len > 0) {
 			UriBuilder builder = UriBuilder.fromUri(concordanceAPI);
 			builder.queryParam("authority", TME_AUTHORITY);
-
 			for (int i = len - 1; i >= 0; i--) {
 				Element el = (Element) nodes.item(i);
-				String id = el.getAttribute("CompositeId");
+				// this is because the previous processor changes attribute
+				// names to be all lower case, some makes the handler less dependent on processor order
+				String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
+						: el.getAttribute("compositeid");
 				if (StringUtils.isNotBlank(id)) {
 					builder.queryParam("identifierValue", id);
 				}
-				System.out.println(id + " " + i);
 			}
 			URI concordanceApiQuery = builder.build();
-			Concordances response = client.resource(concordanceApiQuery).get(Concordances.class);
-			replaceLinkToContentPresentInDocumentStore(response.getConcordances(), nodes);
+			Concordances responseConcordances = client.resource(concordanceApiQuery).get(Concordances.class);
+			if (responseConcordances != null && responseConcordances.getConcordances() != null
+					&& !responseConcordances.getConcordances().isEmpty()) {
+				replaceLinkToContentPresentInDocumentStore(responseConcordances.getConcordances(), nodes);
+			} else {
+				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, "UTF-8").stream()
+						.filter(item -> item.getName().equals("identifierValue")).map(NameValuePair::getValue)
+						.collect(Collectors.toList());
+				identifiers.forEach(item -> LOG.warn("Composite Id is not concorded  id=" + item));
+			}
 		}
 	}
-	
+
 	private void replaceLinkToContentPresentInDocumentStore(List<Concordance> concordances, NodeList nodes) {
 		int len = nodes.getLength();
 		for (int i = len - 1; i >= 0; i--) {
 			Element el = (Element) nodes.item(i);
-			String id = el.getAttribute("CompositeId");
+			// this is because the previous processor changes attributes to be
+			// all lower case, some makes the handler less dependent on processor order
+			String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
+					: el.getAttribute("compositeid");
 			if (StringUtils.isNotBlank(id)) {
 				String conceptApiUrl = getConcordanceByTMEId(concordances, id);
 				if (StringUtils.isNotBlank(conceptApiUrl)) {
@@ -74,18 +88,15 @@ public class TearSheetLinksTransformer implements XPathHandler {
 			}
 		}
 	}
-	
-	private String getConcordanceByTMEId(List<Concordance> concordances, String TMEId) {
 
+	private String getConcordanceByTMEId(List<Concordance> concordances, String TMEId) {
 		Optional<Concordance> concordance = concordances.stream()
 				.filter(item -> item.getIdentifier().getAuthority().equals(TME_AUTHORITY)
 						&& TMEId.equals(item.getIdentifier().getIdentifierValue()))
 				.findFirst();
-
 		if (concordance.isPresent()) {
 			return concordance.get().getConcept().getApiUrl();
 		}
-
 		return null;
 	}
 }

@@ -55,9 +55,9 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     
 
     private List<BodyProcessor> bodyProcessors() {
-        return asList(
-        		new DOMTransformingBodyProcessor(xpathHandlers),
-                stripByAttributesAndValuesBodyProcessor(),
+        return asList(        		
+        	    stripByAttributesAndValuesBodyProcessor(),  
+        	    new DOMTransformingBodyProcessor(xpathHandlers),      
                 new RegexRemoverBodyProcessor("(<p>)\\s*(</p>)|(<p/>)"),
 				new RegexRemoverBodyProcessor("(<p[^>]*?>)\\s*(</p>)|(<p/>)"),
                 stAXTransformingBodyProcessor(),
@@ -66,7 +66,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
                 new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri),
                 new ModularXsltBodyProcessor(xslts()),
-                new Html5SelfClosingTagBodyProcessor()            
+                new Html5SelfClosingTagBodyProcessor()      
         );
     }
 

@@ -35,6 +35,7 @@ import com.ft.bodyprocessing.richcontent.Video;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.dom.DOMTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.model.concordance.Concordances;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
@@ -74,7 +75,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Mock private ClientResponse clientResponse;
     @Mock private Builder builder;
     @Mock private InputStream inputStream;
-    @Mock private Client concordanceClinet;
+    @Mock private Client concordanceClient;
 
     private URI documentStoreUri;
     private URI concordanceUri;
@@ -96,13 +97,14 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setEmbedded(true);
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
-                documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClinet, concordanceUri ).newInstance();
+                documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClient, concordanceUri ).newInstance();
         when(documentStoreApiClient.resource((URI)any())).thenReturn(webResourceNotFound);
         when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseNotFound);
         when(clientResponseNotFound.getStatus()).thenReturn(404);
         when(clientResponseNotFound.getEntityInputStream()).thenReturn(inputStream);
+        when(concordanceClient.resource((URI)any())).thenReturn(webResourceNotFound);
     }
 
     // This is our thorough test of a complicated article that can be created in Methode. Has all the special characters and components. Do not remove!

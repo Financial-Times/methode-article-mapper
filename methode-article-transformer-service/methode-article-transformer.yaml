@@ -76,7 +76,7 @@ documentStoreApi:
         shortName: "documentStoreApi"
         path: content/
         jerseyClient:
-            timeout: 2000ms
+            timeout: 2000ms    
         primaryNodes: ["localhost:14180:14181"]
         secondaryNodes: null
     connectionConfig:
@@ -96,4 +96,16 @@ sourceApi:
     connectionConfig:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
+        
+concordanceApi:
+    endpointConfiguration:
+        shortName: "concordance"
+        jerseyClient:
+            timeout: 5000ms
+        primaryNodes: ["localhost:9132:9133", "localhost:9132:9133"]
+        secondaryNodes: null
+        path: "/concordances"
+    connectionConfiguration:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000  
 
