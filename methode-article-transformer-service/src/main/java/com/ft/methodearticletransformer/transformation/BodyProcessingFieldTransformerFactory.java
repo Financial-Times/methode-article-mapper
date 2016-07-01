@@ -58,8 +58,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         return asList(        		
         	    stripByAttributesAndValuesBodyProcessor(),  
         	    new DOMTransformingBodyProcessor(xpathHandlers),      
-                new RegexRemoverBodyProcessor("(<p>)\\s*(</p>)|(<p/>)"),
-				new RegexRemoverBodyProcessor("(<p[^>]*?>)\\s*(</p>)|(<p/>)"),
+                new RegexRemoverBodyProcessor("(<p[^/>]*>\\s*</p>)|(<p/>)|(<p\\s[^/>]*/>)"),
                 stAXTransformingBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
