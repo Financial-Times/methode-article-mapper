@@ -35,7 +35,6 @@ import com.ft.bodyprocessing.richcontent.Video;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.dom.DOMTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticletransformer.model.concordance.Concordances;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;

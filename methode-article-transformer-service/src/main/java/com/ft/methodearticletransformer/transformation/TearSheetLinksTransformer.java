@@ -45,7 +45,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 			for (int i = len - 1; i >= 0; i--) {
 				Element el = (Element) nodes.item(i);
 				// this is because the previous processor changes attribute
-				// names to be all lower case, some makes the handler less dependent on processor order
+				// names to be all lower case, makes the handler less dependent on processor order
 				String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
 						: el.getAttribute("compositeid");
 				if (StringUtils.isNotBlank(id)) {
@@ -56,7 +56,8 @@ public class TearSheetLinksTransformer implements XPathHandler {
 			Concordances responseConcordances = client.resource(concordanceApiQuery).get(Concordances.class);
 			if (responseConcordances != null && responseConcordances.getConcordances() != null
 					&& !responseConcordances.getConcordances().isEmpty()) {
-				replaceLinkToContentPresentInDocumentStore(responseConcordances.getConcordances(), nodes);
+				
+				transformTearSheetLink(responseConcordances.getConcordances(), nodes);
 			} else {
 				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, "UTF-8").stream()
 						.filter(item -> item.getName().equals("identifierValue")).map(NameValuePair::getValue)
@@ -66,12 +67,12 @@ public class TearSheetLinksTransformer implements XPathHandler {
 		}
 	}
 
-	private void replaceLinkToContentPresentInDocumentStore(List<Concordance> concordances, NodeList nodes) {
+	private void transformTearSheetLink(List<Concordance> concordances, NodeList nodes) {
 		int len = nodes.getLength();
 		for (int i = len - 1; i >= 0; i--) {
 			Element el = (Element) nodes.item(i);
 			// this is because the previous processor changes attributes to be
-			// all lower case, some makes the handler less dependent on processor order
+			// all lower case, makes the handler less dependent on processor order
 			String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
 					: el.getAttribute("compositeid");
 			if (StringUtils.isNotBlank(id)) {

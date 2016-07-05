@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         this.documentStoreUri = uri;
         this.videoMatcher = videoMatcher;
         this.interactiveGraphicsMatcher = interactiveGraphicsMatcher;
-        xpathHandlers = ImmutableMap.of( "//body/p/company", new TearSheetLinksTransformer(concordanceApiClient, concordanceApiUri));
+        xpathHandlers = ImmutableMap.of( "//company", new TearSheetLinksTransformer(concordanceApiClient, concordanceApiUri));
         
 	}
 
@@ -53,7 +52,6 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         return new BodyProcessingFieldTransformer(bodyProcessorChain);
     }
     
-
     private List<BodyProcessor> bodyProcessors() {
         return asList(        		
         	    stripByAttributesAndValuesBodyProcessor(),  
