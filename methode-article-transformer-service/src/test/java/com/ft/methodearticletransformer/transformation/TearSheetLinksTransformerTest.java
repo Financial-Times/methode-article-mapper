@@ -151,7 +151,7 @@ public class TearSheetLinksTransformerTest {
 	private NodeList  getNodeList(Document doc) throws Exception{
 		 XPathFactory xpf = XPathFactory.newInstance();
 		 XPath xp = xpf.newXPath();
-		return nodes = (NodeList)xp.evaluate("//body/p/company", doc, XPathConstants.NODESET);	
+		return nodes = (NodeList)xp.evaluate("//company", doc, XPathConstants.NODESET);	
 	}
 			
 	private String serializeDocument(Document document) {
