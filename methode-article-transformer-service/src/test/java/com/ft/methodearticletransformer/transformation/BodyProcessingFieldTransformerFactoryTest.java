@@ -104,6 +104,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         when(clientResponseNotFound.getStatus()).thenReturn(404);
         when(clientResponseNotFound.getEntityInputStream()).thenReturn(inputStream);
         when(concordanceClient.resource((URI)any())).thenReturn(webResourceNotFound);
+        when(webResourceNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
     }
 
     // This is our thorough test of a complicated article that can be created in Methode. Has all the special characters and components. Do not remove!

@@ -113,7 +113,7 @@ public class MethodeArticleTransformerApplication extends Application<MethodeArt
                                 connectionConfig.getNumberOfConnectionAttempts(),
                                 connectionConfig.getTimeoutMultiplier()
                         )
-                )
+                ).withTransactionPropagation()
                 .build();
     }
 

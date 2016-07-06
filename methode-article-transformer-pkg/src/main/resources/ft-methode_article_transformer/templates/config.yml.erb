@@ -67,6 +67,18 @@ sourceApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
         
+concordanceApi:
+    endpointConfiguration:
+        shortName: "concordance"
+        jerseyClient:
+            timeout: 5000ms
+        primaryNodes: <%=scope.function_hiera(['concordanceApiLocalNodes'])%>
+        secondaryNodes: <%=scope.function_hiera(['concordanceApiRemoteNodes','null'])%>
+        path: "/concordances"
+    connectionConfiguration:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000  
+        
 server:
 
   applicationConnectors:

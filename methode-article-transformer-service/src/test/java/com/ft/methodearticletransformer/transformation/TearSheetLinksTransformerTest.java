@@ -2,6 +2,8 @@ package com.ft.methodearticletransformer.transformation;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -40,6 +42,7 @@ import com.ft.methodearticletransformer.model.concordance.Identifier;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
+
 public class TearSheetLinksTransformerTest {
 	private static final URI CONCORDANCE_API = URI.create("http://localhost/concordances");
 	private static final URI CONCORDANCE_URL = URI.create("http://localhost/concordances?authority=http://api.ft.com/system/FT-TME&identifierValue=");
@@ -56,12 +59,12 @@ public class TearSheetLinksTransformerTest {
 		      + "</body>";
 	private static final String BODY_3 = "<body>" 
 			+ "<p>Some text</p>"
-		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 +"\"  >not concorded company name</company></p>"
+		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 +"\" >concorded company name</company></p>"
 		      + "</body>";
 	private static final String BODY_4= "<body>" 
 	+ "<p>Some text</p>"
-		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1 +"\"  >concorded company name</company></p>"
-		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 +"\"  >not concorded company name</company></p>"
+		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1 +"\"  > not concorded company name</company></p>"
+		      + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 +"\"  >concorded company name</company></p>"
 		      + "</body>";
 	
 
@@ -101,7 +104,7 @@ public class TearSheetLinksTransformerTest {
 		doc = db.parse(new InputSource(new StringReader(BODY_2)));
 		nodes=getNodeList(doc);
         String queryUrl=CONCORDANCE_URL+TME_ID_1;
-		mockConcordacneQueryResponse(queryUrl, null);	
+		mockConcordanceQueryResponse(queryUrl, null);	
 		toTest.handle(doc, nodes);
 		String actual = serializeDocument(doc);
 		Diff diff = new Diff(BODY_2, actual);
@@ -110,34 +113,34 @@ public class TearSheetLinksTransformerTest {
 	}
 	
 	@Test
-	public void shouldTransformComapnyIfCompanyTMEIdIsConcorded() throws Exception {
+	public void shouldTransformCompnyIfCompanyTMEIdIsConcorded() throws Exception {
 		doc = db.parse(new InputSource(new StringReader(BODY_3)));
 		nodes = getNodeList(doc);
 		String queryUrl = CONCORDANCE_URL + TME_ID_2;
-		mockConcordacneQueryResponse(queryUrl, concordances);
+		mockConcordanceQueryResponse(queryUrl, concordances);
 		toTest.handle(doc, nodes);
 		String actual = serializeDocument(doc);
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
 				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/Company\" url=\"" + API_URL2
-				+ "\">not concorded company name</ft-concept></p>" + "</body>";
+				+ "\">concorded company name</ft-concept></p>" + "</body>";
 		assertThat(actual, equalTo(expectedBody));
 	}	
 	
 	
 	@Test
-	public void shouldTransformMultipleComapnies() throws Exception {
+	public void shouldTransformMultipleCompanies() throws Exception {
 		doc = db.parse(new InputSource(new StringReader(BODY_4)));
 		nodes = getNodeList(doc);
 		String queryUrl1 = CONCORDANCE_URL + TME_ID_2+"&identifierValue="+TME_ID_1;
-		mockConcordacneQueryResponse(queryUrl1, concordances);
+		mockConcordanceQueryResponse(queryUrl1, concordances);
 		toTest.handle(doc, nodes);
 		String actual = serializeDocument(doc);
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
-				+"<p><company CompositeId=\"tmeid1\" DICoSEDOL=\"2297907\">concorded company name</company></p>"
+				+"<p><company CompositeId=\"tmeid1\" DICoSEDOL=\"2297907\"> not concorded company name</company></p>"
 				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/Company\" url=\"" + API_URL2
-				+ "\">not concorded company name</ft-concept></p>" + "</body>";
+				+ "\">concorded company name</ft-concept></p>" + "</body>";
 
 		Diff diff = new Diff(expectedBody, actual);
 		diff.overrideElementQualifier(new ElementNameAndTextQualifier());
@@ -171,10 +174,12 @@ public class TearSheetLinksTransformerTest {
 	  }
 	
 	
-	 private void mockConcordacneQueryResponse(String queryUrl, Concordances response) {
+	 private void mockConcordanceQueryResponse(String queryUrl, Concordances response) {
 		    WebResource resource = mock(WebResource.class);
+		    WebResource.Builder builder=mock(WebResource.Builder.class);
 		    when(client.resource(URI.create(queryUrl))).thenReturn(resource);
-		    when(resource.get(Concordances.class)).thenReturn(response);
+		    when(resource.header(anyString(), anyObject())).thenReturn(builder);
+		    when(builder.get(Concordances.class)).thenReturn(response);
 		  }
 
 }

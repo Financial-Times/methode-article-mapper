@@ -70,7 +70,7 @@ public class BodyProcessingStepDefs {
     private static final String TEXT = "Some text in between tags";
 
     private ResilientClient documentStoreApiClient;
-    private Client concordacneApiClient;
+    private Client concordanceApiClient;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private URI documentStoreUri;
@@ -130,7 +130,7 @@ public class BodyProcessingStepDefs {
     @Before
     public void setup() throws Exception {
         documentStoreApiClient = mock(ResilientClient.class);
-        concordacneApiClient=mock(Client.class);
+        concordanceApiClient=mock(Client.class);
         documentStoreUri = new URI("www.anyuri.com");
         concordanceUri = new URI("concordanceuri/concordances");
         videoMatcher = new VideoMatcher(VIDEO_CONFIGS);
@@ -175,22 +175,23 @@ public class BodyProcessingStepDefs {
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
         
         WebResource webResource = mock(WebResource.class);
-        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
-        when(concordacneApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
-        when(concordacneApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
-        when(webResource.get(Concordances.class)).thenReturn(concordancesResponse);
-        when(concordacneApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
-        when(webResourceNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
         WebResource.Builder builder = mock(WebResource.Builder.class);
+        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
+        when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
+        when(builderNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(webResource.header(anyString(), anyString())).thenReturn(builder);
         ClientResponse clientResponseSuccess = mock(ClientResponse.class);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
         InputStream inputStream = mock(InputStream.class);
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordacneApiClient, concordanceUri).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
     }
 
 
