@@ -33,10 +33,12 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.richcontent.RichContentItem;
 import com.ft.bodyprocessing.richcontent.Video;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
+import com.ft.bodyprocessing.xml.dom.DOMTransformingBodyProcessor;
 import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
@@ -64,6 +66,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Mock private ResilientClient documentStoreApiClient;
     @Mock private VideoMatcher videoMatcher;
     @Mock private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
+    @Mock private DOMTransformingBodyProcessor domTransformingBodyProcessor;
     @Mock private WebResource webResourceNotFound;
     @Mock private ClientResponse clientResponseNotFound;
     @Mock private Builder builderNotFound;
@@ -71,8 +74,10 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Mock private ClientResponse clientResponse;
     @Mock private Builder builder;
     @Mock private InputStream inputStream;
+    @Mock private Client concordanceClient;
 
-    private URI uri;
+    private URI documentStoreUri;
+    private URI concordanceUri;
 	private static final String TRANSACTION_ID = "tid_test";
     private Video exampleYouTubeVideo;
     private Video exampleVimeoVideo;
@@ -80,7 +85,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
     @Before
     public void setup() throws Exception {
         
-        uri = new URI("www.anyuri.com");
+        documentStoreUri = new URI("www.anyuri.com");
+        concordanceUri = new URI("www.concordanceapi.com");
         exampleVimeoVideo = new Video();
         exampleVimeoVideo.setUrl("https://www.vimeo.com/77761436");
         exampleVimeoVideo.setEmbedded(true);
@@ -90,23 +96,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
         exampleYouTubeVideo.setEmbedded(true);
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
-                uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+                documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClient, concordanceUri ).newInstance();
         when(documentStoreApiClient.resource((URI)any())).thenReturn(webResourceNotFound);
         when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseNotFound);
         when(clientResponseNotFound.getStatus()).thenReturn(404);
         when(clientResponseNotFound.getEntityInputStream()).thenReturn(inputStream);
+        when(concordanceClient.resource((URI)any())).thenReturn(webResourceNotFound);
+        when(webResourceNotFound.header(anyString(), anyString())).thenReturn(builderNotFound);
     }
 
     // This is our thorough test of a complicated article that can be created in Methode. Has all the special characters and components. Do not remove!
     @Test
     public void kitchenSinkArticleShouldBeTransformedAccordingToRules() {
     	// content used as links in the kitchen sink
-    	Set<URI> setOfAssetIds = ImmutableSet.of(UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET1_UUID).build(), 
-    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET2_UUID).build(), 
-    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET3_UUID).build(), 
-    	        UriBuilder.fromUri(uri).path(KITCHEN_SINK_ASSET4_UUID).build());
+    	Set<URI> setOfAssetIds = ImmutableSet.of(UriBuilder.fromUri(documentStoreUri).path(KITCHEN_SINK_ASSET1_UUID).build(), 
+    	        UriBuilder.fromUri(documentStoreUri).path(KITCHEN_SINK_ASSET2_UUID).build(), 
+    	        UriBuilder.fromUri(documentStoreUri).path(KITCHEN_SINK_ASSET3_UUID).build(), 
+    	        UriBuilder.fromUri(documentStoreUri).path(KITCHEN_SINK_ASSET4_UUID).build());
     	
     	when(documentStoreApiClient.resource(argThat(isIn(setOfAssetIds)))).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);

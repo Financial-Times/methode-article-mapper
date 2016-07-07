@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
@@ -16,7 +15,9 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,17 +28,27 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
+import org.codehaus.stax2.ri.evt.StartElementEventImpl;
+import org.custommonkey.xmlunit.Diff;
+
 import com.ft.bodyprocessing.richcontent.ConvertParameters;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.bodyprocessing.xml.eventhandlers.TransformingEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticletransformer.model.concordance.ConceptView;
+import com.ft.methodearticletransformer.model.concordance.Concordance;
+import com.ft.methodearticletransformer.model.concordance.Concordances;
+import com.ft.methodearticletransformer.model.concordance.Identifier;
 import com.ft.methodearticletransformer.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
 import com.ft.methodearticletransformer.transformation.InteractiveGraphicsMatcher;
 import com.ft.methodearticletransformer.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
 import com.google.common.collect.ImmutableList;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.header.InBoundHeaders;
@@ -49,11 +60,6 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
-import org.codehaus.stax2.ri.evt.StartElementEventImpl;
-import org.custommonkey.xmlunit.Diff;
-
 public class BodyProcessingStepDefs {
 
     private String methodeBodyText;
@@ -64,9 +70,11 @@ public class BodyProcessingStepDefs {
     private static final String TEXT = "Some text in between tags";
 
     private ResilientClient documentStoreApiClient;
+    private Client concordanceApiClient;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
-    private URI uri;
+    private URI documentStoreUri;
+    private URI concordanceUri;
 
     private InBoundHeaders headers;
     private MessageBodyWorkers workers;
@@ -86,6 +94,18 @@ public class BodyProcessingStepDefs {
     private static final String CONVERSION_TEMPLATE = "%ss";
     private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(CONVERT_FROM_PARAMETER, CONVERTED_TO_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
+    
+	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
+	private static final String TME_ID_CONCORDED = "TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0M=-T04=";
+	private static final String TME_ID_NOT_CONCORDED = "notconcorded";
+	private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http://api.ft.com/system/FT-TME&identifierValue=");
+	private static final String API_URL_CONCORDED ="http://api.ft.com/organisations/704a3225-9b5c-3b4f-93c7-8e6a6993bfb0";
+    private static  final Identifier identifier = new Identifier(TME_AUTHORITY, TME_ID_CONCORDED);
+    private static final  ConceptView concept= new ConceptView(API_URL_CONCORDED , API_URL_CONCORDED );
+    private Concordance concordance;
+    private Concordances concordancesResponse;
+    private Concordances concordancesEmpty;
+	
 
     public static List<VideoSiteConfiguration> VIDEO_CONFIGS = Arrays.asList(
             new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", true, T, null, true),
@@ -110,8 +130,9 @@ public class BodyProcessingStepDefs {
     @Before
     public void setup() throws Exception {
         documentStoreApiClient = mock(ResilientClient.class);
-
-        uri = new URI("www.anyuri.com");
+        concordanceApiClient=mock(Client.class);
+        documentStoreUri = new URI("www.anyuri.com");
+        concordanceUri = new URI("concordanceuri/concordances");
         videoMatcher = new VideoMatcher(VIDEO_CONFIGS);
         interactiveGraphicsMatcher = new InteractiveGraphicsMatcher(INTERACTIVE_GRAPHICS_RULES);
         headers = mock(InBoundHeaders.class);
@@ -120,8 +141,10 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
+        concordance = new Concordance(concept, identifier);
+        concordancesResponse = new Concordances(Arrays.asList(concordance));  
+        concordancesEmpty = new Concordances(new ArrayList<Concordance>());
 
         rulesAndHandlers = new HashMap<>();
         rulesAndHandlers.put( "STRIP ELEMENT AND CONTENTS" , "StripElementAndContentsXMLEventHandler");
@@ -152,17 +175,23 @@ public class BodyProcessingStepDefs {
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
         
         WebResource webResource = mock(WebResource.class);
-        when(documentStoreApiClient.resource(UriBuilder.fromUri(uri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         WebResource.Builder builder = mock(WebResource.Builder.class);
+        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
+        when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
+        when(builderNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(webResource.header(anyString(), anyString())).thenReturn(builder);
         ClientResponse clientResponseSuccess = mock(ClientResponse.class);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
         InputStream inputStream = mock(InputStream.class);
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, uri, videoMatcher, interactiveGraphicsMatcher).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
     }
 
 
@@ -343,5 +372,11 @@ public class BodyProcessingStepDefs {
     private ClientResponse clientResponseWithCode(int status) {
         return new ClientResponse(status, headers, entity, workers);
     }
+    
+    
+@Given("^There is a company tag in a Methode article body$")
+public void There_is_a_company_tag_in_a_Methode_article_body() throws Throwable {
+    // no op!
+}
 
 }

@@ -15,6 +15,7 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -50,8 +51,8 @@ public class RemoteDropWizardPingHealthCheckTest {
 	public void setUpEndpoints() {
 
 		JerseyClientConfiguration fastTimeOuts = new JerseyClientConfiguration();
-		fastTimeOuts.setConnectionTimeout(Duration.milliseconds(100));
-		fastTimeOuts.setTimeout(Duration.milliseconds(100));
+		fastTimeOuts.setConnectionTimeout(Duration.milliseconds(500));
+		fastTimeOuts.setTimeout(Duration.milliseconds(500));
 
 		int apiAdminPort = instanceRule.port();
 

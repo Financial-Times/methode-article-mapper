@@ -8,3 +8,4 @@ import org.junit.runner.RunWith;
 @CucumberOptions(tags={"@BodyProcessing","~@Ignore"}, monochrome=true, format = { "pretty", "html:target/cucumber-html-report", "json:target/cucumber-json-report/publishing.json" })
 public class BodyProcessingTest {
 }
+
