@@ -64,7 +64,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, "UTF-8").stream()
 						.filter(item -> item.getName().equals("identifierValue")).map(NameValuePair::getValue)
 						.collect(Collectors.toList());
-				identifiers.forEach(item -> LOG.warn("Composite Id is not concorded  id=" + item));
+				identifiers.forEach(item -> LOG.warn("Composite Id is not concorded CompositeId=" + item));
 			}
 		}
 	}
@@ -86,7 +86,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 					newElement.setTextContent(el.getTextContent());
 					el.getParentNode().replaceChild(newElement, el);
 				} else {
-					LOG.warn("Composite Id is not concorded  id=" + id);
+					LOG.warn("Composite Id is not concorded CompositeId=" + id);
 				}
 			}
 		}
