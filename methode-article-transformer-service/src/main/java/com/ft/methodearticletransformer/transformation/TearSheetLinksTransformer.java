@@ -1,6 +1,8 @@
 package com.ft.methodearticletransformer.transformation;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,24 +43,30 @@ public class TearSheetLinksTransformer implements XPathHandler {
 		int len = nodes.getLength();
 		if (len > 0) {
 			UriBuilder builder = UriBuilder.fromUri(concordanceAPI);
-			builder.queryParam("authority", TME_AUTHORITY);
-			for (int i = len - 1; i >= 0; i--) {
-				Element el = (Element) nodes.item(i);
-				// this is because the previous processor changes attribute
-				// names to be all lower case, makes the handler less dependent on processor order
-				String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
-						: el.getAttribute("compositeid");
-				if (StringUtils.isNotBlank(id)) {
-					builder.queryParam("identifierValue", id);
+			try {
+				builder.queryParam("authority", URLEncoder.encode(TME_AUTHORITY, "UTF-8"));
+				for (int i = len - 1; i >= 0; i--) {
+					Element el = (Element) nodes.item(i);
+					// this is because the previous processor changes attribute
+					// names to be all lower case, makes the handler less
+					// dependent on processor order
+					String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
+							: el.getAttribute("compositeid");
+					if (StringUtils.isNotBlank(id)) {	
+						builder.queryParam("identifierValue", URLEncoder.encode(id, "UTF-8"));
+					}
 				}
+				
+			} catch ( UnsupportedEncodingException e) {
+				throw  new RuntimeException("Encoding for concordance call failed  ");
 			}
-			URI concordanceApiQuery = builder.build();
+			
+			URI concordanceApiQuery = builder.buildFromEncoded();
 			Concordances responseConcordances = client.resource(concordanceApiQuery)
-													  .header("Host", "public-concordances-api")
-													  .get(Concordances.class);
+					.header("Host", "public-concordances-api").get(Concordances.class);
 			if (responseConcordances != null && responseConcordances.getConcordances() != null
 					&& !responseConcordances.getConcordances().isEmpty()) {
-				
+
 				transformTearSheetLink(responseConcordances.getConcordances(), nodes);
 			} else {
 				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, "UTF-8").stream()

@@ -42,10 +42,9 @@ import com.ft.methodearticletransformer.model.concordance.Identifier;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
-
 public class TearSheetLinksTransformerTest {
 	private static final URI CONCORDANCE_API = URI.create("http://localhost/concordances");
-	private static final URI CONCORDANCE_URL = URI.create("http://localhost/concordances?authority=http://api.ft.com/system/FT-TME&identifierValue=");
+	private static final URI CONCORDANCE_URL = URI.create("http://localhost/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
 	private static final String TME_ID_1 = "tmeid1";
 	private static final String TME_ID_2 = "tmeid2";
@@ -70,7 +69,7 @@ public class TearSheetLinksTransformerTest {
 
 	private Document doc;
 	private NodeList nodes;
-	private  DocumentBuilder db;
+	private DocumentBuilder db;
 	private TearSheetLinksTransformer toTest;
 	private Client client = mock(Client.class);
     private Identifier identifier = new Identifier(TME_AUTHORITY, TME_ID_2);
@@ -145,7 +144,7 @@ public class TearSheetLinksTransformerTest {
 		Diff diff = new Diff(expectedBody, actual);
 		diff.overrideElementQualifier(new ElementNameAndTextQualifier());
 		XMLAssert.assertXMLEqual(diff, true);
-	}	           
+	}	
 	
 	
 	private NodeList  getNodeList(Document doc) throws Exception{
