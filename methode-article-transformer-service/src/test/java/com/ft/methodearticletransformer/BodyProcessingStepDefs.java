@@ -98,7 +98,7 @@ public class BodyProcessingStepDefs {
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
 	private static final String TME_ID_CONCORDED = "TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0M=-T04=";
 	private static final String TME_ID_NOT_CONCORDED = "notconcorded";
-	private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http://api.ft.com/system/FT-TME&identifierValue=");
+	private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
 	private static final String API_URL_CONCORDED ="http://api.ft.com/organisations/704a3225-9b5c-3b4f-93c7-8e6a6993bfb0";
     private static  final Identifier identifier = new Identifier(TME_AUTHORITY, TME_ID_CONCORDED);
     private static final  ConceptView concept= new ConceptView(API_URL_CONCORDED , API_URL_CONCORDED );
