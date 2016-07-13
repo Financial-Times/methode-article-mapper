@@ -58,7 +58,13 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 public class EomFileProcessor {
-
+    private static class ParsedEomFile {
+      Document attributesDocument;
+      Document value;
+      String body;
+      Date lastModified;
+    }
+    
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
@@ -136,61 +142,82 @@ public class EomFileProcessor {
 
     public Content processPublication(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
-
-        if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
-            throw new UnsupportedTypeException(uuid, eomFile.getType());
-        }
-
-		if (!workflowStatusEligibleForPublishing(eomFile)) {
-			    throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
-		}
-	
+        
         try {
-            return transformEomFileToContent(uuid, eomFile, transactionId);
+            ParsedEomFile parsedEomFile = getEligibleContentForPublishing(eomFile, uuid, transactionId);
+            
+            return transformEomFileToContent(uuid, parsedEomFile, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
     }
-
-    private Content transformEomFileToContent(UUID uuid, EomFile eomFile, String transactionId)
+    
+    private ParsedEomFile getEligibleContentForPublishing(EomFile eomFile, UUID uuid, String transactionId)
+        throws SAXException, XPathExpressionException,
+               ParserConfigurationException, TransformerException, IOException {
+      
+      final Document attributesDocument;
+      final Document systemAttributesDocument;
+      final Document eomFileDocument;
+      final XPath xpath;
+      
+      try {
+        final DocumentBuilder documentBuilder = getDocumentBuilder();
+        xpath = XPathFactory.newInstance().newXPath();
+        
+        attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+        systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+        eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+      } finally {
+        if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
+          throw new UnsupportedTypeException(uuid, eomFile.getType());
+        }
+        
+        if (!workflowStatusEligibleForPublishing(eomFile)) {
+          throw new WorkflowStatusNotEligibleForPublishException(uuid, eomFile.getWorkflowStatus());
+        }
+      }
+      
+      verifyEmbargoDate(xpath, attributesDocument, uuid);
+      verifySource(uuid, xpath, attributesDocument);
+      verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
+      verifyChannel(uuid, xpath, systemAttributesDocument);
+      
+      final String lastPublicationDateAsString = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
+      verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
+      
+      String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+      verifyBodyPresent(uuid, rawBody);
+      
+      ParsedEomFile parsedEomFile = new ParsedEomFile();
+      parsedEomFile.attributesDocument = attributesDocument;
+      parsedEomFile.value = eomFileDocument;
+      parsedEomFile.body = rawBody;
+      parsedEomFile.lastModified = eomFile.getLastModified();
+      return parsedEomFile;
+    }
+    
+    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, String transactionId)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
-        final DocumentBuilder documentBuilder = getDocumentBuilder();
         final XPath xpath = XPathFactory.newInstance().newXPath();
-        final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-        verifyEmbargoDate(xpath, attributesDocument, uuid);
-        verifySource(uuid, xpath, attributesDocument);
-        verifyNotMarkedDeleted(uuid, xpath, attributesDocument);
 
-        final Document systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
-
-        verifyChannel(uuid, xpath, systemAttributesDocument);
-
-        final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-
-        final String headline = xpath.evaluate(HEADLINE_XPATH, eomFileDocument);
+        final String headline = xpath.evaluate(HEADLINE_XPATH, eomFile.value);
 
         final String lastPublicationDateAsString = xpath
-                .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributesDocument);
+                .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", eomFile.attributesDocument);
 
-        final boolean discussionEnabled = isDiscussionEnabled(xpath, attributesDocument);
+        final boolean discussionEnabled = isDiscussionEnabled(xpath, eomFile.attributesDocument);
 
-        final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
-
-        verifyLastPublicationDatePresent(uuid, lastPublicationDateAsString);
-
-        String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
-        verifyBodyPresent(uuid, rawBody);
-        String transformedBody = transformField(rawBody, bodyTransformer, transactionId);
-        
+        String transformedBody = transformField(eomFile.body, bodyTransformer, transactionId);
         if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
-            throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
-          }
-        
+          throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
+        }
 
-        String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
+        final String mainImage = generateMainImageUuid(xpath, eomFile.value);
+        String postProcessedBody = putMainImageReferenceInBodyXml(xpath, eomFile.attributesDocument, mainImage, transformedBody);
 
-        final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFileDocument),
+        final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.value),
                 bylineTransformer, transactionId); //byline is optional
 
         return Content.builder()
@@ -203,9 +230,9 @@ public class EomFileProcessor {
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
-                .withStandout(buildStandoutSection(xpath, attributesDocument))
+                .withStandout(buildStandoutSection(xpath, eomFile.attributesDocument))
                 .withPublishReference(transactionId)
-                .withLastModified(eomFile.getLastModified())
+                .withLastModified(eomFile.lastModified)
                 .build();
     }
 
