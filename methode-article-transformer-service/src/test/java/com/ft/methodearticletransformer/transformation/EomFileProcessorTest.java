@@ -155,9 +155,9 @@ public class EomFileProcessorTest {
    
     
     @Test
-    public void shouldAllowEOMStoryWithNonEligbleWorkflowStatusBeforeEnforceDate() {
+    public void shouldAllowEOMStoryWithNonEligibleWorkflowStatusBeforeEnforceDate() {
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createEomStoryFileInvalidWfsPreEnforce(uuid))
+                .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "FTcom", initialPublicationDateAsStringPreWfsEnforce))
                 .build();
         
         String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
@@ -174,14 +174,32 @@ public class EomFileProcessorTest {
     }
     
     @Test(expected = WorkflowStatusNotEligibleForPublishException.class)
-    public void shouldNotAllowEOMStoryWithNonEligbleWorkflowStatusAfterEnforceDate() {
+    public void shouldNotAllowEOMStoryWithNonEligibleWorkflowStatusAfterEnforceDate() {
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createEomStoryFileInvalidWfsPostEnforce(uuid))
+                .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "FTcom", initialPublicationDateAsString))
                 .build();
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         fail("Content should not be returned" + content.toString());
     }
     
+    @Test
+    public void shouldAllowEOMStoryWithFinancialTimesChannelAndNonEligibleWorkflowStatus() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "Financial Times", initialPublicationDateAsString))
+                .build();
+        
+        String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(expectedBody);
+        
+        final Content expectedContent = Content.builder()
+                .withValuesFrom(standardExpectedContent)
+                .withXmlBody(expectedBody).build();
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+
+        verify(bodyTransformer, times(1)).transform(isA(String.class), isA(String.class));
+        assertThat(content, equalTo(expectedContent));
+    }
     
     @Test(expected = UnsupportedTypeException.class)
     public void shouldThrowUnsupportedTypeExceptionIfPublishingDwc() {
@@ -469,15 +487,10 @@ public class EomFileProcessorTest {
     }
     
     
-    private EomFile createEomStoryFileInvalidWfsPreEnforce(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", "FTContentMove/Ready", lastPublicationDateAsString,initialPublicationDateAsStringPreWfsEnforce, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
+    private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
+        return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString, initialPublicationDate, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
     }
    
-
-    private EomFile createEomStoryFileInvalidWfsPostEnforce(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", "FTContentMove/Ready", lastPublicationDateAsString,initialPublicationDateAsString, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
-    }
-
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
