@@ -8,10 +8,10 @@ import com.ft.methodearticletransformer.methode.NotWebChannelException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
 
-public class DefaultPublishEligibilityChecker
+public class EOMCompoundStoryPublishEligibilityChecker
     extends PublishEligibilityChecker {
 
-  public DefaultPublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
+  public EOMCompoundStoryPublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
     super(eomFile, uuid, transactionId);
   }
   

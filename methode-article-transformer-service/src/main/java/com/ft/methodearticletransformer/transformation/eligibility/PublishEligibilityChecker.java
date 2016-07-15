@@ -92,7 +92,7 @@ public abstract class PublishEligibilityChecker {
       return new EOMStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
     }
     
-    return new DefaultPublishEligibilityChecker(eomFile, uuid, transactionId);
+    return new EOMCompoundStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
   }
   
   public PublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
