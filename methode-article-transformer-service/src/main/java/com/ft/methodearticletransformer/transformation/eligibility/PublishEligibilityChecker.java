@@ -37,8 +37,6 @@ import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
 import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
 import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.ParsedEomFile;
 import com.google.common.base.Strings;
@@ -51,8 +49,6 @@ public abstract class PublishEligibilityChecker {
       "/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode";
   
   private static final Logger LOG = LoggerFactory.getLogger(PublishEligibilityChecker.class);
-  
-  private static final String EOM_STORY_TYPE = "EOM::Story";
   
   private static final String BODY_TAG_XPATH = "/doc/story/text/body";
   
@@ -88,7 +84,7 @@ public abstract class PublishEligibilityChecker {
   public static PublishEligibilityChecker forEomFile(EomFile eomFile, UUID uuid, String transactionId) {
     String type = eomFile.getType();
     
-    if (EOM_STORY_TYPE.equals(type)) {
+    if (EOMStoryPublishEligibilityChecker.TYPE.equals(type)) {
       return new EOMStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
     }
     
@@ -140,10 +136,7 @@ public abstract class PublishEligibilityChecker {
       eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
       rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
     } finally {
-      if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
-        throw new UnsupportedTypeException(uuid, eomFile.getType());
-      }
-      
+      checkType();
       checkWorkflowStatus();
     }
     
@@ -159,6 +152,8 @@ public abstract class PublishEligibilityChecker {
     
     return parsedEomFile;
   }
+  
+  public abstract void checkType();
   
   protected abstract void checkWorkflowStatus() throws XPathExpressionException;
   

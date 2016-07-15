@@ -7,13 +7,17 @@ import java.util.UUID;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import com.ft.methodearticletransformer.methode.EomFileType;
 import com.ft.methodearticletransformer.methode.NotWebChannelException;
+import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.TransformationException;
 import com.google.common.base.Strings;
 
 public class EOMStoryPublishEligibilityChecker extends PublishEligibilityChecker {
+  public static final String TYPE = EomFileType.EOMStory.getTypeName();
+  
   private static final String EOM_STORY_INITIAL_PUBLISH_DATE_XPATH =
       "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
 
@@ -28,6 +32,13 @@ public class EOMStoryPublishEligibilityChecker extends PublishEligibilityChecker
   
   public EOMStoryPublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
     super(eomFile, uuid, transactionId);
+  }
+  
+  @Override
+  public void checkType() {
+    if (!TYPE.equals(eomFile.getType())) {
+      throw new UnsupportedTypeException(uuid, eomFile.getType());
+    }
   }
   
   @Override

@@ -6,8 +6,6 @@ import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
-import com.ft.methodearticletransformer.methode.SupportedTypeResolver;
-import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.eligibility.PublishEligibilityChecker;
@@ -77,10 +75,8 @@ public class EomFileProcessor {
 
     public Content processPreview(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
-
-        if (!new SupportedTypeResolver(eomFile.getType()).isASupportedType()) {
-            throw new UnsupportedTypeException(uuid, eomFile.getType());
-        }
+        
+        PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId).checkType();
 
         try {
             final DocumentBuilder documentBuilder = getDocumentBuilder();
