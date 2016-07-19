@@ -121,7 +121,7 @@ public class TearSheetLinksTransformerTest {
 		String actual = serializeDocument(doc);
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
-				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/Company\" url=\"" + API_URL2
+				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" url=\"" + API_URL2
 				+ "\">concorded company name</ft-concept></p>" + "</body>";
 		assertThat(actual, equalTo(expectedBody));
 	}	
@@ -138,7 +138,7 @@ public class TearSheetLinksTransformerTest {
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
 				+"<p><company CompositeId=\"tmeid1\" DICoSEDOL=\"2297907\"> not concorded company name</company></p>"
-				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/Company\" url=\"" + API_URL2
+				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" url=\"" + API_URL2
 				+ "\">concorded company name</ft-concept></p>" + "</body>";
 
 		Diff diff = new Diff(expectedBody, actual);
