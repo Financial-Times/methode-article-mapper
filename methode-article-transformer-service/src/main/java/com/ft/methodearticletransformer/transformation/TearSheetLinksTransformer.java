@@ -29,7 +29,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
 	private final static String CONCEPT_TAG="ft-concept";
-	private final static String COMPANY_TYPE= "http://www.ft.com/ontology/company/Company";
+	private final static String COMPANY_TYPE= "http://www.ft.com/ontology/company/PublicCompany";
 	private final Client client;
 	private final URI concordanceAPI;
 	
