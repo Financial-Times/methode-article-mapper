@@ -1,6 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
+import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -57,6 +58,8 @@ public class EomFileProcessor {
     private static final String NO_PICTURE_FLAG = "No picture";
 
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
+    private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
+    private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String BODY_TAG_XPATH = "/doc/story/text/body";
     private static final String START_BODY = "<body";
@@ -84,6 +87,10 @@ public class EomFileProcessor {
             final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
             final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
             final String headline = xpath.evaluate(HEADLINE_XPATH, eomFileDocument);
+            final AlternativeTitles altTitles = buildAlternativeTitles(eomFileDocument, xpath);
+            
+            final String standfirst = xpath.evaluate(STANDFIRST_XPATH, eomFileDocument);
+            
             final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFileDocument),
                     bylineTransformer, transactionId); //byline is optional
 
@@ -101,6 +108,8 @@ public class EomFileProcessor {
             return Content.builder()
                     .withUuid(uuid)
                     .withTitle(headline)
+                    .withAlternativeTitles(altTitles)
+                    .withStandfirst(standfirst)
                     .withXmlBody(postProcessedBody)
                     .withByline(transformedByline)
                     .withMainImage(mainImage)
@@ -142,14 +151,18 @@ public class EomFileProcessor {
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
-
-        final String headline = xpath.evaluate(HEADLINE_XPATH, eomFile.getValue());
-
+        final Document doc = eomFile.getValue();
+        
+        final String headline = xpath.evaluate(HEADLINE_XPATH, doc);
+        final AlternativeTitles altTitles = buildAlternativeTitles(doc, xpath);
+        
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", eomFile.getAttributes());
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, eomFile.getAttributes());
 
+        String standfirst = xpath.evaluate(STANDFIRST_XPATH, doc);
+        
         String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
         if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
           throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
@@ -164,6 +177,8 @@ public class EomFileProcessor {
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
+                .withAlternativeTitles(altTitles)
+                .withStandfirst(standfirst)
                 .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
                 .withMainImage(mainImage)
@@ -286,4 +301,17 @@ public class EomFileProcessor {
         int index = wrappedBody.indexOf('>', START_BODY.length()) + 1;
         return wrappedBody.substring(index, wrappedBody.length() - END_BODY.length()).trim();
       }
+    
+    private AlternativeTitles buildAlternativeTitles(Document doc, XPath xpath)
+        throws XPathExpressionException {
+      
+      AlternativeTitles.Builder builder = AlternativeTitles.builder();
+      
+      String promotionalTitle = xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc);
+      if (!Strings.isNullOrEmpty(promotionalTitle)) {
+        builder = builder.withPromotionalTitle(promotionalTitle); 
+      }
+      
+      return builder.build();
+    }
 }

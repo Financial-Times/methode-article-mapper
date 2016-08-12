@@ -1,6 +1,9 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.ft.common.FileUtils;
+import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -450,6 +453,50 @@ public class EomFileProcessorTest {
         assertThat(content,notNullValue());
     }
 
+    @Test
+    public void thatStandfirstIsPresent() {
+      final String expectedStandfirst = "Test standfirst";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, null, expectedStandfirst))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getStandfirst(), is(equalToIgnoringWhiteSpace(expectedStandfirst)));
+    }
+
+    @Test
+    public void thatStandfirstIsOptional() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        assertThat(content.getStandfirst(), is(nullValue()));
+    }
+
+    @Test
+    public void thatAlternativeTitlesArePresent() {
+      String promoTitle = "Test Promo Title";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, promoTitle, null))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(equalToIgnoringWhiteSpace(promoTitle)));
+    }
+    
+    @Test
+    public void thatAlternativeTitlesAreOptional() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        AlternativeTitles actual = content.getAlternativeTitles();
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getPromotionalTitle(), is(nullValue()));
+    }
+
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
         when(bodyTransformer.transform(anyString(), anyString())).then(returnsFirstArg());
         final UUID imageUuid = UUID.randomUUID();
@@ -480,7 +527,7 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(
-                    buildEomFileValue(mainImageUuid).getBytes(UTF8))
+                    buildEomFileValue(mainImageUuid, null, null))
                 .withAttributes(
                     buildEomFileAttributes(
                         lastPublicationDateAsString, initialPublicationDateAsString,
@@ -532,7 +579,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(buildEomFileValue(null).getBytes(UTF8))
+                .withValue(buildEomFileValue(null, null, null))
                 .withAttributes(buildEomFileAttributes(
                     lastPublicationDateAsString, initialPublicationDateAsString, markedDeleted, "No picture",
                     commentsEnabled, editorsPick, exclusive, scoop, embargoDate, sourceCode)
@@ -543,13 +590,19 @@ public class EomFileProcessorTest {
                 .build();
     }
     
-    private static String buildEomFileValue(
-        UUID mainImageUuid) {
+    private static byte[] buildEomFileValue(
+        UUID mainImageUuid,
+        String promoTitle,
+        String standfirst) {
       
       Template mustache = Mustache.compiler().compile(ARTICLE_TEMPLATE);
+      
       Map<String,Object> attributes = new HashMap<>();
       attributes.put("mainImageUuid", mainImageUuid);
-      return mustache.execute(attributes);
+      attributes.put("promoTitle", promoTitle);
+      attributes.put("standfirst", standfirst);
+      
+      return mustache.execute(attributes).getBytes(UTF_8);
     }
     
     private static String buildEomFileAttributes(
