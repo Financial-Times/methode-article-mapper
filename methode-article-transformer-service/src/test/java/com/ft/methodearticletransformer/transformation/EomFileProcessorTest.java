@@ -1,6 +1,9 @@
 package com.ft.methodearticletransformer.transformation;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.ft.common.FileUtils;
+import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -19,18 +22,22 @@ import com.ft.methodearticletransformer.methode.WorkflowStatusNotEligibleForPubl
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
 import com.google.common.collect.ImmutableSortedSet;
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -45,7 +52,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
@@ -56,23 +62,28 @@ import static org.mockito.Mockito.when;
 
 
 public class EomFileProcessorTest {
+    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
+    
+    private static final String ARTICLE_TEMPLATE = FileUtils.readFile("article/article_value.xml.mustache");
+    private static final String ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_attributes.xml.mustache");
+    private static final String SYSTEM_ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_system_attributes.xml.mustache");
 
+    private static final String TRANSACTION_ID = "tid_test";
     private static final String FALSE = "False";
     private static final Date LAST_MODIFIED = new Date();
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
+    
     private static final String lastPublicationDateAsString = "20130813145815";
     private static final String initialPublicationDateAsString = "20120813145815";
     private static final String initialPublicationDateAsStringPreWfsEnforce = "20110513145815";
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
+    private static final String EXPECTED_TITLE = "\n                    And sacked chimney-sweep pumps boss full of mayonnaise.\n                ";
+    
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
-    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
-
-    public static final Charset UTF8 = Charset.forName("UTF-8");
+    
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private FieldTransformer bodyTransformer;
     private FieldTransformer bylineTransformer;
@@ -83,14 +94,6 @@ public class EomFileProcessorTest {
     private Content standardExpectedContent;
 
     private EomFileProcessor eomFileProcessor;
-    private static final String TRANSACTION_ID = "tid_test";
-    private static final String simpleArticleXmlTemplate = FileUtils.readFile("article/simple_article_value.xml");
-    private static final String articleWithImagesXmlTemplate = FileUtils.readFile("article/article_value_with_image.xml");
-    private static final String articleAttributesXml = FileUtils.readFile("article/article_attributes.xml");
-    private static final String articleSystemAttributesXml = FileUtils.readFile("article/article_system_attributes.xml");
-
-    public EomFileProcessorTest() {
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -113,8 +116,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFile(uuid, "True"))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test(expected = EmbargoDateInTheFutureException.class)
@@ -122,17 +124,16 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithEmbargoDateInTheFuture(uuid))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test(expected = NotWebChannelException.class)
     public void shouldThrowExceptionIfNoFtComChannel() {
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createStandardEomFileWithNoFtChannel(uuid))
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withSystemAttributes(buildEomFileSystemAttributes("NotFTcom"))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test(expected = SourceNotEligibleForPublishException.class)
@@ -140,17 +141,16 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileNonFtSource(uuid))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test(expected = WorkflowStatusNotEligibleForPublishException.class)
     public void shouldThrowExceptionIfWorkflowStatusNotEligibleForPublishing() {
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createStandardEomFileWorkflowStatusNotEligible(uuid))
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withWorkflowStatus("Stories/Edit")
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
    
     
@@ -178,8 +178,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "FTcom", initialPublicationDateAsString))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
     
     @Test
@@ -206,8 +205,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createDwcComponentFile(uuid))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test(expected = MethodeMissingFieldException.class)
@@ -215,8 +213,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithNoLastPublicationDate(uuid))
                 .build();
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("Content should not be returned" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
 
     @Test
@@ -266,8 +263,7 @@ public class EomFileProcessorTest {
     public void shouldThrowExceptionIfBodyTagisMissingFromTransformedBody() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<p>some other random text</p>");
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("should not transform body without body tag" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
         
     
@@ -275,16 +271,14 @@ public class EomFileProcessorTest {
     public void shouldThrowExceptionIfTransformedBodyIsBlank() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body> \n \n \n </body>");
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("should not transform body without body tag" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
     
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfTransformedBodyIsEmpty() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body></body>");
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
-        fail("should not transform body without body tag" + content.toString());
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
     }
  
 
@@ -309,16 +303,11 @@ public class EomFileProcessorTest {
 
     @Test
     public void shouldTransformBylineWhenPresentOnPublish() {
+      String byline = "By <author-name>Gillian Tett</author-name>";
+      
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                        "<!DOCTYPE doc SYSTEM \"/SysConfig/Rules/ftpsi.dtd\">" +
-                        "<doc><lead><lead-headline><headline><ln>" +
-                        "And sacked chimney-sweep pumps boss full of mayonnaise." +
-                        "</ln></headline></lead-headline></lead>" +
-                        "<story><text><byline>By <author-name>Gillian Tett</author-name></byline>" +
-                        "<body><p>random text for now</p></body>" +
-                        "</text></story></doc>").getBytes(UTF8))
+                .withValue(buildEomFileValue(null, null, null, byline))
                 .build();
 
         final Content expectedContent = Content.builder()
@@ -328,8 +317,7 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
 
-        verify(bylineTransformer).transform("<byline>By <author-name>Gillian Tett</author-name></byline>",
-                TRANSACTION_ID);
+        verify(bylineTransformer).transform("<byline>" + byline + "</byline>", TRANSACTION_ID);
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -433,7 +421,7 @@ public class EomFileProcessorTest {
         String value = FileUtils.readFile("article/article_value_with_no_body.xml");
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(value.getBytes(UTF8))
+                .withValue(value.getBytes(UTF_8))
                 .build();
 
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
@@ -448,6 +436,50 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createEomStoryFile(uuid);
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         assertThat(content,notNullValue());
+    }
+
+    @Test
+    public void thatStandfirstIsPresent() {
+      final String expectedStandfirst = "Test standfirst";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, null, expectedStandfirst, null))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getStandfirst(), is(equalToIgnoringWhiteSpace(expectedStandfirst)));
+    }
+
+    @Test
+    public void thatStandfirstIsOptional() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        assertThat(content.getStandfirst(), is(nullValue()));
+    }
+
+    @Test
+    public void thatAlternativeTitlesArePresent() {
+      String promoTitle = "Test Promo Title";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, promoTitle, null, null))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(equalToIgnoringWhiteSpace(promoTitle)));
+    }
+    
+    @Test
+    public void thatAlternativeTitlesAreOptional() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+        AlternativeTitles actual = content.getAlternativeTitles();
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getPromotionalTitle(), is(nullValue()));
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
@@ -479,13 +511,17 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(String.format(articleWithImagesXmlTemplate, mainImageUuid).getBytes(UTF8))
-                .withAttributes(String.format(articleAttributesXml, lastPublicationDateAsString, initialPublicationDateAsString, FALSE, articleImageMetadataFlag, FALSE, "", "", "", "", "FT"))
-                .withSystemAttributes(String.format(articleSystemAttributesXml, "FTcom"))
+                .withValue(
+                    buildEomFileValue(mainImageUuid, null, null, null))
+                .withAttributes(
+                    buildEomFileAttributes(
+                        lastPublicationDateAsString, initialPublicationDateAsString,
+                        FALSE, articleImageMetadataFlag, FALSE, "", "", "", "", "FT"))
+                .withSystemAttributes(
+                    buildEomFileSystemAttributes("FTcom"))
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
     }
-    
     
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString, initialPublicationDate, "True", "Yes", "Yes", "Yes", EOMStory.getTypeName());
@@ -499,16 +535,8 @@ public class EomFileProcessorTest {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString, initialPublicationDateAsString,FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
-    private EomFile createStandardEomFileWithNoFtChannel(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "NotFTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
-    }
-
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
-    }
-
-    private EomFile createStandardEomFileWorkflowStatusNotEligible(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", "Stories/Edit", lastPublicationDateAsString,initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName());
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
@@ -528,18 +556,72 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(simpleArticleXmlTemplate.getBytes(UTF8))
-                .withAttributes(
-                        String.format(articleAttributesXml,
-                                lastPublicationDateAsString,initialPublicationDateAsString, markedDeleted, "No picture", commentsEnabled,
-                                editorsPick, exclusive, scoop, embargoDate, sourceCode)
+                .withValue(buildEomFileValue(null, null, null, null))
+                .withAttributes(buildEomFileAttributes(
+                    lastPublicationDateAsString, initialPublicationDateAsString, markedDeleted, "No picture",
+                    commentsEnabled, editorsPick, exclusive, scoop, embargoDate, sourceCode)
                 )
-                .withSystemAttributes(String.format(articleSystemAttributesXml, channel))
+                .withSystemAttributes(buildEomFileSystemAttributes(channel))
                 .withWorkflowStatus(workflowStatus)
                 .withLastModified(LAST_MODIFIED)
                 .build();
     }
-
+    
+    private static byte[] buildEomFileValue(
+        UUID mainImageUuid,
+        String promoTitle,
+        String standfirst,
+        String byline) {
+      
+      Template mustache = Mustache.compiler().escapeHTML(false).compile(ARTICLE_TEMPLATE);
+      
+      Map<String,Object> attributes = new HashMap<>();
+      attributes.put("mainImageUuid", mainImageUuid);
+      attributes.put("promoTitle", promoTitle);
+      attributes.put("standfirst", standfirst);
+      attributes.put("byline", byline);
+      
+      return mustache.execute(attributes).getBytes(UTF_8);
+    }
+    
+    private static String buildEomFileAttributes(
+        String lastPublicationDate,
+        String initialPublicationDate,
+        String markedDeleted,
+        String imageMetadata,
+        String commentsEnabled,
+        String editorsPick,
+        String exclusive,
+        String scoop,
+        String embargoDate,
+        String sourceCode
+        ) {
+      
+      Template mustache = Mustache.compiler().compile(ATTRIBUTES_TEMPLATE);
+      Map<String,String> attributes = new HashMap<>();
+      attributes.put("lastPublicationDate", lastPublicationDate);
+      attributes.put("initialPublicationDate", initialPublicationDate);
+      attributes.put("deleted", markedDeleted);
+      attributes.put("articleImage", imageMetadata);
+      attributes.put("comments", String.valueOf(commentsEnabled));
+      attributes.put("editorsPick", editorsPick);
+      attributes.put("exclusive", exclusive);
+      attributes.put("scoop", scoop);
+      attributes.put("embargoDate", embargoDate);
+      attributes.put("sourceCode", sourceCode);
+      
+      return mustache.execute(attributes);
+    }
+    
+    private static String buildEomFileSystemAttributes(
+        String channel) {
+      
+      Template mustache = Mustache.compiler().compile(SYSTEM_ATTRIBUTES_TEMPLATE);
+      Map<String,Object> attributes = new HashMap<>();
+      attributes.put("channel", channel);
+      return mustache.execute(attributes);
+    }
+    
     private EomFile createDwcComponentFile(UUID uuid) {
 
         return new EomFile.Builder()
@@ -558,7 +640,7 @@ public class EomFileProcessorTest {
                         "]>\n" +
                         "<dwc>\n" +
                         "&dwcContent;\n" +
-                        "</dwc>\n").getBytes(UTF8))
+                        "</dwc>\n").getBytes(UTF_8))
                 .withAttributes("<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTDWC2/classify.dtd\">\n" +
                         "<ObjectMetadata><FTcom><DIFTcomWebType>editorsChoice_2</DIFTcomWebType>\n" +
                         "<autoFill/>\n" +
@@ -591,7 +673,7 @@ public class EomFileProcessorTest {
 
     private Content createStandardExpectedContent() {
         return Content.builder()
-                .withTitle("And sacked chimney-sweep pumps boss full of mayonnaise.")
+                .withTitle(EXPECTED_TITLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Arrays.asList(financialTimesBrand)))
