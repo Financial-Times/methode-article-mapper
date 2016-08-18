@@ -35,7 +35,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -49,6 +48,11 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 public class EomFileProcessor {
+  enum TransformationMode {
+    PUBLISH,
+    PREVIEW
+  }
+  
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
@@ -61,7 +65,6 @@ public class EomFileProcessor {
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
-    private static final String BODY_TAG_XPATH = "/doc/story/text/body";
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
 
@@ -79,47 +82,14 @@ public class EomFileProcessor {
     public Content processPreview(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
         
-        PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId).checkType();
-
+        PublishEligibilityChecker eligibilityChecker =
+            PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
+        
+        
         try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-            final XPath xpath = XPathFactory.newInstance().newXPath();
-            final Document attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-            final Document eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-            final String headline = xpath.evaluate(HEADLINE_XPATH, eomFileDocument);
-            final AlternativeTitles altTitles = buildAlternativeTitles(eomFileDocument, xpath);
-            
-            final String standfirst = xpath.evaluate(STANDFIRST_XPATH, eomFileDocument);
-            
-            final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFileDocument),
-                    bylineTransformer, transactionId); //byline is optional
-
-            //body transformation
-            String postProcessedBody = "<body></body>";
-            String transformedBody = postProcessedBody;
-
-            String rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
-            if (!Strings.isNullOrEmpty(rawBody)) {
-                transformedBody = transformField(rawBody, bodyTransformer, transactionId);
-            }
-            final String mainImage = generateMainImageUuid(xpath, eomFileDocument);
-            postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributesDocument, mainImage, transformedBody);
-
-            return Content.builder()
-                    .withUuid(uuid)
-                    .withTitle(headline)
-                    .withAlternativeTitles(altTitles)
-                    .withStandfirst(standfirst)
-                    .withXmlBody(postProcessedBody)
-                    .withByline(transformedByline)
-                    .withMainImage(mainImage)
-                    .withBrands(new TreeSet<>(Collections.singletonList(financialTimesBrand)))
-                    .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
-                    .withComments(Comments.builder().withEnabled(isDiscussionEnabled(xpath, attributesDocument)).build())
-                    .withPublishReference(transactionId)
-                    .withLastModified(eomFile.getLastModified())
-                    .build();
-
+          ParsedEomFile parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
+          
+          return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
@@ -131,7 +101,7 @@ public class EomFileProcessor {
         try {
             ParsedEomFile parsedEomFile = getEligibleContentForPublishing(eomFile, uuid, transactionId);
             
-            return transformEomFileToContent(uuid, parsedEomFile, transactionId);
+            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PUBLISH, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
@@ -147,7 +117,7 @@ public class EomFileProcessor {
       return eligibilityChecker.getEligibleContentForPublishing();
     }
     
-    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, String transactionId)
+    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
@@ -161,11 +131,19 @@ public class EomFileProcessor {
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, eomFile.getAttributes());
 
-        String standfirst = xpath.evaluate(STANDFIRST_XPATH, doc);
+        String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, doc)).trim();
         
         String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
-        if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
-          throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
+        switch (mode) {
+          case PREVIEW:
+            if (Strings.isNullOrEmpty(transformedBody)) {
+              transformedBody = "<body></body>";
+            }
+            break;
+          default:
+            if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
+              throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
+            }
         }
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
@@ -307,8 +285,8 @@ public class EomFileProcessor {
       
       AlternativeTitles.Builder builder = AlternativeTitles.builder();
       
-      String promotionalTitle = xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc);
-      if (!Strings.isNullOrEmpty(promotionalTitle)) {
+      String promotionalTitle = Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
+      if (!promotionalTitle.isEmpty()) {
         builder = builder.withPromotionalTitle(promotionalTitle); 
       }
       
