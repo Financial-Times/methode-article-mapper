@@ -123,7 +123,7 @@ public class EomFileProcessor {
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final Document doc = eomFile.getValue();
         
-        final String headline = xpath.evaluate(HEADLINE_XPATH, doc);
+        final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, doc)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(doc, xpath);
         
         final String lastPublicationDateAsString = xpath

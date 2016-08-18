@@ -77,7 +77,7 @@ public class EomFileProcessorTest {
     private static final String initialPublicationDateAsStringPreWfsEnforce = "20110513145815";
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
-    private static final String EXPECTED_TITLE = "\n                    And sacked chimney-sweep pumps boss full of mayonnaise.\n                ";
+    private static final String EXPECTED_TITLE = "And sacked chimney-sweep pumps boss full of mayonnaise.";
     
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
