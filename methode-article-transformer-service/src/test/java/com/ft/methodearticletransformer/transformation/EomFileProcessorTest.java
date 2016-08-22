@@ -77,10 +77,11 @@ public class EomFileProcessorTest {
     private static final String initialPublicationDateAsStringPreWfsEnforce = "20110513145815";
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
-    private static final String EXPECTED_TITLE = "\n                    And sacked chimney-sweep pumps boss full of mayonnaise.\n                ";
+    private static final String EXPECTED_TITLE = "And sacked chimney-sweep pumps boss full of mayonnaise.";
     
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
+    private static final String EMPTY_BODY = "<body></body>";
     
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -277,8 +278,16 @@ public class EomFileProcessorTest {
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfTransformedBodyIsEmpty() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body></body>");
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(EMPTY_BODY);
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+    }
+    
+    @Test
+    public void thatPreviewEmptyTransformedBodyIsAllowed() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(EMPTY_BODY);
+        Content actual = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID);
+        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
  
 
@@ -452,6 +461,19 @@ public class EomFileProcessorTest {
     }
 
     @Test
+    public void thatWhitespaceStandfirstIsTreatedAsAbsent() {
+      final String standfirst = "\n";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, null, standfirst, null))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getStandfirst(), is(nullValue()));
+    }
+
+    @Test
     public void thatStandfirstIsOptional() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
@@ -480,6 +502,19 @@ public class EomFileProcessorTest {
         AlternativeTitles actual = content.getAlternativeTitles();
         assertThat(actual, is(notNullValue()));
         assertThat(actual.getPromotionalTitle(), is(nullValue()));
+    }
+
+    @Test
+    public void thatWhitespacePromoTitleIsTreatedAsAbsent() {
+      String promoTitle = "\n";
+      
+      final EomFile eomFile = (new EomFile.Builder())
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, promoTitle, null, null))
+          .build();
+      
+      Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
+      assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(nullValue()));
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {

@@ -153,6 +153,28 @@ public abstract class PublishEligibilityChecker {
     return parsedEomFile;
   }
   
+  public final ParsedEomFile getEligibleContentForPreview()
+      throws ParserConfigurationException, SAXException, IOException,
+             XPathExpressionException, TransformerException {
+    
+    final Document eomFileDocument;
+    
+    try {
+      final DocumentBuilder documentBuilder = getDocumentBuilder();
+      
+      attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+      eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+      rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+    } finally {
+      checkType();
+    }
+    
+    ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
+        attributesDocument, eomFile.getLastModified());
+    
+    return parsedEomFile;
+  }
+  
   public abstract void checkType();
   
   protected abstract void checkWorkflowStatus() throws XPathExpressionException;
