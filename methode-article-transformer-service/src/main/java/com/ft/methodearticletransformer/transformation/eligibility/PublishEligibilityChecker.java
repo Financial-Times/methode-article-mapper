@@ -1,5 +1,22 @@
 package com.ft.methodearticletransformer.transformation.eligibility;
 
+import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
+import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
+import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
+import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
+import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticletransformer.model.EomFile;
+import com.ft.methodearticletransformer.transformation.ParsedEomFile;
+
+import com.google.common.base.Strings;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,22 +41,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticletransformer.methode.MethodeMissingBodyException;
-import com.ft.methodearticletransformer.methode.MethodeMissingFieldException;
-import com.ft.methodearticletransformer.methode.SourceNotEligibleForPublishException;
-import com.ft.methodearticletransformer.model.EomFile;
-import com.ft.methodearticletransformer.transformation.ParsedEomFile;
-import com.google.common.base.Strings;
 
 public abstract class PublishEligibilityChecker {
   protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
@@ -66,11 +67,17 @@ public abstract class PublishEligibilityChecker {
   protected Document attributesDocument;
   protected Document systemAttributesDocument;
 
+  public PublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
+    this.eomFile = eomFile;
+    this.uuid = uuid;
+    this.transactionId = transactionId;
+  }
+  
   protected static Date toDate(String dateString, String format) {
     if (dateString == null || dateString.equals("")) {
       return null;
     }
-    
+
     try {
       DateFormat dateFormat = new SimpleDateFormat(format);
       dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -83,18 +90,12 @@ public abstract class PublishEligibilityChecker {
   
   public static PublishEligibilityChecker forEomFile(EomFile eomFile, UUID uuid, String transactionId) {
     String type = eomFile.getType();
-    
+
     if (EOMStoryPublishEligibilityChecker.TYPE.equals(type)) {
       return new EOMStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
     }
-    
+
     return new EOMCompoundStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
-  }
-  
-  public PublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
-    this.eomFile = eomFile;
-    this.uuid = uuid;
-    this.transactionId = transactionId;
   }
 
   private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
@@ -148,7 +149,7 @@ public abstract class PublishEligibilityChecker {
     checkBody();
     
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
-        attributesDocument, eomFile.getLastModified());
+            attributesDocument, eomFile.getLastModified(), eomFile.getWebUrl());
     
     return parsedEomFile;
   }
@@ -170,7 +171,7 @@ public abstract class PublishEligibilityChecker {
     }
     
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
-        attributesDocument, eomFile.getLastModified());
+            attributesDocument, eomFile.getLastModified(), eomFile.getWebUrl());
     
     return parsedEomFile;
   }

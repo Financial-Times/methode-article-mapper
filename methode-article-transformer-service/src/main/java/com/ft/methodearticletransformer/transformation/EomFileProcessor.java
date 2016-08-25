@@ -11,8 +11,10 @@ import com.ft.methodearticletransformer.methode.UntransformableMethodeContentExc
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticletransformer.util.ImageSetUuidGenerator;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,18 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,48 +49,43 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 
 public class EomFileProcessor {
-  enum TransformationMode {
-    PUBLISH,
-    PREVIEW
-  }
-  
+    public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
-    public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String NO_PICTURE_FLAG = "No picture";
-
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
-
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
-
     public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
                             Brand financialTimesBrand) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.financialTimesBrand = financialTimesBrand;
+    }
+
+    private static Date toDate(String dateString, String format) {
+        if (dateString == null || dateString.equals("")) {
+            return null;
+        }
+        try {
+            DateFormat dateFormat = new SimpleDateFormat(format);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return dateFormat.parse(dateString);
+        } catch (ParseException e) {
+            log.warn("Error parsing date " + dateString, e);
+            return null;
+        }
     }
 
     public Content processPreview(EomFile eomFile, String transactionId) {
@@ -165,6 +174,7 @@ public class EomFileProcessor {
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, eomFile.getAttributes()))
+                .withWebUrl(eomFile.getWebUrl())
                 .withPublishReference(transactionId)
                 .withLastModified(eomFile.getLastModified())
                 .build();
@@ -257,39 +267,30 @@ public class EomFileProcessor {
         return writer.toString();
     }
 
-    private static Date toDate(String dateString, String format) {
-        if (dateString == null || dateString.equals("")) {
-            return null;
-        }
-        try {
-            DateFormat dateFormat = new SimpleDateFormat(format);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return dateFormat.parse(dateString);
-        } catch (ParseException e) {
-            log.warn("Error parsing date " + dateString, e);
-            return null;
-        }
-    }
-    
     private String unwrapBody(String wrappedBody) {
         if (!(wrappedBody.startsWith(START_BODY) && wrappedBody.endsWith(END_BODY))) {
           throw new IllegalArgumentException("can't unwrap a string that is not a wrapped body");
         }
-        
+
         int index = wrappedBody.indexOf('>', START_BODY.length()) + 1;
         return wrappedBody.substring(index, wrappedBody.length() - END_BODY.length()).trim();
       }
     
     private AlternativeTitles buildAlternativeTitles(Document doc, XPath xpath)
         throws XPathExpressionException {
-      
-      AlternativeTitles.Builder builder = AlternativeTitles.builder();
-      
-      String promotionalTitle = Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
+
+        AlternativeTitles.Builder builder = AlternativeTitles.builder();
+
+        String promotionalTitle = Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
       if (!promotionalTitle.isEmpty()) {
-        builder = builder.withPromotionalTitle(promotionalTitle); 
+          builder = builder.withPromotionalTitle(promotionalTitle);
       }
-      
-      return builder.build();
+
+        return builder.build();
+    }
+
+    enum TransformationMode {
+        PUBLISH,
+        PREVIEW
     }
 }

@@ -3,6 +3,7 @@ package com.ft.methodearticletransformer.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
 import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,6 +21,7 @@ public class EomFile {
     private final String workflowStatus;
     private final String systemAttributes;
     private final String usageTickets;
+    private final URI webUrl;
     private Date lastModified;
 
     public EomFile(@JsonProperty("uuid") String uuid,
@@ -29,7 +31,8 @@ public class EomFile {
                    @JsonProperty("workflowStatus") String workflowStatus,
                    @JsonProperty("systemAttributes") String systemAttributes,
                    @JsonProperty("usageTickets") String usageTickets,
-                   @JsonProperty("lastModified") Date lastModified) {
+                   @JsonProperty("lastModified") Date lastModified,
+                   @JsonProperty("webUrl") URI webUrl) {
         this.uuid = uuid;
         this.type = type;
         this.value = bytes;
@@ -38,6 +41,7 @@ public class EomFile {
         this.systemAttributes = systemAttributes;
         this.usageTickets = usageTickets;
         this.lastModified = lastModified;
+        this.webUrl = webUrl;
     }
 
     public String getUuid() {
@@ -73,6 +77,10 @@ public class EomFile {
         return lastModified;
     }
 
+    public URI getWebUrl() {
+        return webUrl;
+    }
+
     public static class Builder {
         private String uuid;
         private String type;
@@ -82,6 +90,7 @@ public class EomFile {
         private String systemAttributes;
         private String usageTickets;
         private Date lastModified;
+        private URI webUrl;
 
         public Builder withUuid(String uuid) {
             this.uuid = uuid;
@@ -124,6 +133,11 @@ public class EomFile {
             return this;
         }
 
+        public Builder withWebUrl(URI webUrl) {
+            this.webUrl = webUrl;
+            return this;
+        }
+
         public Builder withValuesFrom(EomFile eomFile) {
             return withUuid(eomFile.getUuid())
                     .withType(eomFile.getType())
@@ -132,11 +146,12 @@ public class EomFile {
                     .withWorkflowStatus(eomFile.getWorkflowStatus())
                     .withSystemAttributes(eomFile.getSystemAttributes())
                     .withUsageTickets(eomFile.getUsageTickets())
-                    .withLastModified(eomFile.getLastModified());
+                    .withLastModified(eomFile.getLastModified())
+                    .withWebUrl(eomFile.getWebUrl());
         }
 
         public EomFile build() {
-            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets, lastModified);
+            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets, lastModified, webUrl);
         }
     }
 }

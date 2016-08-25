@@ -1,5 +1,57 @@
 package com.ft.methodearticletransformer.methode.rest;
 
+import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
+import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
+import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfiguration;
+import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
+import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
+import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
+import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
+import com.ft.methodearticletransformer.methode.UnexpectedSourceApiException;
+import com.ft.methodearticletransformer.model.EomAssetType;
+import com.ft.methodearticletransformer.model.EomFile;
+
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
+import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.net.HostAndPort;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
+
+import org.apache.http.conn.ConnectTimeoutException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Matchers;
+
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -18,54 +70,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
-import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
-import com.ft.methodearticletransformer.configuration.AssetTypeRequestConfiguration;
-import com.ft.methodearticletransformer.configuration.SourceApiEndpointConfiguration;
-import com.ft.methodearticletransformer.configuration.ConnectionConfiguration;
-import com.ft.methodearticletransformer.methode.SourceApiUnavailableException;
-import com.ft.methodearticletransformer.methode.ResourceNotFoundException;
-import com.ft.methodearticletransformer.methode.UnexpectedSourceApiException;
-import com.ft.methodearticletransformer.model.EomAssetType;
-import com.ft.methodearticletransformer.model.EomFile;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.UrlMatchingStrategy;
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.net.HostAndPort;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandler;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
-
 public class RestContentSourceServiceTest {
 
 	private static final String TEST_HOST = "localhost";
@@ -76,24 +80,71 @@ public class RestContentSourceServiceTest {
 	//don't change these without also changing the asset type tests
     private static final int NUMBER_OF_ASSET_TYPE_IDS_PER_REQUEST = 2;
     private static final Integer NUMBER_OF_PARALLEL_ASSET_TYPE_REQUESTS = 4;
-
-	@ClassRule
+    private static final String JSON_EOM_FILE = "{\"uuid\":\"" + SAMPLE_UUID
+            + "\",\"type\":\"EOM::CompoundStory\",\"value\":\"\"," +
+            "\"attributes\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<!DOCTYPE ObjectMetadata SYSTEM" +
+            "\\\"/SysConfig/Classify/FTStories/classify.dtd\\\"><ObjectMetadata>\\n    <EditorialDisplayIndexing>\\n        " +
+            "<DILeadCompanies><DILeadCompany title=\\\"Google Inc\\\"><DICoFTCode>GOOGL00000</DICoFTCode><DICoDescriptor>Google Inc</DICoDescriptor>" +
+            "<DICoTickerSymbol>GOOG</DICoTickerSymbol><DICoTickerExchangeCountry>us</DICoTickerExchangeCountry><DICoTickerExchangeCode/>" +
+            "<DICoFTMWTickercode>us:GOOG</DICoFTMWTickercode><DICoSEDOL>B020QX2</DICoSEDOL><DICoISIN/><DICoCOFlag/><DICoVersion/></DILeadCompany>" +
+            "</DILeadCompanies>\\n        <DITemporaryCompanies>\\n            <DITemporaryCompany>\\n                <DICoTempCode/>\\n                " +
+            "<DICoTempDescriptor/>\\n                <DICoTickerCode/>\\n            </DITemporaryCompany>\\n        </DITemporaryCompanies>\\n        " +
+            "<DIFTSEGlobalClassifications/>\\n        <DIStockExchangeIndices/>\\n        <DIHotTopics/>\\n        " +
+            "<DIHeadlineCopy>Lead headline Â£42m for S&amp;Pâ\u0080\u0099s â\u0080\u009Cup 79%â\u0080\u009D</DIHeadlineCopy>\\n        " +
+            "<DIBylineCopy>By </DIBylineCopy>\\n        \\n    <DIFTNPSections/></EditorialDisplayIndexing>\\n    <OutputChannels>\\n        <DIFTN>\\n" +
+            "            <DIFTNPublicationDate/>\\n            <DIFTNZoneEdition/>\\n            <DIFTNPage/>\\n            <DIFTNTimeEdition/>\\n" +
+            "            <DIFTNFronts/>\\n        </DIFTN>\\n        <DIFTcom>\\n            <DIFTcomWebType>story</DIFTcomWebType>\\n            " +
+            "<DIFTcomDisplayCodes>\\n                <DIFTcomDisplayCodeRank1/>\\n                <DIFTcomDisplayCodeRank2/>\\n            " +
+            "</DIFTcomDisplayCodes>\\n            <DIFTcomSubscriptionLevel>2</DIFTcomSubscriptionLevel>\\n            " +
+            "<DIFTcomUpdateTimeStamp>False</DIFTcomUpdateTimeStamp>\\n            <DIFTcomIndexAndSynd>false</DIFTcomIndexAndSynd>\\n            " +
+            "<DIFTcomSafeToSyndicate>True</DIFTcomSafeToSyndicate>\\n            <DIFTcomInitialPublication>20131018162433</DIFTcomInitialPublication>\\n" +
+            "            <DIFTcomLastPublication>20131125125802</DIFTcomLastPublication>\\n            " +
+            "<DIFTcomSuppresInlineAds>False</DIFTcomSuppresInlineAds>\\n            <DIFTcomMap>True</DIFTcomMap>\\n            " +
+            "<DIFTcomDisplayStyle>Normal</DIFTcomDisplayStyle>\\n            <DIFTcomMarkDeleted>False</DIFTcomMarkDeleted>\\n            " +
+            "<DIFTcomMakeUnlinkable>False</DIFTcomMakeUnlinkable>\\n            <isBestStory>0</isBestStory>\\n            " +
+            "<DIFTcomCMRId>762172</DIFTcomCMRId>\\n            <DIFTcomCMRHint/>\\n            <DIFTcomCMR>\\n                <DIFTcomCMRPrimarySection/>" +
+            "\\n                <DIFTcomCMRPrimarySectionId/>\\n                <DIFTcomCMRPrimaryTheme/>\\n                <DIFTcomCMRPrimaryThemeId/>\\n" +
+            "                <DIFTcomCMRBrand/>\\n                <DIFTcomCMRBrandId/>\\n                <DIFTcomCMRGenre/>\\n                " +
+            "<DIFTcomCMRGenreId/>\\n                <DIFTcomCMRMediaType/>\\n                <DIFTcomCMRMediaTypeId/>\\n            </DIFTcomCMR>\\n" +
+            "            \\n            \\n            \\n            \\n            \\n            \\n        <DIFTcomECPositionInText>Default" +
+            "</DIFTcomECPositionInText><DIFTcomHideECLevel1>False</DIFTcomHideECLevel1><DIFTcomHideECLevel2>False</DIFTcomHideECLevel2>" +
+            "<DIFTcomHideECLevel3>False</DIFTcomHideECLevel3><DIFTcomDiscussion>True</DIFTcomDiscussion><DIFTcomArticleImage>Primary size" +
+            "</DIFTcomArticleImage></DIFTcom>\\n        <DISyndication>\\n            <DISyndBeenCopied>False</DISyndBeenCopied>\\n            " +
+            "<DISyndEdition>USA</DISyndEdition>\\n            <DISyndStar>01</DISyndStar>\\n            <DISyndChannel/>\\n            <DISyndArea/>\\n" +
+            "            <DISyndCategory/>\\n        </DISyndication>\\n    </OutputChannels>\\n    <EditorialNotes>\\n        <Language>English</Language>" +
+            "\\n        <Author>roddamm</Author>\\n        <Guides/>\\n        <Editor/>\\n        <Sources>\\n            \\n        " +
+            "<Source title=\\\"Financial Times\\\"><SourceCode>FT</SourceCode><SourceDescriptor>Financial Times</SourceDescriptor>" +
+            "<SourceOnlineInclusion>True</SourceOnlineInclusion><SourceCanBeSyndicated>True</SourceCanBeSyndicated></Source></Sources>\\n        " +
+            "<WordCount>2644</WordCount>\\n        <CreationDate>20131018133645</CreationDate>\\n        <EmbargoDate/>\\n        " +
+            "<ExpiryDate>20131018133645</ExpiryDate>\\n        <ObjectLocation>/FT/Content/World News/Stories/Live/TestForSteveAshdown.xml</ObjectLocation>\\n" +
+            "        <OriginatingStory/>\\n        <CCMS>\\n            <CCMSCommissionRefNo/>\\n            <CCMSContributorRefNo/>\\n            " +
+            "<CCMSContributorFullName/>\\n            <CCMSContributorInclude/>\\n            <CCMSContributorRights/>\\n            <CCMSFilingDate/>\\n" +
+            "            <CCMSProposedPublishingDate/>\\n        </CCMS>\\n    </EditorialNotes>\\n    <WiresIndexing>\\n        <category/>\\n        <Keyword/>" +
+            "\\n        <char_count/>\\n        <priority/>\\n        <basket/>\\n        <title/>\\n        <Version/>\\n        <story_num/>\\n        " +
+            "<file_name/>\\n        <serviceid/>\\n        <entry_date/>\\n        <ref_field/>\\n        <take_num/>\\n    </WiresIndexing>\\n    " +
+            "\\n<DataFactoryIndexing><ADRIS_MetaData><IndexSuccess>yes</IndexSuccess><StartTime>Mon Nov 25 12:58:03 GMT 2013</StartTime>" +
+            "<EndTime>Mon Nov 25 12:58:03 GMT 2013</EndTime></ADRIS_MetaData><DFMajorCompanies/><DFMinorCompanies/><DFNAICS/><DFWPMIndustries/>" +
+            "<DFFTSEGlobalClassifications/><DFStockExchangeIndices/><DFSubjects/><DFCountries/><DFRegions/><DFWPMRegions/><DFProvinces/><DFFTcomDisplayCodes/>" +
+            "<DFFTSections/><DFWebRegions/></DataFactoryIndexing></ObjectMetadata>\",\"workflowStatus\":\"Stories/WebRevise\"," +
+            "\"systemAttributes\":\"<props>" +
+            "<productInfo><name>FTcom</name>\\n<issueDate>20131018</issueDate>\\n</productInfo>\\n<workFolder>/FT/WorldNews</workFolder>\\n<templateName>" +
+            "/SysConfig/Templates/FT/Base-Story.xml</templateName>\\n<summary>Text Formatting\\n\\nThis is an example of bold text : This text is bold &lt;b&gt;" +
+            "\\n\\nThis is an example of italic text : This text is italic &lt;i&gt;\\n\\nEmphasis\\n\\nStrong\\n\\nSuperscript\\n\\nSubscript\\n\\nUnderline" +
+            "\\n\\n\\nLinks\\n\\nThis is a link for an FT article that has been cut and paste from a browser: http://www.ft.com/cms/s/2/e78a8668-c997-11e1-aae2-002128161462.html." +
+            "\\nThis link was added using Right-click, Insert Hyperlink: A story about something financial\\n\\nThis link was added using drag and drop of an article: A story abo..." +
+            "</summary><wordCount>2644</wordCount></props>\",\"webUrl\":\"http://www.ft.com/a-url\"}";
+    @ClassRule
 	public static WireMockClassRule sourceApiWireMockRule = new WireMockClassRule(0); //will allocate a free port
-
 	@Rule
 	public WireMockClassRule sourceApiInstanceRule = sourceApiWireMockRule;
-
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
-
 	private ObjectMapper objectMapper;
 	private SourceApiEndpointConfiguration sourceApiEndpointConfiguration;
 	private Environment environment;
-
 	private ClientHandler handler = mock(ClientHandler.class);
     private Client mockClient = new Client(handler);
     private ClientResponse clientResponse = mock(ClientResponse.class);
-
 	private RestContentSourceService restMethodeFileService;
 	private RestContentSourceService mockedClientRestMethodeFileService;
 
@@ -134,8 +185,6 @@ public class RestContentSourceServiceTest {
         when(clientResponse.getEntity(Matchers.<GenericType<Map<String, EomAssetType>>>any())).thenReturn(new HashMap<String, EomAssetType>());
 		mockedClientRestMethodeFileService = new RestContentSourceService(environment, mockClient, sourceApiEndpointConfiguration);
 	}
-
-
 
 	@Test
     public void shouldSuccessfullyGetAssetTypesInSingleRequest() throws Exception {
@@ -178,7 +227,8 @@ public class RestContentSourceServiceTest {
 		assertThat(eomFile.getType(), is(equalTo("EOM::CompoundStory")));
 		assertThat(eomFile.getSystemAttributes(), containsString("templateName"));
 		assertThat(eomFile.getValue(), is(notNullValue()));
-	}
+        assertThat(eomFile.getWebUrl(), is(equalTo(URI.create("http://www.ft.com/a-url"))));
+    }
 
 	@Test
 	public void shouldThrowFileNotFoundExceptionWhen404RetrievingEomFile() {
@@ -222,7 +272,6 @@ public class RestContentSourceServiceTest {
         expectedException.expect(SourceApiUnavailableException.class);
         mockedClientRestMethodeFileService.fileByUuid(SAMPLE_UUID, SAMPLE_TRANSACTION_ID);
     }
-
 
 	@Test
     public void shouldThrowSourceApiUnavailableExceptionWhen503RetrievingAssetTypes() throws Exception {
@@ -288,7 +337,6 @@ public class RestContentSourceServiceTest {
         return expectedOutput;
     }
 
-
     private ResponseDefinitionBuilder anAssetTypeResponseForExpectedOutput(Map<String, EomAssetType> expectedOutput, int statusCode) throws Exception {
         return aResponse().withStatus(statusCode).withHeader("Content-type", "application/json").withBody(objectMapper.writeValueAsString(expectedOutput));
     }
@@ -309,59 +357,5 @@ public class RestContentSourceServiceTest {
 	public void cleanUp() {
 		reset();
 	}
-
-	private static final String JSON_EOM_FILE = "{\"uuid\":\"" + SAMPLE_UUID
-			+ "\",\"type\":\"EOM::CompoundStory\",\"value\":\"\"," +
-			"\"attributes\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<!DOCTYPE ObjectMetadata SYSTEM" +
-			"\\\"/SysConfig/Classify/FTStories/classify.dtd\\\"><ObjectMetadata>\\n    <EditorialDisplayIndexing>\\n        " +
-			"<DILeadCompanies><DILeadCompany title=\\\"Google Inc\\\"><DICoFTCode>GOOGL00000</DICoFTCode><DICoDescriptor>Google Inc</DICoDescriptor>" +
-			"<DICoTickerSymbol>GOOG</DICoTickerSymbol><DICoTickerExchangeCountry>us</DICoTickerExchangeCountry><DICoTickerExchangeCode/>" +
-			"<DICoFTMWTickercode>us:GOOG</DICoFTMWTickercode><DICoSEDOL>B020QX2</DICoSEDOL><DICoISIN/><DICoCOFlag/><DICoVersion/></DILeadCompany>" +
-			"</DILeadCompanies>\\n        <DITemporaryCompanies>\\n            <DITemporaryCompany>\\n                <DICoTempCode/>\\n                " +
-			"<DICoTempDescriptor/>\\n                <DICoTickerCode/>\\n            </DITemporaryCompany>\\n        </DITemporaryCompanies>\\n        " +
-			"<DIFTSEGlobalClassifications/>\\n        <DIStockExchangeIndices/>\\n        <DIHotTopics/>\\n        " +
-			"<DIHeadlineCopy>Lead headline Â£42m for S&amp;Pâ\u0080\u0099s â\u0080\u009Cup 79%â\u0080\u009D</DIHeadlineCopy>\\n        " +
-			"<DIBylineCopy>By </DIBylineCopy>\\n        \\n    <DIFTNPSections/></EditorialDisplayIndexing>\\n    <OutputChannels>\\n        <DIFTN>\\n" +
-			"            <DIFTNPublicationDate/>\\n            <DIFTNZoneEdition/>\\n            <DIFTNPage/>\\n            <DIFTNTimeEdition/>\\n" +
-			"            <DIFTNFronts/>\\n        </DIFTN>\\n        <DIFTcom>\\n            <DIFTcomWebType>story</DIFTcomWebType>\\n            " +
-			"<DIFTcomDisplayCodes>\\n                <DIFTcomDisplayCodeRank1/>\\n                <DIFTcomDisplayCodeRank2/>\\n            " +
-			"</DIFTcomDisplayCodes>\\n            <DIFTcomSubscriptionLevel>2</DIFTcomSubscriptionLevel>\\n            " +
-			"<DIFTcomUpdateTimeStamp>False</DIFTcomUpdateTimeStamp>\\n            <DIFTcomIndexAndSynd>false</DIFTcomIndexAndSynd>\\n            " +
-			"<DIFTcomSafeToSyndicate>True</DIFTcomSafeToSyndicate>\\n            <DIFTcomInitialPublication>20131018162433</DIFTcomInitialPublication>\\n" +
-			"            <DIFTcomLastPublication>20131125125802</DIFTcomLastPublication>\\n            " +
-			"<DIFTcomSuppresInlineAds>False</DIFTcomSuppresInlineAds>\\n            <DIFTcomMap>True</DIFTcomMap>\\n            " +
-			"<DIFTcomDisplayStyle>Normal</DIFTcomDisplayStyle>\\n            <DIFTcomMarkDeleted>False</DIFTcomMarkDeleted>\\n            " +
-			"<DIFTcomMakeUnlinkable>False</DIFTcomMakeUnlinkable>\\n            <isBestStory>0</isBestStory>\\n            " +
-			"<DIFTcomCMRId>762172</DIFTcomCMRId>\\n            <DIFTcomCMRHint/>\\n            <DIFTcomCMR>\\n                <DIFTcomCMRPrimarySection/>" +
-			"\\n                <DIFTcomCMRPrimarySectionId/>\\n                <DIFTcomCMRPrimaryTheme/>\\n                <DIFTcomCMRPrimaryThemeId/>\\n" +
-			"                <DIFTcomCMRBrand/>\\n                <DIFTcomCMRBrandId/>\\n                <DIFTcomCMRGenre/>\\n                " +
-			"<DIFTcomCMRGenreId/>\\n                <DIFTcomCMRMediaType/>\\n                <DIFTcomCMRMediaTypeId/>\\n            </DIFTcomCMR>\\n" +
-			"            \\n            \\n            \\n            \\n            \\n            \\n        <DIFTcomECPositionInText>Default" +
-			"</DIFTcomECPositionInText><DIFTcomHideECLevel1>False</DIFTcomHideECLevel1><DIFTcomHideECLevel2>False</DIFTcomHideECLevel2>" +
-			"<DIFTcomHideECLevel3>False</DIFTcomHideECLevel3><DIFTcomDiscussion>True</DIFTcomDiscussion><DIFTcomArticleImage>Primary size" +
-			"</DIFTcomArticleImage></DIFTcom>\\n        <DISyndication>\\n            <DISyndBeenCopied>False</DISyndBeenCopied>\\n            " +
-			"<DISyndEdition>USA</DISyndEdition>\\n            <DISyndStar>01</DISyndStar>\\n            <DISyndChannel/>\\n            <DISyndArea/>\\n" +
-			"            <DISyndCategory/>\\n        </DISyndication>\\n    </OutputChannels>\\n    <EditorialNotes>\\n        <Language>English</Language>" +
-			"\\n        <Author>roddamm</Author>\\n        <Guides/>\\n        <Editor/>\\n        <Sources>\\n            \\n        " +
-			"<Source title=\\\"Financial Times\\\"><SourceCode>FT</SourceCode><SourceDescriptor>Financial Times</SourceDescriptor>" +
-			"<SourceOnlineInclusion>True</SourceOnlineInclusion><SourceCanBeSyndicated>True</SourceCanBeSyndicated></Source></Sources>\\n        " +
-			"<WordCount>2644</WordCount>\\n        <CreationDate>20131018133645</CreationDate>\\n        <EmbargoDate/>\\n        " +
-			"<ExpiryDate>20131018133645</ExpiryDate>\\n        <ObjectLocation>/FT/Content/World News/Stories/Live/TestForSteveAshdown.xml</ObjectLocation>\\n" +
-			"        <OriginatingStory/>\\n        <CCMS>\\n            <CCMSCommissionRefNo/>\\n            <CCMSContributorRefNo/>\\n            " +
-			"<CCMSContributorFullName/>\\n            <CCMSContributorInclude/>\\n            <CCMSContributorRights/>\\n            <CCMSFilingDate/>\\n" +
-			"            <CCMSProposedPublishingDate/>\\n        </CCMS>\\n    </EditorialNotes>\\n    <WiresIndexing>\\n        <category/>\\n        <Keyword/>" +
-			"\\n        <char_count/>\\n        <priority/>\\n        <basket/>\\n        <title/>\\n        <Version/>\\n        <story_num/>\\n        " +
-			"<file_name/>\\n        <serviceid/>\\n        <entry_date/>\\n        <ref_field/>\\n        <take_num/>\\n    </WiresIndexing>\\n    " +
-			"\\n<DataFactoryIndexing><ADRIS_MetaData><IndexSuccess>yes</IndexSuccess><StartTime>Mon Nov 25 12:58:03 GMT 2013</StartTime>" +
-			"<EndTime>Mon Nov 25 12:58:03 GMT 2013</EndTime></ADRIS_MetaData><DFMajorCompanies/><DFMinorCompanies/><DFNAICS/><DFWPMIndustries/>" +
-			"<DFFTSEGlobalClassifications/><DFStockExchangeIndices/><DFSubjects/><DFCountries/><DFRegions/><DFWPMRegions/><DFProvinces/><DFFTcomDisplayCodes/>" +
-			"<DFFTSections/><DFWebRegions/></DataFactoryIndexing></ObjectMetadata>\",\"workflowStatus\":\"Stories/WebRevise\"," +
-			"\"systemAttributes\":\"<props>" +
-			"<productInfo><name>FTcom</name>\\n<issueDate>20131018</issueDate>\\n</productInfo>\\n<workFolder>/FT/WorldNews</workFolder>\\n<templateName>" +
-			"/SysConfig/Templates/FT/Base-Story.xml</templateName>\\n<summary>Text Formatting\\n\\nThis is an example of bold text : This text is bold &lt;b&gt;" +
-			"\\n\\nThis is an example of italic text : This text is italic &lt;i&gt;\\n\\nEmphasis\\n\\nStrong\\n\\nSuperscript\\n\\nSubscript\\n\\nUnderline" +
-			"\\n\\n\\nLinks\\n\\nThis is a link for an FT article that has been cut and paste from a browser: http://www.ft.com/cms/s/2/e78a8668-c997-11e1-aae2-002128161462.html." +
-			"\\nThis link was added using Right-click, Insert Hyperlink: A story about something financial\\n\\nThis link was added using drag and drop of an article: A story abo..." +
-			"</summary><wordCount>2644</wordCount></props>\"}";
 
 }
