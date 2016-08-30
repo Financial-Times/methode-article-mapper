@@ -25,6 +25,9 @@ For getting transformed articles available in the native store, make a GET reque
 
 Alternatively, transformation can be triggered through a POST message containing a Methode article to http://localhost:11070/content-transform/{uuid}
 The {uuid} value must match the UUID of the posted Methode article.
+In case the required transformation is triggered to provide an article preview, you need to set a `preview` query parameter in the URL with `true` as value: 
+e.g., http://localhost:11070/content-transform/d8bca7c3-e8b8-4dbf-9bd1-4df8d2e0c086?preview=true 
+This `preview` setting will not trigger an exception in case of empty article body.
 
 ### Healthcheck
 
