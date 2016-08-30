@@ -51,9 +51,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 public class EomFileProcessor {
+
+    enum TransformationMode {
+        PUBLISH,
+        PREVIEW
+    }
+
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
-
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -90,14 +95,14 @@ public class EomFileProcessor {
 
     public Content processPreview(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
-        
+
         PublishEligibilityChecker eligibilityChecker =
             PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
-        
-        
+
+
         try {
           ParsedEomFile parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
-          
+
           return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
@@ -106,24 +111,24 @@ public class EomFileProcessor {
 
     public Content processPublication(EomFile eomFile, String transactionId) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
-        
+
         try {
             ParsedEomFile parsedEomFile = getEligibleContentForPublishing(eomFile, uuid, transactionId);
-            
+
             return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PUBLISH, transactionId);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
     }
-    
+
     private ParsedEomFile getEligibleContentForPublishing(EomFile eomFile, UUID uuid, String transactionId)
         throws SAXException, XPathExpressionException,
                ParserConfigurationException, TransformerException, IOException {
-      
-      PublishEligibilityChecker eligibilityChecker =
+
+        PublishEligibilityChecker eligibilityChecker =
           PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
-      
-      return eligibilityChecker.getEligibleContentForPublishing();
+
+        return eligibilityChecker.getEligibleContentForPublishing();
     }
     
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId)
@@ -131,17 +136,17 @@ public class EomFileProcessor {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final Document doc = eomFile.getValue();
-        
+
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, doc)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(doc, xpath);
-        
+
         final String lastPublicationDateAsString = xpath
                 .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", eomFile.getAttributes());
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, eomFile.getAttributes());
 
         String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, doc)).trim();
-        
+
         String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
         switch (mode) {
           case PREVIEW:
@@ -251,7 +256,6 @@ public class EomFileProcessor {
         return convertNodeToStringReturningEmptyIfNull(node);
     }
 
-
     private String getNodeAsHTML5String(Node node) throws TransformerException {
         Html5SelfClosingTagBodyProcessor processor = new Html5SelfClosingTagBodyProcessor();
         String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
@@ -275,7 +279,7 @@ public class EomFileProcessor {
         int index = wrappedBody.indexOf('>', START_BODY.length()) + 1;
         return wrappedBody.substring(index, wrappedBody.length() - END_BODY.length()).trim();
       }
-    
+
     private AlternativeTitles buildAlternativeTitles(Document doc, XPath xpath)
         throws XPathExpressionException {
 
@@ -287,10 +291,5 @@ public class EomFileProcessor {
       }
 
         return builder.build();
-    }
-
-    enum TransformationMode {
-        PUBLISH,
-        PREVIEW
     }
 }
