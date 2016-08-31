@@ -1,9 +1,10 @@
 package com.ft.methodearticletransformer.transformation;
 
+import org.w3c.dom.Document;
+
+import java.net.URI;
 import java.util.Date;
 import java.util.UUID;
-
-import org.w3c.dom.Document;
 
 public class ParsedEomFile {
   private final UUID uuid;
@@ -11,12 +12,14 @@ public class ParsedEomFile {
   private final Document value;
   private final String body;
   private final Date lastModified;
-  
-  public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument, Date lastModified) {
+  private final URI webUrl;
+
+  public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument, Date lastModified, URI webUrl) {
     this.uuid = uuid;
     this.value = value;
     this.body = body;
     this.attributesDocument = attributesDocument;
+    this.webUrl = webUrl;
     this.lastModified = lastModified;
   }
   
@@ -38,5 +41,9 @@ public class ParsedEomFile {
   
   public Date getLastModified() {
     return lastModified;
+  }
+
+  public URI getWebUrl() {
+    return webUrl;
   }
 }

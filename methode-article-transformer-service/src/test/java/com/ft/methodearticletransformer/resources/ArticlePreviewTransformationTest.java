@@ -8,13 +8,15 @@ import com.ft.methodearticletransformer.methode.UnsupportedTypeException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.EomFileProcessor;
 import com.ft.methodearticletransformer.transformation.FieldTransformer;
+
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
 import java.util.UUID;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import static com.jcabi.matchers.RegexMatchers.matchesPattern;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -29,16 +31,14 @@ import static org.mockito.Mockito.when;
  */
 public class ArticlePreviewTransformationTest {
 
+    public static final String ARBITRARY_BRAND = "any brand";
     private static final boolean IS_PREVIEW = true;
     private static final String TRANSACTION_ID = "tid_test";
     private static final String VALID_EOM_FILE_TYPE = "EOM::CompoundStory";
-    private static String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
-    public static final String ARBITRARY_BRAND = "any brand";
-
     private static final String VALUE_PROPERTY = FileUtils.readFile("preview/article_preview_value.xml");
     private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
     private static final String[] WORFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
-
+    private static String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
     private HttpHeaders httpHeaders= mock(HttpHeaders.class);
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
@@ -91,7 +91,7 @@ public class ArticlePreviewTransformationTest {
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
                 WORFLOW_STATUS[0],
-                null, null, null );
+                null, null, null, null);
         return articlePreviewEomFile;
     }
 }
