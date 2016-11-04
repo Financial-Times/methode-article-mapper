@@ -737,7 +737,6 @@ public class EomFileProcessorTest {
                 .withWebUrl(webUrl)
                 .withLastModified(LAST_MODIFIED)
                 .build();
-
     }
 
     private EomFile createDwcComponentFile(UUID uuid) {

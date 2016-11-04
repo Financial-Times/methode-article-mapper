@@ -47,6 +47,8 @@ import javax.xml.xpath.XPathFactory;
 
 public class EomFileProcessor {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
+
     enum TransformationMode {
         PUBLISH,
         PREVIEW
@@ -69,7 +71,7 @@ public class EomFileProcessor {
             return value;
         }
 
-        static ContributorRights fromString(String value) throws Exception {
+        static ContributorRights fromString(String value) throws ContributorRightsException {
             if (value != null) {
                 for (ContributorRights rights : ContributorRights.values()) {
                     if (value.equals(rights.getValue())) {
@@ -77,7 +79,7 @@ public class EomFileProcessor {
                     }
                 }
             }
-            throw new Exception("Unmatched type: " + value);
+            throw new ContributorRightsException("Unmatched type=" + value);
         }
     }
 
@@ -215,10 +217,16 @@ public class EomFileProcessor {
 
     private Syndication getSyndication(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
         String cmsContributorRights = xpath.evaluate("/ObjectMetadata/EditorialNotes/CCMS/CCMSContributorRights", attributesDocument);
+
+        if (cmsContributorRights.isEmpty()) {
+            return Syndication.VERIFY;
+        }
+
         ContributorRights contributorRights;
         try {
              contributorRights = ContributorRights.fromString(cmsContributorRights);
-        } catch (Exception e) {
+        } catch (ContributorRightsException e) {
+            LOGGER.warn("Found invalid CCMSContributorRights={} in article", cmsContributorRights, e);
             return Syndication.VERIFY;
         }
 
