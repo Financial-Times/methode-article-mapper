@@ -1,12 +1,7 @@
 package com.ft.methodearticletransformer.transformation;
 
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
-import com.ft.content.model.AlternativeTitles;
-import com.ft.content.model.Brand;
-import com.ft.content.model.Comments;
-import com.ft.content.model.Content;
-import com.ft.content.model.Identifier;
-import com.ft.content.model.Standout;
+import com.ft.content.model.*;
 import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.eligibility.PublishEligibilityChecker;
@@ -57,6 +52,35 @@ public class EomFileProcessor {
         PREVIEW
     }
 
+    enum ContributorRights {
+        FIFTY_FIFTY_NEW("1"),
+        FIFTY_FIFTY_OLD("2"),
+        ALL_NO_PAYMENT("3"),
+        CONTRACT("4"),
+        NO_RIGHTS("5");
+
+        private String value;
+
+        ContributorRights(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        static ContributorRights fromString(String value) throws Exception {
+            if (value != null) {
+                for (ContributorRights rights : ContributorRights.values()) {
+                    if (value.equals(rights.getValue())) {
+                        return rights;
+                    }
+                }
+            }
+            throw new Exception("Unmatched type: " + value);
+        }
+    }
+
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
@@ -72,6 +96,7 @@ public class EomFileProcessor {
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
+
     public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
                             Brand financialTimesBrand) {
         this.bodyTransformer = bodyTransformer;
@@ -166,6 +191,8 @@ public class EomFileProcessor {
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
                 bylineTransformer, transactionId); //byline is optional
 
+        final Syndication canBeSyndicated = getSyndication(xpath, eomFile.getAttributes());
+
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
@@ -182,7 +209,27 @@ public class EomFileProcessor {
                 .withWebUrl(eomFile.getWebUrl())
                 .withPublishReference(transactionId)
                 .withLastModified(eomFile.getLastModified())
+                .withCanBeSyndicated(canBeSyndicated)
                 .build();
+    }
+
+    private Syndication getSyndication(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
+        String cmsContributorRights = xpath.evaluate("/ObjectMetadata/EditorialNotes/CCMS/CCMSContributorRights", attributesDocument);
+        ContributorRights contributorRights;
+        try {
+             contributorRights = ContributorRights.fromString(cmsContributorRights);
+        } catch (Exception e) {
+            return Syndication.VERIFY;
+        }
+
+        switch (contributorRights) {
+            case ALL_NO_PAYMENT:
+                return Syndication.YES;
+            case NO_RIGHTS:
+                return Syndication.NO;
+            default:
+                return Syndication.VERIFY;
+        }
     }
 
     private Standout buildStandoutSection(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
