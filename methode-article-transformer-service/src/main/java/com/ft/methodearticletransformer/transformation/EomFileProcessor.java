@@ -1,7 +1,13 @@
 package com.ft.methodearticletransformer.transformation;
 
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
-import com.ft.content.model.*;
+import com.ft.content.model.AlternativeTitles;
+import com.ft.content.model.Brand;
+import com.ft.content.model.Comments;
+import com.ft.content.model.Content;
+import com.ft.content.model.Identifier;
+import com.ft.content.model.Standout;
+import com.ft.content.model.Syndication;
 import com.ft.methodearticletransformer.methode.UntransformableMethodeContentException;
 import com.ft.methodearticletransformer.model.EomFile;
 import com.ft.methodearticletransformer.transformation.eligibility.PublishEligibilityChecker;

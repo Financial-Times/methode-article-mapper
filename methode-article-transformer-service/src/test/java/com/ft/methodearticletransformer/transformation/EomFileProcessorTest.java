@@ -1,7 +1,13 @@
 package com.ft.methodearticletransformer.transformation;
 
 import com.ft.common.FileUtils;
-import com.ft.content.model.*;
+import com.ft.content.model.AlternativeTitles;
+import com.ft.content.model.Brand;
+import com.ft.content.model.Comments;
+import com.ft.content.model.Content;
+import com.ft.content.model.Identifier;
+import com.ft.content.model.Standout;
+import com.ft.content.model.Syndication;
 import com.ft.methodearticletransformer.methode.EmbargoDateInTheFutureException;
 import com.ft.methodearticletransformer.methode.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticletransformer.methode.MethodeMarkedDeletedException;
@@ -520,7 +526,7 @@ public class EomFileProcessorTest {
                     uuid, contributorRight);
 
             Content content = eomFileProcessor.processPublication(eomFileContractContributorRights, TRANSACTION_ID);
-            assertThat(content.getCanBeSyndicated(), is(Syndication.VERIFY));
+            assertThat("contributorRight=" + contributorRight, content.getCanBeSyndicated(), is(Syndication.VERIFY));
         }
     }
 
