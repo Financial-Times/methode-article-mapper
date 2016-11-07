@@ -34,7 +34,14 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticletransformer.methode.EomFileType.EOMStory;
@@ -494,7 +501,7 @@ public class EomFileProcessorTest {
     @Test
     public void testArticleCanBeSyndicated() {
         final EomFile eomFile = createStandardEomFileWithContributorRights(
-                uuid, EomFileProcessor.ContributorRights.ALL_NO_PAYMENT.getValue());
+                uuid, ContributorRights.ALL_NO_PAYMENT.getValue());
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         assertThat(content.getCanBeSyndicated(), is(Syndication.YES));
@@ -503,7 +510,7 @@ public class EomFileProcessorTest {
     @Test
     public void testArticleCanNotBeSyndicated() {
         final EomFile eomFile = createStandardEomFileWithContributorRights(
-                uuid, EomFileProcessor.ContributorRights.NO_RIGHTS.getValue());
+                uuid, ContributorRights.NO_RIGHTS.getValue());
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID);
         assertThat(content.getCanBeSyndicated(), is(Syndication.NO));
@@ -512,9 +519,9 @@ public class EomFileProcessorTest {
     @Test
     public void testArticleNeedsToBeVerifiedForSyndication() {
         String[] contributorRights = {
-                EomFileProcessor.ContributorRights.CONTRACT.getValue(),
-                EomFileProcessor.ContributorRights.FIFTY_FIFTY_NEW.getValue(),
-                EomFileProcessor.ContributorRights.FIFTY_FIFTY_OLD.getValue(),
+                ContributorRights.CONTRACT.getValue(),
+                ContributorRights.FIFTY_FIFTY_NEW.getValue(),
+                ContributorRights.FIFTY_FIFTY_OLD.getValue(),
                 "",
                 "invalid value",
                 "-1",
