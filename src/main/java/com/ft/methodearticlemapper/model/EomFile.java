@@ -22,7 +22,6 @@ public class EomFile {
     private final String systemAttributes;
     private final String usageTickets;
     private final URI webUrl;
-    private Date lastModified;
 
     public EomFile(@JsonProperty("uuid") String uuid,
                    @JsonProperty("type") String type,
@@ -31,7 +30,6 @@ public class EomFile {
                    @JsonProperty("workflowStatus") String workflowStatus,
                    @JsonProperty("systemAttributes") String systemAttributes,
                    @JsonProperty("usageTickets") String usageTickets,
-                   @JsonProperty("lastModified") Date lastModified,
                    @JsonProperty("webUrl") URI webUrl) {
         this.uuid = uuid;
         this.type = type;
@@ -40,7 +38,6 @@ public class EomFile {
         this.workflowStatus = workflowStatus;
         this.systemAttributes = systemAttributes;
         this.usageTickets = usageTickets;
-        this.lastModified = lastModified;
         this.webUrl = webUrl;
     }
 
@@ -73,9 +70,6 @@ public class EomFile {
         return usageTickets;
     }
 
-    public Date getLastModified() {
-        return lastModified;
-    }
 
     public URI getWebUrl() {
         return webUrl;
@@ -146,12 +140,11 @@ public class EomFile {
                     .withWorkflowStatus(eomFile.getWorkflowStatus())
                     .withSystemAttributes(eomFile.getSystemAttributes())
                     .withUsageTickets(eomFile.getUsageTickets())
-                    .withLastModified(eomFile.getLastModified())
                     .withWebUrl(eomFile.getWebUrl());
         }
 
         public EomFile build() {
-            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets, lastModified, webUrl);
+            return new EomFile(uuid, type, value, attributes, workflowStatus, systemAttributes, usageTickets, webUrl);
         }
     }
 }

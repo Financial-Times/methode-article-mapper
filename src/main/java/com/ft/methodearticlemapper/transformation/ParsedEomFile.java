@@ -11,16 +11,14 @@ public class ParsedEomFile {
   private final Document attributesDocument;
   private final Document value;
   private final String body;
-  private final Date lastModified;
   private final URI webUrl;
 
-  public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument, Date lastModified, URI webUrl) {
+  public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument, URI webUrl) {
     this.uuid = uuid;
     this.value = value;
     this.body = body;
     this.attributesDocument = attributesDocument;
     this.webUrl = webUrl;
-    this.lastModified = lastModified;
   }
   
   public UUID getUUID() {
@@ -37,10 +35,6 @@ public class ParsedEomFile {
   
   public Document getAttributes() {
     return attributesDocument;
-  }
-  
-  public Date getLastModified() {
-    return lastModified;
   }
 
   public URI getWebUrl() {

@@ -77,7 +77,7 @@ documentStoreApi:
         path: content/
         jerseyClient:
             timeout: 2000ms    
-        primaryNodes: ["localhost:14180:14181"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
     connectionConfig:
         numberOfConnectionAttempts: 3
@@ -102,10 +102,49 @@ concordanceApi:
         shortName: "concordance"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: ["localhost:9132:9133", "localhost:9132:9133"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
         path: "/concordances"
     connectionConfiguration:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000  
+
+consumer:
+  jerseyClient:
+    connectionTimeout: 2 seconds
+    timeout: 25 seconds
+  messageConsumer:
+    queueProxyHost: http://localhost:8080
+    queue: kafka
+    topicName: NativeCmsPublicationEvents
+    groupName: MethodeListMapper
+    backoffPeriod: 10000
+    streamCount: 1
+    autoCommit: true
+    offsetReset: largest
+  healthCheck:
+    name: "Can connect consumer to kafka-proxy"
+    severity: 2
+    businessImpact: "Newly published WordPress featured images will not be available from the Content API"
+    technicalSummary: "Tests that kafka-proxy is reachable and message can be consumed"
+    panicGuideUrl: "https://panic.example.org/"
+  systemCode: methode-web-pub
+
+producer:
+  jerseyClient:
+    connectionTimeout: 2 seconds
+    timeout: 25 seconds
+  messageProducer:
+    proxyHostAndPort: localhost:8080
+    additionalHeaders:
+      Host: kafka
+    topicName: CmsPublicationEvents
+  healthCheck:
+    name: "Can connect producer to kafka-proxy"
+    severity: 2
+    businessImpact: "Newly published WordPress featured images will not be available from the Content API"
+    technicalSummary: "Tests that kafka-proxy is reachable and the CmsPublicationEvents topic exists"
+    panicGuideUrl: "https://panic.example.org/"
+
+contentUriPrefix: http://methode-article-transformer.svc.ft.com/content
 

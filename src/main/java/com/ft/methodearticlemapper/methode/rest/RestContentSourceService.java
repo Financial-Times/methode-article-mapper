@@ -17,7 +17,7 @@ import com.ft.api.jaxrs.client.exceptions.RemoteApiException;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticlemapper.configuration.AssetTypeRequestConfiguration;
-import com.ft.methodearticlemapper.configuration.SourceApiEndpointConfiguration;
+import com.ft.methodearticlemapper.configuration.SourceApiConfiguration;
 import com.ft.methodearticlemapper.methode.SourceApiUnavailableException;
 import com.ft.methodearticlemapper.methode.ResourceNotFoundException;
 import com.ft.methodearticlemapper.methode.ContentSourceService;
@@ -46,7 +46,7 @@ public class RestContentSourceService implements ContentSourceService {
 	private ExecutorService executorService;
 
 
-	public RestContentSourceService(Environment environment, Client sourceApiClient, SourceApiEndpointConfiguration sourceApiConfiguration) {
+	public RestContentSourceService(Environment environment, Client sourceApiClient, SourceApiConfiguration sourceApiConfiguration) {
 		jerseyClient = sourceApiClient;
 		apiHost = sourceApiConfiguration.getEndpointConfiguration().getHost();
 		apiPort = sourceApiConfiguration.getEndpointConfiguration().getPort();

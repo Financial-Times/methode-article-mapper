@@ -8,8 +8,11 @@ import org.junit.Test;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -53,7 +56,7 @@ public class PostContentToTransformResourceHappyPathsTest {
     @Test
     public void publicationProcessedOk() {
         postContentToTransformResource.doTransform(uuid, false, eomFile, httpHeaders);
-        verify(eomFileProcessor, times(1)).processPublication(eomFile, TRANSACTION_ID);
+        verify(eomFileProcessor, times(1)).processPublication(eq(eomFile), eq(TRANSACTION_ID), any());
     }
 
 }

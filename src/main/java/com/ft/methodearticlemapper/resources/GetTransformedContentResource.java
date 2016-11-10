@@ -70,8 +70,8 @@ public class GetTransformedContentResource {
         Date lastModifiedDate = null;
         try {
         	EomFile eomFile = contentSourceService.fileByUuid(uuid, transactionId);
-            lastModifiedDate = eomFile.getLastModified();
-    		return eomFileProcessor.processPublication(eomFile, transactionId);
+            lastModifiedDate = new Date();
+    		return eomFileProcessor.processPublication(eomFile, transactionId, lastModifiedDate);
 
         } catch (SourceApiUnavailableException e) {
 			throw ServerError.status(503)

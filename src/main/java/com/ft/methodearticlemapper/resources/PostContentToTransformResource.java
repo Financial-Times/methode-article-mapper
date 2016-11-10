@@ -24,6 +24,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
+import java.util.Date;
 import java.util.UUID;
 
 @Path("/content-transform")
@@ -53,7 +55,7 @@ public class PostContentToTransformResource {
 			if(preview) {
 				return eomFileProcessor.processPreview(eomFile, transactionId);
 			}
-			return eomFileProcessor.processPublication(eomFile, transactionId);
+			return eomFileProcessor.processPublication(eomFile, transactionId, new Date());
 
 		}catch(SourceApiUnavailableException e){
 			throw ServerError.status(503)

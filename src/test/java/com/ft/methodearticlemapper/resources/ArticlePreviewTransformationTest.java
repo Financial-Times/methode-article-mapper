@@ -91,7 +91,7 @@ public class ArticlePreviewTransformationTest {
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
                 WORFLOW_STATUS[0],
-                null, null, null, null);
+                null, null, null);
         return articlePreviewEomFile;
     }
 }

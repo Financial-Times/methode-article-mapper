@@ -1,7 +1,10 @@
 package com.ft.methodearticlemapper;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
+
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -16,12 +19,22 @@ import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
+import com.ft.message.consumer.MessageListener;
+import com.ft.message.consumer.MessageQueueConsumerInitializer;
+import com.ft.messagequeueproducer.MessageProducer;
+import com.ft.messagequeueproducer.QueueProxyProducer;
 import com.ft.methodearticlemapper.configuration.ConcordanceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.ConnectionConfiguration;
+import com.ft.methodearticlemapper.configuration.ConsumerConfiguration;
 import com.ft.methodearticlemapper.configuration.DocumentStoreApiConfiguration;
-import com.ft.methodearticlemapper.configuration.SourceApiEndpointConfiguration;
+import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
+import com.ft.methodearticlemapper.configuration.SourceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.MethodeArticleMapperConfiguration;
+import com.ft.methodearticlemapper.health.CanConnectToMessageQueueProducerProxyHealthcheck;
 import com.ft.methodearticlemapper.health.RemoteServiceHealthCheck;
+import com.ft.methodearticlemapper.messaging.MessageBuilder;
+import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
+import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
 import com.ft.methodearticlemapper.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticlemapper.methode.ContentSourceService;
 import com.ft.methodearticlemapper.methode.rest.RestContentSourceService;
@@ -35,6 +48,7 @@ import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
 import io.dropwizard.Application;
+import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
@@ -62,13 +76,13 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
         ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
-    	SourceApiEndpointConfiguration sourceApiEndpointConfiguration = configuration.getSourceApiConfiguration();
-        Client sourceApiClient = configureResilientClient(environment, sourceApiEndpointConfiguration.getEndpointConfiguration(), sourceApiEndpointConfiguration.getConnectionConfiguration());
+    	SourceApiConfiguration sourceApiConfiguration = configuration.getSourceApiConfiguration();
+        Client sourceApiClient = configureResilientClient(environment, sourceApiConfiguration.getEndpointConfiguration(), sourceApiConfiguration.getConnectionConfiguration());
         
         EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
         UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
         URI documentStoreUri = documentStoreApiBuilder.build();
-        ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiEndpointConfiguration);
+        ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiConfiguration);
         
         ConcordanceApiConfiguration concordanceApiConfiguration=configuration.getConcordanceApiConfiguration();
         Client concordanceApiClient = configureResilientClient(environment, concordanceApiConfiguration.getEndpointConfiguration(), concordanceApiConfiguration.getConnectionConfiguration());
@@ -85,8 +99,29 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 concordanceUri
         );
 
+        ConsumerConfiguration consumerConfig = configuration.getConsumerConfiguration();
+        MessageProducingArticleMapper msgProducingListMapper = new MessageProducingArticleMapper(
+                getMessageBuilder(configuration, environment),
+                configureMessageProducer(configuration.getProducerConfiguration(), environment),
+                eomFileProcessor
+        );
+        MessageListener listener = new NativeCmsPublicationEventsListener(
+                environment.getObjectMapper(),
+                msgProducingListMapper,
+                consumerConfig.getSystemCode()
+        );
+        registerListener(environment, listener, consumerConfig, getConsumerClient(environment, consumerConfig));
+
+        registerHealthChecks(
+                environment,
+                buildClientHealthChecks(
+                        sourceApiClient, sourceApiConfiguration.getEndpointConfiguration(),
+                        concordanceApiClient, concordanceApiConfiguration.getEndpointConfiguration(),
+                        documentStoreApiClient, documentStoreApiConfiguration.getEndpointConfiguration()
+                )
+        );
+
         environment.jersey().register(
-        		
                 new GetTransformedContentResource(
                         contentSourceService,
                         eomFileProcessor
@@ -97,45 +132,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                         eomFileProcessor
                 )
         );
-        
-        HealthCheckRegistry healthChecks = environment.healthChecks();
-        AdvancedHealthCheck nativeStoreApiHealthCheck = new RemoteServiceHealthCheck(
-            "Native Store Reader",
-            sourceApiClient,
-            sourceApiEndpointConfiguration.getEndpointConfiguration().getHost(),
-            sourceApiEndpointConfiguration.getEndpointConfiguration().getPort(),
-            "/__gtg",
-            "nativerw",
-            1,
-            "Unable to retrieve content from native store. Publication will fail.",
-            "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/native-store-reader-writer");
-        healthChecks.register(nativeStoreApiHealthCheck.getName(), nativeStoreApiHealthCheck);
-        
-        AdvancedHealthCheck concordanceApiHealthCheck = new RemoteServiceHealthCheck(
-            "Public Concordance API",
-            concordanceApiClient,
-            concordanceApiConfiguration.getEndpointConfiguration().getHost(),
-            concordanceApiConfiguration.getEndpointConfiguration().getPort(),
-            "/__gtg",
-            "public-concordances-api",
-            1,
-            "Articles will not be annotated with company tearsheet information.",
-            "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/public-concordances-api"
-            );
-        healthChecks.register(concordanceApiHealthCheck.getName(), concordanceApiHealthCheck);
-        
-        AdvancedHealthCheck documentStoreApiHealthCheck = new RemoteServiceHealthCheck(
-            "Document Store API",
-            documentStoreApiClient,
-            documentStoreApiConfiguration.getEndpointConfiguration().getHost(),
-            documentStoreApiConfiguration.getEndpointConfiguration().getPort(),
-            "/__health",
-            "document-store-api",
-            1,
-            "Clients will be unable to query the content service using alternative identifiers.",
-            "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/documentstoreapi");
-        healthChecks.register(documentStoreApiHealthCheck.getName(), documentStoreApiHealthCheck);
-        
+
         environment.jersey().register(RuntimeExceptionMapper.class);
         Errors.customise(new MethodeArticleTransformerErrorEntityFactory());
     }
@@ -170,4 +167,125 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
 				new BylineProcessingFieldTransformerFactory().newInstance(),
                 financialTimesBrand);
 	}
+
+    private void registerHealthChecks(Environment environment, List<AdvancedHealthCheck> advancedHealthChecks) {
+        HealthCheckRegistry healthChecks = environment.healthChecks();
+        for (AdvancedHealthCheck hc : advancedHealthChecks) {
+            healthChecks.register(hc.getName(), hc);
+        }
+    }
+
+    private List<AdvancedHealthCheck> buildClientHealthChecks(
+            Client sourceApiClient, EndpointConfiguration sourceApiEndpointConfiguration,
+            Client concordanceApiClient, EndpointConfiguration concordanceApiConfiguration,
+            ResilientClient documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
+
+        List<AdvancedHealthCheck> healthchecks = new ArrayList<>();
+        healthchecks.add(new RemoteServiceHealthCheck(
+                "Native Store Reader",
+                sourceApiClient,
+                sourceApiEndpointConfiguration.getHost(),
+                sourceApiEndpointConfiguration.getPort(),
+                "/__gtg",
+                "nativerw",
+                1,
+                "Unable to retrieve content from native store. Publication will fail.",
+                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/native-store-reader-writer")
+        );
+        healthchecks.add(new RemoteServiceHealthCheck(
+                "Public Concordance API",
+                concordanceApiClient,
+                concordanceApiConfiguration.getHost(),
+                concordanceApiConfiguration.getPort(),
+                "/__gtg",
+                "public-concordances-api",
+                1,
+                "Articles will not be annotated with company tearsheet information.",
+                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/public-concordances-api")
+        );
+        healthchecks.add(new RemoteServiceHealthCheck(
+                "Document Store API",
+                documentStoreApiClient,
+                documentStoreApiEndpointConfiguration.getHost(),
+                documentStoreApiEndpointConfiguration.getPort(),
+                "/__health",
+                "document-store-api",
+                1,
+                "Clients will be unable to query the content service using alternative identifiers.",
+                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/documentstoreapi")
+        );
+        return healthchecks;
+    }
+
+    private MessageBuilder getMessageBuilder(MethodeArticleMapperConfiguration configuration, Environment environment) {
+        return new MessageBuilder(
+                UriBuilder.fromUri(configuration.getContentUriPrefix()).path("{uuid}"),
+                configuration.getConsumerConfiguration().getSystemCode(),
+                environment.getObjectMapper()
+        );
+    }
+
+    private Client getConsumerClient(Environment environment, ConsumerConfiguration config) {
+        JerseyClientConfiguration jerseyConfig = config.getJerseyClientConfiguration();
+        jerseyConfig.setGzipEnabled(false);
+        jerseyConfig.setGzipEnabledForRequests(false);
+
+        return ResilientClientBuilder.in(environment)
+                .using(jerseyConfig)
+                .usingDNS()
+                .named("consumer-client")
+                .build();
+    }
+
+    protected MessageProducer configureMessageProducer(ProducerConfiguration config, Environment environment) {
+        JerseyClientConfiguration jerseyConfig = config.getJerseyClientConfiguration();
+        jerseyConfig.setGzipEnabled(false);
+        jerseyConfig.setGzipEnabledForRequests(false);
+
+        Client producerClient = ResilientClientBuilder.in(environment)
+                .using(jerseyConfig)
+                .usingDNS()
+                .named("producer-client")
+                .build();
+
+        final QueueProxyProducer.BuildNeeded queueProxyBuilder = QueueProxyProducer.builder()
+                .withJerseyClient(producerClient)
+                .withQueueProxyConfiguration(config.getMessageQueueProducerConfiguration());
+
+        final QueueProxyProducer producer = queueProxyBuilder.build();
+
+        registerProducerHealthCheck(environment, config, queueProxyBuilder);
+
+        return producer;
+    }
+
+    protected void registerListener(Environment environment, MessageListener listener, ConsumerConfiguration config, Client consumerClient) {
+        final MessageQueueConsumerInitializer messageQueueConsumerInitializer =
+                new MessageQueueConsumerInitializer(
+                        config.getMessageQueueConsumerConfiguration(),
+                        listener,
+                        consumerClient
+                );
+        environment.lifecycle().manage(messageQueueConsumerInitializer);
+
+        registerConsumerHealthCheck(environment, config, messageQueueConsumerInitializer);
+    }
+
+    private void registerProducerHealthCheck(Environment environment, ProducerConfiguration config, QueueProxyProducer.BuildNeeded queueProxyBuilder) {
+        environment.healthChecks().register("KafkaProxyProducer",
+                new CanConnectToMessageQueueProducerProxyHealthcheck(
+                        queueProxyBuilder.buildHealthcheck(),
+                        config.getHealthcheckConfiguration(),
+                        environment.metrics()
+                )
+        );
+    }
+
+    private void registerConsumerHealthCheck(Environment environment, ConsumerConfiguration config, MessageQueueConsumerInitializer messageQueueConsumerInitializer) {
+        environment.healthChecks().register("KafkaProxyConsumer",
+                messageQueueConsumerInitializer.buildPassiveConsumerHealthcheck(
+                        config.getHealthcheckConfiguration(), environment.metrics()
+                )
+        );
+    }
 }

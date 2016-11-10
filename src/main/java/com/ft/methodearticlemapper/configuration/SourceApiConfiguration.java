@@ -9,7 +9,7 @@ import io.dropwizard.client.JerseyClientConfiguration;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class SourceApiEndpointConfiguration {
+public class SourceApiConfiguration {
 
 	private final EndpointConfiguration endpointConfiguration;
 
@@ -25,7 +25,7 @@ public class SourceApiEndpointConfiguration {
 	 * @param assetTypeRequestConfiguration the configuration for requesting asset types
 	 * @return a simple configuration
 	 */
-	public static SourceApiEndpointConfiguration forTesting(String host, int port, AssetTypeRequestConfiguration assetTypeRequestConfiguration, ConnectionConfiguration connectionConfig) {
+	public static SourceApiConfiguration forTesting(String host, int port, AssetTypeRequestConfiguration assetTypeRequestConfiguration, ConnectionConfiguration connectionConfig) {
 
 		JerseyClientConfiguration clientConfig = new JerseyClientConfiguration();
 		clientConfig.setGzipEnabled(false);
@@ -38,7 +38,7 @@ public class SourceApiEndpointConfiguration {
 				Arrays.asList(String.format("%s:%d:%d", host, port, port + 1)),
 				Collections.<String>emptyList());
 
-		return new SourceApiEndpointConfiguration(
+		return new SourceApiConfiguration(
 				endpointConfiguration,
 				assetTypeRequestConfiguration,
                 connectionConfig
@@ -46,9 +46,9 @@ public class SourceApiEndpointConfiguration {
 	}
 
 
-	public SourceApiEndpointConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
-                                          @JsonProperty("assetTypeRequestConfiguration") AssetTypeRequestConfiguration assetTypeRequestConfiguration,
-                                          @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfig) {
+	public SourceApiConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
+                                  @JsonProperty("assetTypeRequestConfiguration") AssetTypeRequestConfiguration assetTypeRequestConfiguration,
+                                  @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfig) {
 		this.endpointConfiguration = endpointConfiguration;
 		this.assetTypeRequestConfiguration = assetTypeRequestConfiguration;
         this.connectionConfig = connectionConfig;

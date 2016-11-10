@@ -149,7 +149,7 @@ public abstract class PublishEligibilityChecker {
     checkBody();
     
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
-            attributesDocument, eomFile.getLastModified(), eomFile.getWebUrl());
+            attributesDocument, eomFile.getWebUrl());
     
     return parsedEomFile;
   }
@@ -171,7 +171,7 @@ public abstract class PublishEligibilityChecker {
     }
     
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
-            attributesDocument, eomFile.getLastModified(), eomFile.getWebUrl());
+            attributesDocument, eomFile.getWebUrl());
     
     return parsedEomFile;
   }

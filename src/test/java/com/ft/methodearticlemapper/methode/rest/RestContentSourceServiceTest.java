@@ -4,7 +4,7 @@ import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.methodearticlemapper.configuration.AssetTypeRequestConfiguration;
 import com.ft.methodearticlemapper.configuration.ConnectionConfiguration;
-import com.ft.methodearticlemapper.configuration.SourceApiEndpointConfiguration;
+import com.ft.methodearticlemapper.configuration.SourceApiConfiguration;
 import com.ft.methodearticlemapper.methode.ResourceNotFoundException;
 import com.ft.methodearticlemapper.methode.SourceApiUnavailableException;
 import com.ft.methodearticlemapper.methode.UnexpectedSourceApiException;
@@ -140,7 +140,7 @@ public class RestContentSourceServiceTest {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 	private ObjectMapper objectMapper;
-	private SourceApiEndpointConfiguration sourceApiEndpointConfiguration;
+	private SourceApiConfiguration sourceApiConfiguration;
 	private Environment environment;
 	private ClientHandler handler = mock(ClientHandler.class);
     private Client mockClient = new Client(handler);
@@ -170,20 +170,20 @@ public class RestContentSourceServiceTest {
 
         ConnectionConfiguration connectionConfig = new ConnectionConfiguration(3, 1000);
 
-		sourceApiEndpointConfiguration =
-				new SourceApiEndpointConfiguration(endpointConfiguration, assetTypeRequestConfiguration, connectionConfig);
+		sourceApiConfiguration =
+				new SourceApiConfiguration(endpointConfiguration, assetTypeRequestConfiguration, connectionConfig);
 
 		environment = new Environment("test-env", null, null, new MetricRegistry(), Thread.currentThread().getContextClassLoader());
 
 		HostAndPort endpoint = HostAndPort.fromParts("localhost", port);
 		Client client = ResilientClientBuilder.inTesting(endpoint).build();
 
-		restMethodeFileService = new RestContentSourceService(environment, client, sourceApiEndpointConfiguration);
+		restMethodeFileService = new RestContentSourceService(environment, client, sourceApiConfiguration);
 
 		//for cases where we want to control what the client does
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(Matchers.<GenericType<Map<String, EomAssetType>>>any())).thenReturn(new HashMap<String, EomAssetType>());
-		mockedClientRestMethodeFileService = new RestContentSourceService(environment, mockClient, sourceApiEndpointConfiguration);
+		mockedClientRestMethodeFileService = new RestContentSourceService(environment, mockClient, sourceApiConfiguration);
 	}
 
 	@Test

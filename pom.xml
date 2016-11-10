@@ -33,6 +33,8 @@
         <maven-shade-plugin.version>.</maven-shade-plugin.version>
         <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
         <ft-build-info-maven-plugin.version>1.0</ft-build-info-maven-plugin.version>
+        <message-queue-consumer.version>1.8.1</message-queue-consumer.version>
+        <message-queue-producer.version>1.0.4</message-queue-producer.version>
         <maven-jar-plugin.version>2.3.2</maven-jar-plugin.version>
         <target-jdk>1.8</target-jdk>
         <jaxrs.transaction-id-handling.version>1.9</jaxrs.transaction-id-handling.version>
@@ -132,6 +134,16 @@
                     <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.ft</groupId>
+            <artifactId>message-queue-consumer</artifactId>
+            <version>${message-queue-consumer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ft</groupId>
+            <artifactId>message-queue-producer</artifactId>
+            <version>${message-queue-producer.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ft.resilient-jersey-wrapper</groupId>

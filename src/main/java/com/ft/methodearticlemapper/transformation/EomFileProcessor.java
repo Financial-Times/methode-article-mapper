@@ -1,5 +1,8 @@
 package com.ft.methodearticlemapper.transformation;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
+
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
@@ -11,9 +14,6 @@ import com.ft.methodearticlemapper.methode.UntransformableMethodeContentExceptio
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -103,19 +103,19 @@ public class EomFileProcessor {
         try {
           ParsedEomFile parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
 
-          return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId);
+          return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId, new Date());
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
     }
 
-    public Content processPublication(EomFile eomFile, String transactionId) {
+    public Content processPublication(EomFile eomFile, String transactionId, Date lastModified) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
 
         try {
             ParsedEomFile parsedEomFile = getEligibleContentForPublishing(eomFile, uuid, transactionId);
 
-            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PUBLISH, transactionId);
+            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PUBLISH, transactionId, lastModified);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
@@ -131,7 +131,7 @@ public class EomFileProcessor {
         return eligibilityChecker.getEligibleContentForPublishing();
     }
     
-    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId)
+    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
@@ -181,7 +181,7 @@ public class EomFileProcessor {
                 .withStandout(buildStandoutSection(xpath, eomFile.getAttributes()))
                 .withWebUrl(eomFile.getWebUrl())
                 .withPublishReference(transactionId)
-                .withLastModified(eomFile.getLastModified())
+                .withLastModified(lastModified)
                 .build();
     }
 
