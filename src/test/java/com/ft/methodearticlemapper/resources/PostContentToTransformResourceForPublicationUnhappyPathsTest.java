@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
  *
  * Created by julia.fernee on 29/01/2016.
  */
-public class PostContentToTransformResourceForPublicationUnhappyPaths {
+public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
 
     private static final Date LAST_MODIFIED = new Date();
     private static final String INVALID_TYPE = "EOM::DistortedStory";
@@ -46,8 +46,8 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
 
     private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
     private HttpHeaders httpHeaders = mock(HttpHeaders.class);
-    private EomFile eomFile = mock(EomFile.class);;
-    private UUID uuid = UUID.randomUUID();;
+    private EomFile eomFile = mock(EomFile.class);
+    private UUID uuid = UUID.randomUUID();
 
     /*Class under test*/
     private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);
@@ -55,6 +55,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Before
     public void preconditions() {
         when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
+        when(eomFile.getUuid()).thenReturn(uuid.toString());
     }
 
     /**
@@ -133,7 +134,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
     @Test
     public void shouldThrow404ExceptionWhenPublicationNotEligibleForPublishing() {
 
-        when(eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED)).
+        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedTypeException(uuid, "EOM::DistortedStory"));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), false,  eomFile, httpHeaders);
@@ -277,7 +278,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPaths {
            fail("No exception was thrown, but expected one.");
        } catch (WebApplicationClientException e) {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
-                   containsString(uuid.toString()));
+                   containsString("it's blank"));
            assertThat(e.getResponse().getStatus(), equalTo(418));
        }
    }
