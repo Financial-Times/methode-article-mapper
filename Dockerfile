@@ -23,7 +23,6 @@ EXPOSE 8080 8081
 CMD exec java $JAVA_OPTS \
      -Ddw.server.applicationConnectors[0].port=8080 \
      -Ddw.server.adminConnectors[0].port=8081 \
-     -Ddw.sourceApi.endpointConfiguration.primaryNodes=$VULCAN_HOST \
      -Ddw.documentStoreApi.endpointConfiguration.primaryNodes=$VULCAN_HOST \
      -Ddw.concordanceApi.endpointConfiguration.primaryNodes=$VULCAN_HOST \
      -Ddw.logging.appenders[0].logFormat="%-5p [%d{ISO8601, GMT}] %c: %X{transaction_id} %replace(%m%n[%thread]%xEx){'\n', '|'}%nopex%n" \

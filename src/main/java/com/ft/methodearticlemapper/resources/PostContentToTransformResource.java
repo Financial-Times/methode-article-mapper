@@ -2,7 +2,6 @@ package com.ft.methodearticlemapper.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
-import com.ft.api.jaxrs.errors.ServerError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
 import com.ft.methodearticlemapper.methode.MethodeContentInvalidException;
@@ -11,10 +10,12 @@ import com.ft.methodearticlemapper.methode.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.methode.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.methode.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.methode.NotWebChannelException;
-import com.ft.methodearticlemapper.methode.SourceApiUnavailableException;
 import com.ft.methodearticlemapper.methode.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+
+import java.util.Date;
+import java.util.UUID;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,9 +25,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Path("/content-transform")
 public class PostContentToTransformResource {
@@ -57,10 +55,6 @@ public class PostContentToTransformResource {
 			}
 			return eomFileProcessor.processPublication(eomFile, transactionId, new Date());
 
-		}catch(SourceApiUnavailableException e){
-			throw ServerError.status(503)
-					.reason(ErrorMessage.METHODE_API_UNAVAILABLE)
-					.exception(e);
 		}catch(MethodeMarkedDeletedException e){
 			throw ClientError.status(404)
 					.context(uuid)

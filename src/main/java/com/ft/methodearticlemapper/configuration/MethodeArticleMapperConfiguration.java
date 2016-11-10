@@ -12,7 +12,6 @@ import java.util.List;
 public class MethodeArticleMapperConfiguration extends Configuration {
 	
 	private final DocumentStoreApiConfiguration documentStoreApiConfiguration;
-	private final SourceApiConfiguration sourceApiConfiguration;
 	private final ConcordanceApiConfiguration concordanceApiConfiguration;
     private final ConsumerConfiguration consumerConfiguration;
     private final ProducerConfiguration producerConfiguration;
@@ -24,7 +23,6 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     public MethodeArticleMapperConfiguration(@JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
                                              @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
-                                             @JsonProperty("sourceApi") SourceApiConfiguration sourceApiConfiguration,
                                              @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
                                              @JsonProperty("financialTimesBrandId") String financialTimesBrandId,
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
@@ -32,7 +30,6 @@ public class MethodeArticleMapperConfiguration extends Configuration {
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix) {
 
         this.documentStoreApiConfiguration = documentStoreApiConfiguration;
-		this.sourceApiConfiguration = sourceApiConfiguration;
 		this.concordanceApiConfiguration=concordanceApiConfiguration;
         this.financialTimesBrand = new Brand(financialTimesBrandId);
         this.consumerConfiguration = consumerConfiguration;
@@ -42,10 +39,6 @@ public class MethodeArticleMapperConfiguration extends Configuration {
         this.contentUriPrefix = contentUriPrefix;
     }
 
-	public SourceApiConfiguration getSourceApiConfiguration() {
-		return sourceApiConfiguration;
-	}
-	
 	@NotNull
 	public ConcordanceApiConfiguration getConcordanceApiConfiguration() {
 		return concordanceApiConfiguration;

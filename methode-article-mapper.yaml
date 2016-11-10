@@ -83,20 +83,6 @@ documentStoreApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
-sourceApi:
-    endpointConfiguration:
-        shortName: "nativeStore"
-        jerseyClient:
-            timeout: 5000ms
-        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
-        secondaryNodes: null
-    assetTypeRequestConfiguration:
-        numberOfAssetIdsPerAssetTypeRequest: 3
-        numberOfParallelAssetTypeRequests: 4
-    connectionConfig:
-        numberOfConnectionAttempts: 3
-        timeoutMultiplier: 1000
-        
 concordanceApi:
     endpointConfiguration:
         shortName: "concordance"

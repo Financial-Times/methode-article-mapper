@@ -1,13 +1,5 @@
 package com.ft.methodearticlemapper;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.UriBuilder;
-
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
@@ -27,19 +19,15 @@ import com.ft.methodearticlemapper.configuration.ConcordanceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.ConnectionConfiguration;
 import com.ft.methodearticlemapper.configuration.ConsumerConfiguration;
 import com.ft.methodearticlemapper.configuration.DocumentStoreApiConfiguration;
-import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
-import com.ft.methodearticlemapper.configuration.SourceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.MethodeArticleMapperConfiguration;
+import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
 import com.ft.methodearticlemapper.health.CanConnectToMessageQueueProducerProxyHealthcheck;
 import com.ft.methodearticlemapper.health.RemoteServiceHealthCheck;
 import com.ft.methodearticlemapper.messaging.MessageBuilder;
 import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
 import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
 import com.ft.methodearticlemapper.methode.MethodeArticleTransformerErrorEntityFactory;
-import com.ft.methodearticlemapper.methode.ContentSourceService;
-import com.ft.methodearticlemapper.methode.rest.RestContentSourceService;
 import com.ft.methodearticlemapper.resources.PostContentToTransformResource;
-import com.ft.methodearticlemapper.resources.GetTransformedContentResource;
 import com.ft.methodearticlemapper.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticlemapper.transformation.BylineProcessingFieldTransformerFactory;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
@@ -47,6 +35,15 @@ import com.ft.methodearticlemapper.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.sun.jersey.api.client.Client;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.UriBuilder;
+
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.setup.Bootstrap;
@@ -76,14 +73,11 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
         ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
-    	SourceApiConfiguration sourceApiConfiguration = configuration.getSourceApiConfiguration();
-        Client sourceApiClient = configureResilientClient(environment, sourceApiConfiguration.getEndpointConfiguration(), sourceApiConfiguration.getConnectionConfiguration());
-        
+
         EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
         UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
         URI documentStoreUri = documentStoreApiBuilder.build();
-        ContentSourceService contentSourceService = new RestContentSourceService(environment, sourceApiClient, sourceApiConfiguration);
-        
+
         ConcordanceApiConfiguration concordanceApiConfiguration=configuration.getConcordanceApiConfiguration();
         Client concordanceApiClient = configureResilientClient(environment, concordanceApiConfiguration.getEndpointConfiguration(), concordanceApiConfiguration.getConnectionConfiguration());
         EndpointConfiguration concordanceApiEndpointConfiguration = concordanceApiConfiguration.getEndpointConfiguration();
@@ -115,18 +109,11 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         registerHealthChecks(
                 environment,
                 buildClientHealthChecks(
-                        sourceApiClient, sourceApiConfiguration.getEndpointConfiguration(),
                         concordanceApiClient, concordanceApiConfiguration.getEndpointConfiguration(),
                         documentStoreApiClient, documentStoreApiConfiguration.getEndpointConfiguration()
                 )
         );
 
-        environment.jersey().register(
-                new GetTransformedContentResource(
-                        contentSourceService,
-                        eomFileProcessor
-                )
-        );
         environment.jersey().register(
                 new PostContentToTransformResource(
                         eomFileProcessor
@@ -176,22 +163,10 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     }
 
     private List<AdvancedHealthCheck> buildClientHealthChecks(
-            Client sourceApiClient, EndpointConfiguration sourceApiEndpointConfiguration,
             Client concordanceApiClient, EndpointConfiguration concordanceApiConfiguration,
             ResilientClient documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
 
         List<AdvancedHealthCheck> healthchecks = new ArrayList<>();
-        healthchecks.add(new RemoteServiceHealthCheck(
-                "Native Store Reader",
-                sourceApiClient,
-                sourceApiEndpointConfiguration.getHost(),
-                sourceApiEndpointConfiguration.getPort(),
-                "/__gtg",
-                "nativerw",
-                1,
-                "Unable to retrieve content from native store. Publication will fail.",
-                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/native-store-reader-writer")
-        );
         healthchecks.add(new RemoteServiceHealthCheck(
                 "Public Concordance API",
                 concordanceApiClient,
