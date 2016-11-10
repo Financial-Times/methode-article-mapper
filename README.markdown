@@ -79,6 +79,7 @@ You can find an example of a transformed article below.
   "webUrl": "http://www.ft.com/a-vanity-url"
   "publishReference": "tid_z9fak4nour",
   "lastModified": null
+  "canBeSyndicated": "yes"
 }
 ```
 
