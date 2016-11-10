@@ -10,6 +10,7 @@ import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
+import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.methode.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
@@ -52,6 +53,8 @@ import javax.xml.xpath.XPathFactory;
 
 public class EomFileProcessor {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
+
     enum TransformationMode {
         PUBLISH,
         PREVIEW
@@ -72,6 +75,7 @@ public class EomFileProcessor {
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
+
     public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
                             Brand financialTimesBrand) {
         this.bodyTransformer = bodyTransformer;
@@ -166,6 +170,8 @@ public class EomFileProcessor {
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
                 bylineTransformer, transactionId); //byline is optional
 
+        final Syndication canBeSyndicated = getSyndication(xpath, eomFile.getAttributes());
+
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
@@ -182,7 +188,33 @@ public class EomFileProcessor {
                 .withWebUrl(eomFile.getWebUrl())
                 .withPublishReference(transactionId)
                 .withLastModified(lastModified)
+                .withCanBeSyndicated(canBeSyndicated)
                 .build();
+    }
+
+    private Syndication getSyndication(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
+        String cmsContributorRights = xpath.evaluate("/ObjectMetadata/EditorialNotes/CCMS/CCMSContributorRights", attributesDocument);
+
+        if (cmsContributorRights.isEmpty()) {
+            return Syndication.VERIFY;
+        }
+
+        ContributorRights contributorRights;
+        try {
+             contributorRights = ContributorRights.fromString(cmsContributorRights);
+        } catch (ContributorRightsException e) {
+            LOGGER.warn("Found invalid CCMSContributorRights={} in article", cmsContributorRights, e);
+            return Syndication.VERIFY;
+        }
+
+        switch (contributorRights) {
+            case ALL_NO_PAYMENT:
+                return Syndication.YES;
+            case NO_RIGHTS:
+                return Syndication.NO;
+            default:
+                return Syndication.VERIFY;
+        }
     }
 
     private Standout buildStandoutSection(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {

@@ -33,7 +33,6 @@ You can find an example of a transformed article below.
 {
   "uuid": "59b2f3b4-69c2-11e6-a0b1-d87a9fea034f",
   "title": "Myanmar calls on Kofi Annan to head landmark Rohingya effort",
-  "titles": null,
   "alternativeTitles": {
     "promotionalTitle": "Annan to head new Myanmar Rohingya effort"
   },
@@ -69,8 +68,9 @@ You can find an example of a transformed article below.
     "enabled": true
   },
   "copyright": null,
-  "webUrl": "http://www.ft.com/a-vanity-url"
-  "publishReference": "tid_z9fak4nour",
-  "lastModified": null
+  "webUrl": null,
+  "publishReference": "tid_dn4kzqpoxf",
+  "lastModified": "2016-08-25T06:06:23.532Z",
+  "canBeSyndicated": "yes"
 }
 ```
