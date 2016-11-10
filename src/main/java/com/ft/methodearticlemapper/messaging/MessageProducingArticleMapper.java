@@ -24,7 +24,7 @@ public class MessageProducingArticleMapper {
         this.articleMapper = articleMapper;
     }
 
-    public void mapList(EomFile methodeContent, String transactionId, Date messageTimestamp) {
+    public void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) {
         Content article = articleMapper.processPublication(methodeContent, transactionId, messageTimestamp);
         producer.send(Collections.singletonList(messageBuilder.buildMessage(article)));
     }

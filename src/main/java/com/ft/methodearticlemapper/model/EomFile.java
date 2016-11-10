@@ -83,7 +83,6 @@ public class EomFile {
         private String workflowStatus;
         private String systemAttributes;
         private String usageTickets;
-        private Date lastModified;
         private URI webUrl;
 
         public Builder withUuid(String uuid) {
@@ -119,11 +118,6 @@ public class EomFile {
 
         public Builder withUsageTickets(String usageTickets) {
             this.usageTickets = usageTickets;
-            return this;
-        }
-
-        public Builder withLastModified(Date lastModified) {
-            this.lastModified = lastModified;
             return this;
         }
 

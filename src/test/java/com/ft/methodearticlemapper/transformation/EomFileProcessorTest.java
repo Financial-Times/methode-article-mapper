@@ -414,7 +414,6 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .withType("EOM::SomethingElse")
-                .withLastModified(null)
                 .build();
 
         expectedException.expect(MethodeContentNotEligibleForPublishException.class);
@@ -674,7 +673,6 @@ public class EomFileProcessorTest {
                 .withSystemAttributes(buildEomFileSystemAttributes(channel))
                 .withWorkflowStatus(workflowStatus)
                 .withWebUrl(webUrl)
-                .withLastModified(LAST_MODIFIED)
                 .build();
     }
 

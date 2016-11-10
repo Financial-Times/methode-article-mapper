@@ -40,7 +40,7 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
         LOG.info("Process message");
         try {
             EomFile methodeContent = objectMapper.reader(EomFile.class).readValue(message.getMessageBody());
-            msgProducingArticleMapper.mapList(methodeContent, transactionId, message.getMessageTimestamp());
+            msgProducingArticleMapper.mapArticle(methodeContent, transactionId, message.getMessageTimestamp());
         } catch (IOException e) {
             throw new MethodeArticleMapperException("Unable to process message", e);
         }
@@ -60,7 +60,12 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
                 LOG.warn("Message filter failure", e);
                 return false;
             }
-            return (EomFileType.EOMCompoundStory.getTypeName().equals(eomFile.getType()));
+            return isValidType(eomFile.getType());
         };
+    }
+
+    private boolean isValidType(String type) {
+        return (EomFileType.EOMCompoundStory.getTypeName().equals(type)) ||
+                (EomFileType.EOMStory.getTypeName().equals((type)));
     }
 }
