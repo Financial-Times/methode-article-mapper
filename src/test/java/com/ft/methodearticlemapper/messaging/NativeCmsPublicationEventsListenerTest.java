@@ -1,8 +1,10 @@
 package com.ft.methodearticlemapper.messaging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.SystemId;
+import com.ft.methodearticlemapper.methode.MethodeArticleMapperException;
 import com.ft.methodearticlemapper.model.EomFile;
 
 import org.junit.Before;
@@ -12,14 +14,17 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.Date;
 
 import javax.ws.rs.core.UriBuilder;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NativeCmsPublicationEventsListenerTest {
@@ -72,6 +77,48 @@ public class NativeCmsPublicationEventsListenerTest {
         );
 
         listener.onMessage(msg, TX_ID);
+
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void thatMessageIsIgnoredIfIOExceptionIsThrownDuringTypeFiltering() throws Exception {
+        Message mockMsg = mock(Message.class);
+        when(mockMsg.getOriginSystemId()).thenReturn(SystemId.systemIdFromCode(SYSTEM_CODE));
+
+        ObjectReader mockReader = mock(ObjectReader.class);
+        when(mockReader.readValue(mockMsg.getMessageBody())).thenThrow(IOException.class);
+
+        ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
+        when(mockObjectMapper.reader(EomFile.class)).thenReturn(mockReader);
+
+        NativeCmsPublicationEventsListener listener =
+                new NativeCmsPublicationEventsListener(mockObjectMapper, mapper, SYSTEM_CODE);
+
+        listener.onMessage(mockMsg, TX_ID);
+
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+    }
+
+    @Test (expected = MethodeArticleMapperException.class)
+    public void thatServiceExceptionIsThrownIfIOExceptionIsThrownDuringPreMapping() throws Exception {
+        EomFile mockEomFile = mock(EomFile.class);
+        when(mockEomFile.getType()).thenReturn("EOM::Story");
+
+        Message mockMsg = mock(Message.class);
+        when(mockMsg.getOriginSystemId()).thenReturn(SystemId.systemIdFromCode(SYSTEM_CODE));
+
+        ObjectReader mockReader = mock(ObjectReader.class);
+        when(mockReader.readValue(mockMsg.getMessageBody())).thenReturn(mockEomFile).thenThrow(IOException.class);
+
+        ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
+        when(mockObjectMapper.reader(EomFile.class)).thenReturn(mockReader);
+
+        NativeCmsPublicationEventsListener listener =
+                new NativeCmsPublicationEventsListener(mockObjectMapper, mapper, SYSTEM_CODE);
+
+        listener.onMessage(mockMsg, TX_ID);
 
         verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
     }
