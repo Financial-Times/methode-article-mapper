@@ -7,7 +7,7 @@ import com.ft.content.model.Content;
 import com.ft.messagequeueproducer.model.KeyedMessage;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.SystemId;
-import com.ft.methodearticlemapper.methode.MethodeArticleMapperException;
+import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;

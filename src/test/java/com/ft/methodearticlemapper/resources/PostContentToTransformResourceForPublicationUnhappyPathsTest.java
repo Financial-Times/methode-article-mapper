@@ -3,25 +3,27 @@ package com.ft.methodearticlemapper.resources;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.methodearticlemapper.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticlemapper.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticlemapper.methode.MethodeMissingBodyException;
-import com.ft.methodearticlemapper.methode.MethodeMissingFieldException;
-import com.ft.methodearticlemapper.methode.NotWebChannelException;
-import com.ft.methodearticlemapper.methode.SourceNotEligibleForPublishException;
-import com.ft.methodearticlemapper.methode.UnsupportedTypeException;
-import com.ft.methodearticlemapper.methode.UntransformableMethodeContentException;
-import com.ft.methodearticlemapper.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
+import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
+import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
+import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
+import com.ft.methodearticlemapper.exception.NotWebChannelException;
+import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
+import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,7 +41,6 @@ import static org.mockito.Mockito.when;
  */
 public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
 
-    private static final Date LAST_MODIFIED = new Date();
     private static final String INVALID_TYPE = "EOM::DistortedStory";
     private static final String TRANSACTION_ID = "tid_test";
     private static final boolean IS_PREVIEW_FALSE = false;
@@ -69,7 +70,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.UUID_REQUIRED.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.UUID_REQUIRED.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
         }
     }
@@ -85,7 +86,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.INVALID_UUID.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.INVALID_UUID.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
         }
     }
@@ -104,7 +105,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(String.format(ErrorMessage.CONFLICTING_UUID.toString(), pathUuid, payloadUuid)));
+                    equalTo(String.format(PostContentToTransformResource.ErrorMessage.CONFLICTING_UUID.toString(), pathUuid, payloadUuid)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_CONFLICT));
         }
     }
@@ -122,7 +123,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.METHODE_FILE_NOT_FOUND.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
         }
     }
@@ -180,7 +181,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.NOT_WEB_CHANNEL.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.NOT_WEB_CHANNEL.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
         }
     }
@@ -239,7 +240,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(),
+                    equalTo(String.format(PostContentToTransformResource.ErrorMessage.METHODE_FIELD_MISSING.toString(),
                             missingField)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
         }

@@ -8,9 +8,9 @@ import java.util.UUID;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.ft.methodearticlemapper.methode.EomFileType;
-import com.ft.methodearticlemapper.methode.NotWebChannelException;
-import com.ft.methodearticlemapper.methode.UnsupportedTypeException;
-import com.ft.methodearticlemapper.methode.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.NotWebChannelException;
+import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.TransformationException;
 import com.google.common.base.Strings;

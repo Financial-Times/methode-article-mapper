@@ -2,7 +2,7 @@ package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticlemapper.methode.DocumentStoreApiUnavailableException;
+import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
 import com.ft.methodearticlemapper.model.EomAssetType;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -31,7 +31,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

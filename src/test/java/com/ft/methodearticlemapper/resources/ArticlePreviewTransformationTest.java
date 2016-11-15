@@ -4,7 +4,7 @@ import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
-import com.ft.methodearticlemapper.methode.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;

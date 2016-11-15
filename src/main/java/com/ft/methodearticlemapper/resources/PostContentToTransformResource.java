@@ -4,13 +4,13 @@ import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
-import com.ft.methodearticlemapper.methode.MethodeContentInvalidException;
-import com.ft.methodearticlemapper.methode.MethodeContentNotEligibleForPublishException;
-import com.ft.methodearticlemapper.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticlemapper.methode.MethodeMissingBodyException;
-import com.ft.methodearticlemapper.methode.MethodeMissingFieldException;
-import com.ft.methodearticlemapper.methode.NotWebChannelException;
-import com.ft.methodearticlemapper.methode.UntransformableMethodeContentException;
+import com.ft.methodearticlemapper.exception.MethodeContentInvalidException;
+import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
+import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
+import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
+import com.ft.methodearticlemapper.exception.NotWebChannelException;
+import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 
@@ -98,6 +98,28 @@ public class PostContentToTransformResource {
 			throw ClientError.status(400)
 					.reason(ErrorMessage.INVALID_UUID)
 					.exception(iae);
+		}
+	}
+
+	enum ErrorMessage {
+		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
+		UUID_REQUIRED("No UUID was passed"),
+		INVALID_UUID("The UUID passed was invalid"),
+		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
+		NOT_WEB_CHANNEL("This is not a web channel story"),
+		METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
+		DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable"),
+		CONFLICTING_UUID("UUID in the url [%s] and uuid in the payload [%s] are not the same");
+
+		private final String text;
+
+		ErrorMessage(String text) {
+			this.text = text;
+		}
+
+		@Override
+		public String toString() {
+			return text;
 		}
 	}
 }

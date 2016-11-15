@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.content.model.Content;
 import com.ft.messaging.standards.message.v1.Message;
-import com.ft.methodearticlemapper.methode.MethodeArticleMapperException;
+import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -3,16 +3,18 @@ package com.ft.methodearticlemapper.resources;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.methodearticlemapper.methode.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
 import java.util.UUID;
+
+import javax.ws.rs.core.HttpHeaders;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,7 +56,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.UUID_REQUIRED.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.UUID_REQUIRED.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
         }
     }
@@ -70,7 +72,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(ErrorMessage.INVALID_UUID.toString()));
+                    equalTo(PostContentToTransformResource.ErrorMessage.INVALID_UUID.toString()));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_BAD_REQUEST));
         }
     }
@@ -89,7 +91,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(String.format(ErrorMessage.CONFLICTING_UUID.toString(), pathUuid, payloadUuid)));
+                    equalTo(String.format(PostContentToTransformResource.ErrorMessage.CONFLICTING_UUID.toString(), pathUuid, payloadUuid)));
             assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_CONFLICT));
         }
     }

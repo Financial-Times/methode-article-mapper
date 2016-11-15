@@ -1,4 +1,4 @@
-package com.ft.methodearticlemapper.methode;
+package com.ft.methodearticlemapper.exception;
 
 public class DocumentStoreApiUnavailableException extends RuntimeException {
 

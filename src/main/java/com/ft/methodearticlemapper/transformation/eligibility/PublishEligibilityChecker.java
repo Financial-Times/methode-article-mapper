@@ -1,10 +1,10 @@
 package com.ft.methodearticlemapper.transformation.eligibility;
 
-import com.ft.methodearticlemapper.methode.EmbargoDateInTheFutureException;
-import com.ft.methodearticlemapper.methode.MethodeMarkedDeletedException;
-import com.ft.methodearticlemapper.methode.MethodeMissingBodyException;
-import com.ft.methodearticlemapper.methode.MethodeMissingFieldException;
-import com.ft.methodearticlemapper.methode.SourceNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
+import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
+import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
+import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
+import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.ParsedEomFile;
 

@@ -6,7 +6,7 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticlemapper.methode.DocumentStoreApiUnavailableException;
+import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
 import com.google.common.base.Optional;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;

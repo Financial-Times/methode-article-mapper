@@ -5,7 +5,7 @@ import com.ft.message.consumer.MessageListener;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.SystemId;
 import com.ft.methodearticlemapper.methode.EomFileType;
-import com.ft.methodearticlemapper.methode.MethodeArticleMapperException;
+import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 import com.ft.methodearticlemapper.model.EomFile;
 
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.ft.methodearticlemapper.methode;
+package com.ft.methodearticlemapper.exception;
 
 /**
  * The post is a valid WordPress post, but cannot be published by the transformer.
