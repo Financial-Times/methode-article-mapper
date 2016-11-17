@@ -1,0 +1,135 @@
+financialTimesBrandId: http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54
+
+videoSiteConfig:
+    - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
+      template: "https://www.youtube.com/watch?v=%s"
+      embedded: true
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://www.youtube.com/embed/(?<id>[A-Za-z0-9_-]+)"
+      template: "https://www.youtube.com/watch?v=%s"
+      embedded: false
+      convertedParams:
+          - convertFromParameter: "start"
+            convertedToParameter: "t"
+            conversionTemplate: "%ss"
+      forceHTTPS: true
+
+    - urlPattern: "https?://youtu.be/(?<id>[A-Za-z0-9_-]+)"
+      template: "https://www.youtube.com/watch?v=%s"
+      embedded: false
+      retainedParams: ["t"]
+      forceHTTPS: true
+
+    - urlPattern: "https?://vimeo.com/(?<id>[0-9]+)"
+      template: null
+      embedded: false
+      forceHTTPS: true
+
+    - urlPattern: "//player.vimeo.com/video/(?<id>[0-9]+)"
+      template: "https://www.vimeo.com/%s"
+      embedded: true
+      forceHTTPS: true
+
+    - urlPattern: "https?://video.ft.com/(?<id>[0-9]+)/"
+      template: null
+      embedded: false
+
+interactiveGraphicsWhiteList: [ "http://interactive.ftdata.co.uk/(?!(_other/ben/twitter)|(widgets/audio)).*",
+    "http://(www.)?ft.com/ig/(?!widgets/widgetBrowser/audio).*",
+    "http://ig.ft.com/features.*",
+    "http://ft.cartodb.com/.*" ]
+
+server:
+
+  applicationConnectors:
+    - type: http
+      port: 11070
+
+  adminConnectors:
+      - type: http
+        port: 11071
+
+  requestLog:
+
+    appenders:
+
+      - type: console
+
+        # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
+        timeZone: UTC
+
+logging:
+
+  level: INFO
+
+  loggers:
+    io.dropwizard: DEBUG
+
+  appenders:
+
+    - type: console
+      
+documentStoreApi:
+    endpointConfiguration:
+        shortName: "documentStoreApi"
+        path: content/
+        jerseyClient:
+            timeout: 2000ms    
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
+        secondaryNodes: null
+    connectionConfig:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000
+
+concordanceApi:
+    endpointConfiguration:
+        shortName: "concordance"
+        jerseyClient:
+            timeout: 5000ms
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
+        secondaryNodes: null
+        path: "/concordances"
+    connectionConfiguration:
+        numberOfConnectionAttempts: 3
+        timeoutMultiplier: 1000  
+
+consumer:
+  jerseyClient:
+    connectionTimeout: 2 seconds
+    timeout: 25 seconds
+  messageConsumer:
+    queueProxyHost: http://localhost:8080
+    queue: kafka
+    topicName: NativeCmsPublicationEvents
+    groupName: MethodeArticleMapper
+    backoffPeriod: 10000
+    streamCount: 1
+    autoCommit: true
+    offsetReset: largest
+  healthCheck:
+    name: "Can connect consumer to kafka-proxy"
+    severity: 2
+    businessImpact: "Newly published Methode articles will not be available from the Content API"
+    technicalSummary: "Tests that kafka-proxy is reachable and message can be consumed"
+    panicGuideUrl: "https://panic.example.org/"
+  systemCode: methode-web-pub
+
+producer:
+  jerseyClient:
+    connectionTimeout: 2 seconds
+    timeout: 25 seconds
+  messageProducer:
+    proxyHostAndPort: localhost:8080
+    additionalHeaders:
+      Host: kafka
+    topicName: CmsPublicationEvents
+  healthCheck:
+    name: "Can connect producer to kafka-proxy"
+    severity: 2
+    businessImpact: "Newly published Methode articles will not be available from the Content API"
+    technicalSummary: "Tests that kafka-proxy is reachable and the CmsPublicationEvents topic exists"
+    panicGuideUrl: "https://panic.example.org/"
+
+contentUriPrefix: http://methode-article-mapper.svc.ft.com/content

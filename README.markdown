@@ -1,29 +1,22 @@
-# Methode Article Transformer
-Methode Article Transformer is a Dropwizard application which converts Methode articles to content according to UPP JSON format. 
-Transformation can be triggered by posting a Methode article or obtaining it from the Native Store.
+# Methode Article Mapper
+Methode Article Mapper is a Dropwizard application which consumes Kafka events and maps raw Methode articles to content according to UPP JSON format.
 
 ## Introduction
-This application depends on the following microrservices:
+This application depends on the following micro-services:
 
-* native-store-reader-writer;
+* kafka-proxy;
 * document store API;
 * concordance API.
 
 ## Running
-In order to run the project, please run com.ft.methodearticletransformer.MethodeArticleTransformerApplication with the following program
-parameters: server methode-article-transformer.yaml
 
-Please make sure you are running it in the correct working directory (methode-article-transformer-service).
+`java -jar target/methode-article-mapper-service-1.0-SNAPSHOT.jar server methode-article-mapper.yaml`
 
 ## Endpoints
 
-### Getting transformed articles from Native Store
+### Posting content to be mapped
 
-For getting transformed articles available in the native store, make a GET request to http://localhost:11070/content/{uuid} with Content-Type set to application/json.
-
-### Posting content to be transformed
-
-Alternatively, transformation can be triggered through a POST message containing a Methode article to http://localhost:11070/content-transform/{uuid}
+Transformation can be triggered through a POST message containing a Methode article to http://localhost:11070/content-transform/{uuid}
 The {uuid} value must match the UUID of the posted Methode article.
 In case the required transformation is triggered to provide an article preview, you need to set a `preview` query parameter in the URL with `true` as value: 
 e.g., http://localhost:11070/content-transform/d8bca7c3-e8b8-4dbf-9bd1-4df8d2e0c086?preview=true 
@@ -40,7 +33,6 @@ You can find an example of a transformed article below.
 {
   "uuid": "59b2f3b4-69c2-11e6-a0b1-d87a9fea034f",
   "title": "Myanmar calls on Kofi Annan to head landmark Rohingya effort",
-  "titles": null,
   "alternativeTitles": {
     "promotionalTitle": "Annan to head new Myanmar Rohingya effort"
   },
@@ -76,15 +68,9 @@ You can find an example of a transformed article below.
     "enabled": true
   },
   "copyright": null,
-  "webUrl": "http://www.ft.com/a-vanity-url"
-  "publishReference": "tid_z9fak4nour",
-  "lastModified": null
+  "webUrl": null,
+  "publishReference": "tid_dn4kzqpoxf",
+  "lastModified": "2016-08-25T06:06:23.532Z",
+  "canBeSyndicated": "yes"
 }
 ```
-
-
-
-
-
-
-

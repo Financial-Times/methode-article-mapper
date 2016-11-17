@@ -1,8 +1,5 @@
 target
 *.iml
 .idea
-.classpath
-.settings/
-.project
-/bin
-/target/
+buildurl.txt
+buildnum.txt
