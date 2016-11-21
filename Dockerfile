@@ -1,15 +1,12 @@
-FROM up-registry.ft.com/coco/dropwizardbase
+FROM coco/dropwizardbase:0.7.x-mvn333
 
 COPY . /
 
 RUN apk --update add git \
  && HASH=$(git log -1 --pretty=format:%H) \
- && BUILD_NUMBER=$(cat ../buildnum.txt) \
- && BUILD_URL=$(cat ../buildurl.txt) \
- && echo "DEBUG Jenkins job url: $BUILD_URL" \
- && mvn install -Dbuild.git.revision=$HASH -Dbuild.number=$BUILD_NUMBER -Dbuild.url=$BUILD_URL -Djava.net.preferIPv4Stack=true \
- && rm -f target/methode-article-mapper-service-*sources.jar \
- && mv target/methode-article-mapper-service-*.jar /methode-article-mapper-service.jar \
+ && mvn install -Dbuild.git.revision=$HASH -Djava.net.preferIPv4Stack=true \
+ && rm -f target/methode-article-mapper-*sources.jar \
+ && mv target/methode-article-mapper-*.jar /methode-article-mapper.jar \
  && mv methode-article-mapper.yaml /config.yaml \
  && apk del git \
  && rm -rf /var/cache/apk/* \
