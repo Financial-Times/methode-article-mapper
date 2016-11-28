@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation.eligibility;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
+import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
@@ -43,6 +44,8 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 public abstract class PublishEligibilityChecker {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PublishEligibilityChecker.class);
   protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
   
   protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
@@ -58,7 +61,8 @@ public abstract class PublishEligibilityChecker {
   private static final String EMBARGO_ATTR_XPATH = "/ObjectMetadata/EditorialNotes/EmbargoDate";
   private static final String LAST_PUB_DATE_ATTR_XPATH =
       "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
-  
+  private static final String OBJECT_LOCATION_ATTR_XPATH = "//ObjectMetadata/EditorialNotes/ObjectLocation";
+
   protected final XPath xpath = XPathFactory.newInstance().newXPath();
   protected final EomFile eomFile;
   protected final UUID uuid;
@@ -139,6 +143,7 @@ public abstract class PublishEligibilityChecker {
     } finally {
       checkType();
       checkWorkflowStatus();
+      checkObjectType();
     }
     
     checkNotEmbargoed();
@@ -153,33 +158,40 @@ public abstract class PublishEligibilityChecker {
     
     return parsedEomFile;
   }
-  
+
   public final ParsedEomFile getEligibleContentForPreview()
       throws ParserConfigurationException, SAXException, IOException,
              XPathExpressionException, TransformerException {
-    
+
     final Document eomFileDocument;
-    
+
     try {
       final DocumentBuilder documentBuilder = getDocumentBuilder();
-      
+
       attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
       eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
       rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
     } finally {
       checkType();
     }
-    
+
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
             attributesDocument, eomFile.getWebUrl());
-    
+
     return parsedEomFile;
   }
-  
+
   public abstract void checkType();
-  
+
   protected abstract void checkWorkflowStatus() throws XPathExpressionException;
-  
+
+  protected final void checkObjectType() throws XPathExpressionException {
+    String fileType = xpath.evaluate(OBJECT_LOCATION_ATTR_XPATH, attributesDocument);
+    if (Strings.isNullOrEmpty(fileType) || !fileType.toLowerCase().endsWith(".xml")) {
+      throw new UnsupportedObjectTypeException(uuid, fileType);
+    }
+  }
+
   protected final void checkNotEmbargoed()
       throws XPathExpressionException {
     

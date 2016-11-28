@@ -17,6 +17,7 @@ import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
@@ -55,9 +56,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -83,6 +82,7 @@ public class EomFileProcessorTest {
 
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String EXPECTED_TITLE = "And sacked chimney-sweep pumps boss full of mayonnaise.";
+    private static final String OBJECT_LOCATION="/FT/Content/Companies/Stories/Live/Trump election victory business reaction WO 9.xml";
     
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
@@ -120,6 +120,7 @@ public class EomFileProcessorTest {
                                 .withEmbargoDate("")
                                 .withSourceCode("FT")
                                 .withContributorRights("")
+                                .withObjectLocation(OBJECT_LOCATION)
                                 .build())
                 .withSystemAttributes(
                         buildEomFileSystemAttributes("FTcom"))
@@ -196,6 +197,23 @@ public class EomFileProcessorTest {
                 .withValuesFrom(createStandardEomFileWithEmbargoDateInTheFuture(uuid))
                 .build();
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+    }
+
+    @Test(expected = UnsupportedObjectTypeException.class)
+    public void shouldThrowUnsupportedObjectTypeExceptionIfObjectLocationEmpty() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWithObjectLocation(uuid, ""))
+                .build();
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
+    }
+
+    @Test(expected = UnsupportedObjectTypeException.class)
+    public void shouldThrowUnsupportedObjectTypeExceptionIfObjectTypeIsNotSupported() {
+        String objectLocation = "/FT/Content/Companies/Stories/Live/Trump election victory business reaction WO 9.doc";
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWithObjectLocation(uuid, objectLocation))
+                .build();
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
     }
 
     @Test(expected = NotWebChannelException.class)
@@ -557,6 +575,7 @@ public class EomFileProcessorTest {
                         .withScoop("Yes")
                         .withEmbargoDate("")
                         .withSourceCode("FT")
+                        .withObjectLocation(OBJECT_LOCATION)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom"))
@@ -676,54 +695,59 @@ public class EomFileProcessorTest {
      */
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "");
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "");
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION);
+    }
+
+    private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString,
-                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "");
+                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "");
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "");
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "");
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "");
+                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "");
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION);
     }
     
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
                                           String channel, String sourceCode, String workflowStatus,
                                           String lastPublicationDateAsString, String initialPublicationDateAsString,
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
-                                          String eomType, URI webUrl, String contributorRights) {
+                                          String eomType, URI webUrl, String contributorRights, String objectLocation) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -746,6 +770,7 @@ public class EomFileProcessorTest {
                         .withEmbargoDate(embargoDate)
                         .withSourceCode(sourceCode)
                         .withContributorRights(contributorRights)
+                        .withObjectLocation(objectLocation)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes(channel))
