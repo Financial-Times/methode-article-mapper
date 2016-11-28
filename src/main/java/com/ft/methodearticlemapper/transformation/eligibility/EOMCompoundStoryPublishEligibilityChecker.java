@@ -6,7 +6,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import com.ft.methodearticlemapper.methode.EomFileType;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
-import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
 
@@ -20,9 +20,9 @@ public class EOMCompoundStoryPublishEligibilityChecker
   }
   
   @Override
-  public void checkType() {
+  public void checkEomType() {
     if (!TYPE.equals(eomFile.getType())) {
-      throw new UnsupportedTypeException(uuid, eomFile.getType());
+      throw new UnsupportedEomTypeException(uuid, eomFile.getType());
     }
   }
   

@@ -1,15 +1,15 @@
 package com.ft.methodearticlemapper.transformation.eligibility;
 
+import com.google.common.base.Strings;
+
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
-import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
+import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.ParsedEomFile;
-
-import com.google.common.base.Strings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,6 @@ import javax.xml.xpath.XPathFactory;
 
 public abstract class PublishEligibilityChecker {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PublishEligibilityChecker.class);
   protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
   
   protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
@@ -141,13 +140,13 @@ public abstract class PublishEligibilityChecker {
       eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
       rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
     } finally {
-      checkType();
+      checkEomType();
       checkWorkflowStatus();
-      checkObjectType();
     }
-    
+
     checkNotEmbargoed();
     checkSource();
+    checkObjectType();
     checkNotDeleted();
     checkChannel();
     checkPublicationDate();
@@ -172,7 +171,7 @@ public abstract class PublishEligibilityChecker {
       eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
       rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
     } finally {
-      checkType();
+      checkEomType();
     }
 
     ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
@@ -181,7 +180,7 @@ public abstract class PublishEligibilityChecker {
     return parsedEomFile;
   }
 
-  public abstract void checkType();
+  public abstract void checkEomType();
 
   protected abstract void checkWorkflowStatus() throws XPathExpressionException;
 

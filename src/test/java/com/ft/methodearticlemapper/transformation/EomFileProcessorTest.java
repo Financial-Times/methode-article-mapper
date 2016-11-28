@@ -18,7 +18,7 @@ import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
-import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -288,7 +288,7 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
     
-    @Test(expected = UnsupportedTypeException.class)
+    @Test(expected = UnsupportedEomTypeException.class)
     public void shouldThrowUnsupportedTypeExceptionIfPublishingDwc() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createDwcComponentFile(uuid))

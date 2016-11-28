@@ -9,7 +9,7 @@ import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
-import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -136,7 +136,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     public void shouldThrow404ExceptionWhenPublicationNotEligibleForPublishing() {
 
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
-                thenThrow(new UnsupportedTypeException(uuid, "EOM::DistortedStory"));
+                thenThrow(new UnsupportedEomTypeException(uuid, "EOM::DistortedStory"));
         try {
             postContentToTransformResource.doTransform(uuid.toString(), false,  eomFile, httpHeaders);
             fail("No exception was thrown, but expected one.");
