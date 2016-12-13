@@ -113,7 +113,7 @@ consumer:
     severity: 2
     businessImpact: "Newly published Methode articles will not be available from the Content API"
     technicalSummary: "Tests that kafka-proxy is reachable and message can be consumed"
-    panicGuideUrl: "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/kafka-rest-proxy-runbook"
+    panicGuideUrl: "https://dewey.ft.com/kafka-proxy.html"
   systemCode: methode-web-pub
 
 producer:
@@ -130,6 +130,6 @@ producer:
     severity: 2
     businessImpact: "Newly published Methode articles will not be available from the Content API"
     technicalSummary: "Tests that kafka-proxy is reachable and the CmsPublicationEvents topic exists"
-    panicGuideUrl: "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/kafka-rest-proxy-runbook"
+    panicGuideUrl: "https://dewey.ft.com/kafka-proxy.html"
 
 contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
