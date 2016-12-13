@@ -43,22 +43,35 @@ public class MessageBuilder {
                 RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC))
         );
 
+        return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
+    }
+
+    Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified) {
+        MessageBody msgBody = new MessageBody(
+                null,
+                contentUriBuilder.build(uuid).toString(),
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC))
+        );
+        return buildMessage(uuid, publishReference, msgBody);
+    }
+
+    private Message buildMessage(String uuid, String publishReference, MessageBody msgBody) {
         Message msg;
         try {
+            String messageBody = objectMapper.writeValueAsString(msgBody);
             msg = new Message.Builder().withMessageId(UUID.randomUUID())
                     .withMessageType(CMS_CONTENT_PUBLISHED)
                     .withMessageTimestamp(new Date())
                     .withOriginSystemId(systemId)
                     .withContentType("application/json")
-                    .withMessageBody(objectMapper.writeValueAsString(msgBody))
+                    .withMessageBody(messageBody)
                     .build();
 
-            msg.addCustomMessageHeader(TRANSACTION_ID_HEADER, content.getPublishReference());
-            msg = KeyedMessage.forMessageAndKey(msg, content.getUuid());
+            msg.addCustomMessageHeader(TRANSACTION_ID_HEADER, publishReference);
+            msg = KeyedMessage.forMessageAndKey(msg, uuid);
         } catch (JsonProcessingException e) {
             throw new MethodeArticleMapperException("unable to write JSON for message", e);
         }
-
         return msg;
     }
 
