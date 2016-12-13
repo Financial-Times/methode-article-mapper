@@ -1,14 +1,20 @@
 package com.ft.methodearticlemapper.messaging;
 
-import com.ft.content.model.Content;
 import com.ft.messagequeueproducer.MessageProducer;
+import com.ft.messaging.standards.message.v1.Message;
+import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Date;
 
 public class MessageProducingArticleMapper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageProducingArticleMapper.class);
 
     private final MessageBuilder messageBuilder;
     private final MessageProducer producer;
@@ -24,8 +30,18 @@ public class MessageProducingArticleMapper {
         this.articleMapper = articleMapper;
     }
 
-    public void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) {
-        Content article = articleMapper.processPublication(methodeContent, transactionId, messageTimestamp);
-        producer.send(Collections.singletonList(messageBuilder.buildMessage(article)));
+    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) {
+        Message message;
+        try {
+            message = messageBuilder.buildMessage(
+                    articleMapper.processPublication(methodeContent, transactionId, messageTimestamp)
+            );
+        } catch (MethodeMarkedDeletedException e) {
+            LOGGER.info("Article {} is marked as deleted.", methodeContent.getUuid());
+            message = messageBuilder.buildMessageForDeletedMethodeContent(
+                    methodeContent.getUuid(), transactionId, messageTimestamp
+            );
+        }
+        producer.send(Collections.singletonList(message));
     }
 }

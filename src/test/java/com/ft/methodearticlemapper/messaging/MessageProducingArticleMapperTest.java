@@ -3,6 +3,7 @@ package com.ft.methodearticlemapper.messaging;
 import com.ft.content.model.Content;
 import com.ft.messagequeueproducer.MessageProducer;
 import com.ft.messaging.standards.message.v1.Message;
+import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageProducingListMapperTest {
+public class MessageProducingArticleMapperTest {
 
     @Mock
     private MessageBuilder messageBuilder;
@@ -58,7 +59,7 @@ public class MessageProducingListMapperTest {
     }
 
     @Test
-    public void thatCreatedMessageIsSentToQueue() {
+    public void thatMessageWithContentIsSentToQueue() {
         Content mockedContent = mock(Content.class);
         Message mockedMessage = mock(Message.class);
         when(mapper.processPublication(any(), anyString(), any())).thenReturn(mockedContent);
@@ -67,5 +68,20 @@ public class MessageProducingListMapperTest {
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", new Date());
 
         verify(producer).send(Collections.singletonList(mockedMessage));
+    }
+
+    @Test
+    public void thatMessageWithContentMarkedAsDeletedIsSentToQueue() {
+        String tid = "tid";
+        Date date = new Date();
+        String uuid = UUID.randomUUID().toString();
+        Message deletedContentMsg = mock(Message.class);
+
+        when(mapper.processPublication(any(), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date)).thenReturn(deletedContentMsg);
+
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date);
+
+        verify(producer).send(Collections.singletonList(deletedContentMsg));
     }
 }

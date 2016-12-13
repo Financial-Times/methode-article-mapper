@@ -26,6 +26,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,7 +49,6 @@ public class MessageBuilderTest {
     @Before
     public void setUp() {
         messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper);
-
     }
 
     @Test
@@ -90,6 +90,27 @@ public class MessageBuilderTest {
         assertThat(msgContent.get("contentUri"), equalTo(contentUri.toString()));
         assertThat(msgContent.get("lastModified"), equalTo(lastModified));
         assertThat(msgContent.get("payload"), instanceOf(Map.class));
+    }
+
+
+    @Test
+    public void thatMessageForDeletedContentIsCorrect() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        UriBuilder contentUriBuilder = mock(UriBuilder.class);
+        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper);
+
+        URI contentUri = URI.create("foobar");
+        when(contentUriBuilder.build(UUID.toString())).thenReturn(contentUri);
+
+        String lastModified = "2016-11-02T07:59:24.715Z";
+        Date lastModifiedDate = Date.from(Instant.parse(lastModified));
+
+        Message msg = messageBuilder.buildMessageForDeletedMethodeContent(UUID.toString(), "tid", lastModifiedDate);
+
+        Map<String, Object> msgContent = objectMapper.reader(Map.class).readValue(msg.getMessageBody());
+        assertThat(msgContent.get("contentUri"), equalTo(contentUri.toString()));
+        assertThat(msgContent.get("lastModified"), equalTo(lastModified));
+        assertNull(msgContent.get("payload"));
     }
 
 
