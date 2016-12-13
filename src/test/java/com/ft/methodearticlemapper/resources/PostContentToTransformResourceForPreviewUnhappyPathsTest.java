@@ -3,7 +3,7 @@ package com.ft.methodearticlemapper.resources;
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
-import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 
@@ -105,7 +105,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
         UUID randomUuid = UUID.randomUUID();
         when(eomFile.getUuid()).thenReturn(randomUuid.toString());
         when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
-                thenThrow(new UnsupportedTypeException(randomUuid, INVALID_TYPE));
+                thenThrow(new UnsupportedEomTypeException(randomUuid, INVALID_TYPE));
         try {
             postContentToTransformResource.doTransform(randomUuid.toString(), IS_PREVIEW_TRUE, eomFile, httpHeaders);
             fail("No exception was thrown, but expected one.");

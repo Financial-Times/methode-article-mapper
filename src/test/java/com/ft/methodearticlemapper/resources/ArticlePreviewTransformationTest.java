@@ -4,7 +4,7 @@ import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
-import com.ft.methodearticlemapper.exception.UnsupportedTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
@@ -73,7 +73,7 @@ public class ArticlePreviewTransformationTest {
     /**
      * Tests that validation fails for an article preview when the EomFile type is not an EOM::CompoundStory.
      */
-    @Test (expected = UnsupportedTypeException.class)
+    @Test (expected = UnsupportedEomTypeException.class)
     public void failWhenInvalidEomFileType() {
         EomFile eomFile = mock(EomFile.class);
 

@@ -70,6 +70,11 @@ class EomFileAttributesBuilder {
         return this;
     }
 
+    EomFileAttributesBuilder withObjectLocation(String objectLocation) {
+        this.attributes.put("objectLocation", objectLocation);
+        return this;
+    }
+
     String build() {
         Template mustache = Mustache.compiler().compile(attributesTemplate);
         return mustache.execute(attributes);
