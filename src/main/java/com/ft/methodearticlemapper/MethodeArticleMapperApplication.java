@@ -176,7 +176,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 "public-concordances-api",
                 1,
                 "Articles will not be annotated with company tearsheet information.",
-                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/public-concordances-api")
+                "https://dewey.ft.com/up-mam.html")
         );
         healthchecks.add(new RemoteServiceHealthCheck(
                 "Document Store API",
@@ -187,7 +187,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 "document-store-api",
                 1,
                 "Clients will be unable to query the content service using alternative identifiers.",
-                "https://sites.google.com/a/ft.com/ft-technology-service-transition/home/run-book-library/documentstoreapi")
+                "https://dewey.ft.com/up-mam.html")
         );
         return healthchecks;
     }
