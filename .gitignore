@@ -3,3 +3,7 @@ target
 .idea
 buildurl.txt
 buildnum.txt
+/bin/
+/.classpath
+/.project
+/.settings/

@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
@@ -28,8 +30,12 @@ public class TearSheetLinksTransformer implements XPathHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(TearSheetLinksTransformer.class);
 
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
-	private final static String CONCEPT_TAG="ft-concept";
+	private final static String CONCEPT_TAG="concept";
 	private final static String COMPANY_TYPE= "http://www.ft.com/ontology/company/PublicCompany";
+	private static final Pattern CONCEPT_UUID = Pattern.compile(
+	    ".*/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$",
+	    Pattern.CASE_INSENSITIVE);
+	
 	private final Client client;
 	private final URI concordanceAPI;
 	
@@ -89,7 +95,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 				String conceptApiUrl = getConcordanceByTMEId(concordances, id);
 				if (StringUtils.isNotBlank(conceptApiUrl)) {
 					Element newElement = el.getOwnerDocument().createElement(CONCEPT_TAG);
-					newElement.setAttribute("url", conceptApiUrl);
+					newElement.setAttribute("id", getConceptIdFromUrl(conceptApiUrl));
 					newElement.setAttribute("type", COMPANY_TYPE);
 					newElement.setTextContent(el.getTextContent());
 					el.getParentNode().replaceChild(newElement, el);
@@ -109,5 +115,14 @@ public class TearSheetLinksTransformer implements XPathHandler {
 			return concordance.get().getConcept().getApiUrl();
 		}
 		return null;
+	}
+	
+	private String getConceptIdFromUrl(String apiUrl) {
+	  Matcher m = CONCEPT_UUID.matcher(apiUrl);
+	  if (m.matches()) {
+	    return m.group(1);
+	  }
+	  
+	  throw new IllegalArgumentException("url did not contain a concept UUID");
 	}
 }

@@ -48,7 +48,8 @@ public class TearSheetLinksTransformerTest {
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
 	private static final String TME_ID_1 = "tmeid1";
 	private static final String TME_ID_2 = "tmeid2";
-	private static final String API_URL2 ="http://api.ft.com/organisations/"+ UUID.randomUUID().toString();
+	private static final String ORG_ID = UUID.randomUUID().toString();
+	private static final String API_URL2 ="http://api.ft.com/organisations/"+ ORG_ID;
 	
 	private static final String BODY_1 ="<body> <p>Some text</p></body>";
 	
@@ -112,7 +113,7 @@ public class TearSheetLinksTransformerTest {
 	}
 	
 	@Test
-	public void shouldTransformCompnyIfCompanyTMEIdIsConcorded() throws Exception {
+	public void shouldTransformCompanyIfCompanyTMEIdIsConcorded() throws Exception {
 		doc = db.parse(new InputSource(new StringReader(BODY_3)));
 		nodes = getNodeList(doc);
 		String queryUrl = CONCORDANCE_URL + TME_ID_2;
@@ -121,9 +122,13 @@ public class TearSheetLinksTransformerTest {
 		String actual = serializeDocument(doc);
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
-				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" url=\"" + API_URL2
-				+ "\">concorded company name</ft-concept></p>" + "</body>";
-		assertThat(actual, equalTo(expectedBody));
+				+ "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+				+ "\">concorded company name</concept></p>" + "</body>";
+//		assertThat(actual, equalTo(expectedBody));
+
+        Diff diff = new Diff(expectedBody, actual);
+        diff.overrideElementQualifier(new ElementNameAndTextQualifier());
+        XMLAssert.assertXMLEqual(diff, true);
 	}	
 	
 	
@@ -138,8 +143,8 @@ public class TearSheetLinksTransformerTest {
 
 		String expectedBody = "<body>" + "<p>Some text</p>"
 				+"<p><company CompositeId=\"tmeid1\" DICoSEDOL=\"2297907\"> not concorded company name</company></p>"
-				+ "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" url=\"" + API_URL2
-				+ "\">concorded company name</ft-concept></p>" + "</body>";
+				+ "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+				+ "\">concorded company name</concept></p>" + "</body>";
 
 		Diff diff = new Diff(expectedBody, actual);
 		diff.overrideElementQualifier(new ElementNameAndTextQualifier());
