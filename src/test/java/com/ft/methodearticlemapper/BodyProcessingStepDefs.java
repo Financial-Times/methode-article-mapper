@@ -32,6 +32,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.stax2.ri.evt.EntityReferenceEventImpl;
 import org.codehaus.stax2.ri.evt.StartElementEventImpl;
 import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.ElementNameAndTextQualifier;
+import org.custommonkey.xmlunit.XMLAssert;
 
 import com.ft.bodyprocessing.richcontent.ConvertParameters;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
@@ -334,7 +336,10 @@ public class BodyProcessingStepDefs {
     @When("^it is transformed, (.+) becomes (.+)$")
     public void the_before_becomes_after(String before, String after) throws Throwable {
         transformedBodyText = bodyTransformer.transform(wrapped(before), TRANSACTION_ID);
-        assertThat("before and after do not match", transformedBodyText, equalTo(wrapped(after)));
+        
+        Diff diff = new Diff(wrapped(after), transformedBodyText);
+        diff.overrideElementQualifier(new ElementNameAndTextQualifier());
+        XMLAssert.assertXMLEqual("transformed body does not match expected text", diff, true);
     }
 
     private String wrapped(String bodyMarkUp) {
