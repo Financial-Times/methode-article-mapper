@@ -1,5 +1,7 @@
 package com.ft.methodearticlemapper.transformation.eligibility;
 
+import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
+
 import com.google.common.base.Strings;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
@@ -44,12 +46,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 public abstract class PublishEligibilityChecker {
-
   protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
   
   protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
-  protected static final String SOURCE_ATTR_XPATH =
-      "/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode";
   
   private static final Logger LOG = LoggerFactory.getLogger(PublishEligibilityChecker.class);
   
@@ -240,7 +239,7 @@ public abstract class PublishEligibilityChecker {
     return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
   }
   
-  protected final boolean isFTSource(String source) {
+  public static boolean isFTSource(String source) {
     return "FT".equals(source);
   }
   

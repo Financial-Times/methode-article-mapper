@@ -31,7 +31,12 @@ public class NativeCmsPublicationEventsListenerTest {
 
     private static final String SYSTEM_CODE = "foobar";
     private static final String TX_ID = "tid_foo";
-
+    private static final String ATTRIBUTES_DOC_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        + "<!DOCTYPE ObjectMetadata SYSTEM \"/SysConfig/Classify/FTStories/classify.dtd\">"
+        + "<ObjectMetadata><EditorialNotes><Sources><Source><SourceCode>%s</SourceCode></Source></Sources></EditorialNotes></ObjectMetadata>";
+    
+    private static final String ATTRIBUTES_WITH_FT_SOURCE = String.format(ATTRIBUTES_DOC_TEMPLATE, "FT");
+    
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
@@ -50,7 +55,7 @@ public class NativeCmsPublicationEventsListenerTest {
                 mapper,
                 SYSTEM_CODE);
     }
-
+    
     @Test
     public void thatMessageIsIgnoredIfUnexpectedSystemIDHeaderFound() throws Exception {
         Message msg = new Message();
@@ -72,6 +77,7 @@ public class NativeCmsPublicationEventsListenerTest {
                 objectMapper.writeValueAsString(
                         new EomFile.Builder()
                                 .withType("foobaz")
+                                .withAttributes(ATTRIBUTES_WITH_FT_SOURCE)
                                 .build()
                 )
         );
@@ -105,7 +111,8 @@ public class NativeCmsPublicationEventsListenerTest {
     public void thatServiceExceptionIsThrownIfIOExceptionIsThrownDuringPreMapping() throws Exception {
         EomFile mockEomFile = mock(EomFile.class);
         when(mockEomFile.getType()).thenReturn("EOM::Story");
-
+        when(mockEomFile.getAttributes()).thenReturn(ATTRIBUTES_WITH_FT_SOURCE);
+        
         Message mockMsg = mock(Message.class);
         when(mockMsg.getOriginSystemId()).thenReturn(SystemId.systemIdFromCode(SYSTEM_CODE));
 
@@ -132,6 +139,7 @@ public class NativeCmsPublicationEventsListenerTest {
                 objectMapper.writeValueAsString(
                         new EomFile.Builder()
                                 .withType("EOM::CompoundStory")
+                                .withAttributes(ATTRIBUTES_WITH_FT_SOURCE)
                                 .build()
                 )
         );
@@ -150,6 +158,7 @@ public class NativeCmsPublicationEventsListenerTest {
                 objectMapper.writeValueAsString(
                         new EomFile.Builder()
                                 .withType("EOM::Story")
+                                .withAttributes(ATTRIBUTES_WITH_FT_SOURCE)
                                 .build()
                 )
         );
@@ -157,5 +166,24 @@ public class NativeCmsPublicationEventsListenerTest {
         listener.onMessage(msg, TX_ID);
 
         verify(mapper).mapArticle(Matchers.any(), eq(TX_ID), Matchers.any());
+    }
+
+    @Test
+    public void thatMessageIsIgnoredIfNotSupportedSourceCode() throws Exception {
+      Message msg = new Message();
+      msg.setOriginSystemId(SystemId.systemIdFromCode(SYSTEM_CODE));
+      msg.setMessageTimestamp(new Date());
+      msg.setMessageBody(
+              objectMapper.writeValueAsString(
+                      new EomFile.Builder()
+                              .withType("EOM::CompoundStory")
+                              .withAttributes(String.format(ATTRIBUTES_DOC_TEMPLATE, "wibble"))
+                              .build()
+              )
+      );
+
+      listener.onMessage(msg, TX_ID);
+      
+      verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
     }
 }
