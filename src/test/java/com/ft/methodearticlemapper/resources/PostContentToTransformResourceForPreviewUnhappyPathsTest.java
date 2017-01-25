@@ -97,11 +97,11 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     }
 
     /**
-     * Tests that the response contains http code 404 and the correct message
+     * Tests that the response contains http code 422 and the correct message
      * when the type property in the json payload is not EOM::CompoundStory.
      */
     @Test
-    public void shouldThrow404ExceptionWhenPreviewNotEligibleForPublishing() {
+    public void shouldThrow422ExceptionWhenPreviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
         when(eomFile.getUuid()).thenReturn(randomUuid.toString());
         when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
@@ -112,7 +112,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("[%s] not an EOM::CompoundStory.", INVALID_TYPE)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 }
