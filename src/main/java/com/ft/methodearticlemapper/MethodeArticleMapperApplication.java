@@ -66,7 +66,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
             .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
         
     	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
-    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content/*", "/content-transform/*");
+    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content-transform/*", "/map");
 
     	BuildInfoResource buildInfoResource = new BuildInfoResource();
     	environment.jersey().register(buildInfoResource);

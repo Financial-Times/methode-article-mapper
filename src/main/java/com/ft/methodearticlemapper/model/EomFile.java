@@ -13,6 +13,13 @@ public class EomFile {
     public static final String WEB_READY = "Stories/WebReady";
     public static final String WEB_CHANNEL = "FTcom";
 
+    public static final String SOURCE_ATTR_XPATH =
+        "/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode";
+
+    public static final String LAST_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
+
+    public static final String INITIAL_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
+
     private final String uuid;
     private final String type;
 

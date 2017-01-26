@@ -129,11 +129,11 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     }
 
     /**
-     * Tests that the response contains http code 404 and the correct message
+     * Tests that the response contains http code 422 and the correct message
      * when the type property in the json payload is not EOM::CompoundStory.
      */
     @Test
-    public void shouldThrow404ExceptionWhenPublicationNotEligibleForPublishing() {
+    public void shouldThrow422ExceptionWhenPublicationNotEligibleForPublishing() {
 
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(uuid, "EOM::DistortedStory"));
@@ -143,16 +143,16 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("[%s] not an EOM::CompoundStory.", INVALID_TYPE)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 404 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when content that marked with an active publication embargo date is attempted to be published.
      */
     @Test
-    public void shouldThrow404ExceptionWhenEmbargoDateInTheFuture() {
+    public void shouldThrow422ExceptionWhenEmbargoDateInTheFuture() {
         Date embargoDate = new Date();
 
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
@@ -163,16 +163,16 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("Embargo date [%s] is in the future", embargoDate)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 404 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when web channel element in eom file system attributes property indicates that the content is not eligible for publication.
      */
     @Test
-    public void shouldThrow404ExceptionWhenNotWebChannel() {
+    public void shouldThrow422ExceptionWhenNotWebChannel() {
 
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new NotWebChannelException(uuid));
@@ -182,16 +182,16 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(PostContentToTransformResource.ErrorMessage.NOT_WEB_CHANNEL.toString()));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 404 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when web source element in eom file attributes property indicates that the content is not eligible for publication.
      */
     @Test
-    public void shouldThrow404ExceptionWhenSourceNotFt() {
+    public void shouldThrow422ExceptionWhenSourceNotFt() {
         final String sourceOtherThanFt = "Pepsi";
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new SourceNotEligibleForPublishException(uuid, sourceOtherThanFt));
@@ -201,16 +201,16 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("Source [%s] not eligible for publishing", sourceOtherThanFt)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 404 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when content with workFlow status ineligible for publication is attempted to be published.
      */
     @Test
-    public void shouldThrow404ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
+    public void shouldThrow422ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
 
         final String workflowStatusNotEligibleForPublishing = "Story/Edit";
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
@@ -222,16 +222,16 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format("Workflow status [%s] not eligible for publishing",
                             workflowStatusNotEligibleForPublishing)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 404 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when content with missing publish date is attempted to be published.
      */
     @Test
-    public void shouldThrow404ExceptionWhenMethodeFieldMissing() {
+    public void shouldThrow422ExceptionWhenMethodeFieldMissing() {
         final String missingField = "publishedDate";
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingFieldException(uuid, missingField));
@@ -242,17 +242,17 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
                     equalTo(String.format(PostContentToTransformResource.ErrorMessage.METHODE_FIELD_MISSING.toString(),
                             missingField)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
+            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
 
     /**
-     * Tests that response contains 418 error code and the correct message
+     * Tests that response contains 422 error code and the correct message
      * when eom-file with missing or empty value property or its value property translates into
      * an empty content body is attempted to be published.
      */
     @Test
-    public void shouldThrow418ExceptionWhenMethodeBodyMissing() {
+    public void shouldThrow422ExceptionWhenMethodeBodyMissing() {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingBodyException(uuid));
         try {
@@ -261,17 +261,17 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         } catch (WebApplicationClientException e) {
             assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
                     containsString(uuid.toString()));
-            assertThat(e.getResponse().getStatus(), equalTo(418));
+            assertThat(e.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
         }
     }
     
     
-   /* Tests that response contains 418 error code and the correct message
+   /* Tests that response contains 422 error code and the correct message
     * when eom-file with missing or empty value property or its value property translates into
     * an blank content body post transformation is attempted to be published.
     */
    @Test
-   public void shouldThrow418ExceptionWhenMethodeBodyBlankAfterTransformation() {
+   public void shouldThrow422ExceptionWhenMethodeBodyBlankAfterTransformation() {
        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                thenThrow(new UntransformableMethodeContentException(uuid.toString(), "it's blank"));
        try {
@@ -280,7 +280,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
        } catch (WebApplicationClientException e) {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
                    containsString("it's blank"));
-           assertThat(e.getResponse().getStatus(), equalTo(418));
+           assertThat(e.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
        }
    }
 }

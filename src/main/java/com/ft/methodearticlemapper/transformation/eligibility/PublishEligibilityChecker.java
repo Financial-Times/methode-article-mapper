@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation.eligibility;
 
-import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
+
 import com.google.common.base.Strings;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
@@ -49,8 +50,6 @@ public abstract class PublishEligibilityChecker {
     protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
 
     protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
-    protected static final String SOURCE_ATTR_XPATH =
-            "/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode";
 
     private static final Logger LOG = LoggerFactory.getLogger(PublishEligibilityChecker.class);
 
@@ -152,10 +151,8 @@ public abstract class PublishEligibilityChecker {
         checkInitialPublicationDate();
         checkBody();
 
-        ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
+        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
                 attributesDocument, eomFile.getWebUrl());
-
-        return parsedEomFile;
     }
 
     public final ParsedEomFile getEligibleContentForPreview()
@@ -174,10 +171,8 @@ public abstract class PublishEligibilityChecker {
             checkEomType();
         }
 
-        ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
+        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
                 attributesDocument, eomFile.getWebUrl());
-
-        return parsedEomFile;
     }
 
     public abstract void checkEomType();
@@ -224,7 +219,7 @@ public abstract class PublishEligibilityChecker {
     protected final void checkPublicationDate()
             throws XPathExpressionException {
 
-        String lastPublicationDateAsString = xpath.evaluate(EomFileProcessor.LAST_PUBLICATION_DATE_XPATH, attributesDocument);
+        String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributesDocument);
         if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
             throw new MethodeMissingFieldException(uuid, "publishedDate");
         }
@@ -233,7 +228,7 @@ public abstract class PublishEligibilityChecker {
     protected final void checkInitialPublicationDate()
             throws XPathExpressionException {
 
-        String dateAsString = xpath.evaluate(EomFileProcessor.INITIAL_PUBLICATION_DATE_XPATH, attributesDocument);
+        String dateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributesDocument);
         if (Strings.isNullOrEmpty(dateAsString)) {
             LOG.info("Value missing for initial publication date, content: " + uuid);
         }
@@ -249,7 +244,7 @@ public abstract class PublishEligibilityChecker {
         return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
     }
 
-    protected final boolean isFTSource(String source) {
+    public static boolean isFTSource(String source) {
         return "FT".equals(source);
     }
 
