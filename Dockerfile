@@ -4,6 +4,8 @@ COPY . /
 
 RUN apk --update add git \
  && HASH=$(git log -1 --pretty=format:%H) \
+ && VERSION=$(git tag -l --contains $HASH) \
+ && mvn versions:set -DnewVersion=$VERSION \
  && mvn install -Dbuild.git.revision=$HASH -Djava.net.preferIPv4Stack=true \
  && rm -f target/methode-article-mapper-*sources.jar \
  && mv target/methode-article-mapper-*.jar /methode-article-mapper.jar \
