@@ -61,6 +61,8 @@ public class EomFileProcessor {
     }
 
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
+    public static final String LAST_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
+    public static final String INITIAL_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
@@ -144,8 +146,9 @@ public class EomFileProcessor {
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, doc)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(doc, xpath);
 
-        final String lastPublicationDateAsString = xpath
-                .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", eomFile.getAttributes());
+        final String lastPublicationDateAsString = xpath.evaluate(LAST_PUBLICATION_DATE_XPATH, eomFile.getAttributes());
+
+        final String firstPublicationDateAsString = xpath.evaluate(INITIAL_PUBLICATION_DATE_XPATH, eomFile.getAttributes());
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, eomFile.getAttributes());
 
@@ -189,6 +192,7 @@ public class EomFileProcessor {
                 .withPublishReference(transactionId)
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
+                .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
                 .build();
     }
 
