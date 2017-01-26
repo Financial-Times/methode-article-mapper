@@ -1,10 +1,12 @@
 FROM coco/dropwizardbase:0.7.x-mvn333
 
-COPY . /
+COPY . /methode-article-mapper
 
 RUN apk --update add git \
+ && cd methode-article-mapper \
  && HASH=$(git log -1 --pretty=format:%H) \
- && VERSION=$(git tag -l --contains $HASH) \
+ && TAG=$(git tag -l --contains $HASH) \
+ && VERSION=${TAG:-untagged} \
  && mvn versions:set -DnewVersion=$VERSION \
  && mvn install -Dbuild.git.revision=$HASH -Djava.net.preferIPv4Stack=true \
  && rm -f target/methode-article-mapper-*sources.jar \
