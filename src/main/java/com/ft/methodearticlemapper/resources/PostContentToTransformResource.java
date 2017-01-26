@@ -26,7 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-@Path("/content-transform")
+@Path("/")
 public class PostContentToTransformResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
@@ -40,15 +40,26 @@ public class PostContentToTransformResource {
 
 	@POST
 	@Timed
-	@Path("/{uuidString}")
+	@Path("/content-transform/{uuidString}")
 	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
 	public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
-
-		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders, uuid, "Publish request");
+		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
 
 		validateUuid(uuid, eomFile);
 
+		return processRequest(uuid, preview, eomFile, transactionId);
+	}
+
+	@POST
+	@Timed
+	@Path("/map")
+	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
+	public final Content map(EomFile eomFile, @Context HttpHeaders httpHeaders) {
+        return doTransform(eomFile.getUuid(), false, eomFile, httpHeaders);
+	}
+
+	private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
 		try {
 			if(preview) {
 				return eomFileProcessor.processPreview(eomFile, transactionId);
@@ -61,20 +72,20 @@ public class PostContentToTransformResource {
 					.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
 					.exception(e);
 		}catch(NotWebChannelException e){
-			throw ClientError.status(404)
+			throw ClientError.status(422)
 					.reason(ErrorMessage.NOT_WEB_CHANNEL)
 					.exception(e);
 		}catch(MethodeMissingFieldException e){
-			throw ClientError.status(404)
+			throw ClientError.status(422)
 					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
 					.exception(e);
 		}catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
-			throw ClientError.status(418)
+			throw ClientError.status(422)
 					.error(e.getMessage())
 					.exception(e);
 		}catch(MethodeContentNotEligibleForPublishException e){
-			throw ClientError.status(404)
-					.context(uuid.toString())
+			throw ClientError.status(422)
+					.context(uuid)
 					.error(e.getMessage())
 					.exception(e);
 		}
@@ -82,7 +93,7 @@ public class PostContentToTransformResource {
 
 	private void validateUuid(String uuid, EomFile eomFile) {
 		if (uuid == null) {
-			throw ClientError.status(400).context(uuid).reason(ErrorMessage.UUID_REQUIRED).exception();
+			throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
 		}
 		try {
 
@@ -102,7 +113,7 @@ public class PostContentToTransformResource {
 	}
 
 	enum ErrorMessage {
-		METHODE_FILE_NOT_FOUND("Article cannot be found in Methode"),
+		METHODE_FILE_NOT_FOUND("Article marked as deleted"),
 		UUID_REQUIRED("No UUID was passed"),
 		INVALID_UUID("The UUID passed was invalid"),
 		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
