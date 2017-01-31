@@ -75,6 +75,11 @@ class EomFileAttributesBuilder {
         return this;
     }
 
+    EomFileAttributesBuilder withSubscriptionLevel(String subscriptionLevel) {
+        this.attributes.put("subscriptionLevel", subscriptionLevel);
+        return this;
+    }
+
     String build() {
         Template mustache = Mustache.compiler().compile(attributesTemplate);
         return mustache.execute(attributes);

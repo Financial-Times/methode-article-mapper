@@ -1,3 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE ObjectMetadata SYSTEM "/SysConfig/Classify/FTStories/classify.dtd">
-<ObjectMetadata>\n</ObjectMetadata>
+<ObjectMetadata>
+    <OutputChannels>
+        <DIFTcom>
+            <DIFTcomSubscriptionLevel>0</DIFTcomSubscriptionLevel>
+        </DIFTcom>
+    </OutputChannels>
+</ObjectMetadata>

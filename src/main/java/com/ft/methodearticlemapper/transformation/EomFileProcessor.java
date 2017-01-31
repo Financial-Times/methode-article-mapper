@@ -1,9 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
-
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
+import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
@@ -11,11 +9,13 @@ import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
+import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +24,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +38,17 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 public class EomFileProcessor {
 
@@ -72,6 +71,8 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
+    private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
+
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final Brand financialTimesBrand;
@@ -173,6 +174,8 @@ public class EomFileProcessor {
 
         final Syndication canBeSyndicated = getSyndication(xpath, eomFile.getAttributes());
 
+        final AccessLevel accessLevel = getAccessLevel(xpath, eomFile.getAttributes(), eomFile.getUUID());
+
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
@@ -191,6 +194,7 @@ public class EomFileProcessor {
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
                 .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
+                .withAccessLevel(accessLevel)
                 .build();
     }
 
@@ -216,6 +220,24 @@ public class EomFileProcessor {
                 return Syndication.NO;
             default:
                 return Syndication.VERIFY;
+        }
+    }
+
+    private AccessLevel getAccessLevel(final XPath xpath, Document attributes, UUID uuid) throws XPathExpressionException {
+        SubscriptionLevel subscriptionLevel;
+        try {
+            subscriptionLevel = SubscriptionLevel.fromInt(Integer.parseInt(xpath.evaluate(SUBSCRIPTION_LEVEL_XPATH, attributes)));
+        } catch (InvalidSubscriptionLevelException | NumberFormatException e) {
+            throw new UntransformableMethodeContentException(uuid.toString(), e.getMessage());
+        }
+
+        switch (subscriptionLevel) {
+            case SHOWCASE:
+                return AccessLevel.FREE;
+            case PREMIUM:
+                return AccessLevel.PREMIUM;
+            default:
+                return AccessLevel.SUBSCRIBED;
         }
     }
 
