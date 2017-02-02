@@ -59,6 +59,7 @@ You can find an example of a transformed article below.
   "externalBinaryUrl": null,
   "members": null,
   "mainImage": "af6b69ba-69ce-11e6-3ed7-4fe0459ea806",
+  "storyPackage": "d6fc8da7-fc26-4187-a38a-291442408969",
   "standout": {
     "editorsChoice": false,
     "exclusive": false,

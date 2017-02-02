@@ -168,6 +168,8 @@ public class EomFileProcessor {
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, eomFile.getAttributes(), mainImage, transformedBody);
 
+        final String storyPackage = Strings.emptyToNull(StringUtils.substringAfter(xpath.evaluate(EomFile.STORY_PACKAGE_LINK_XPATH, doc), "uuid="));
+
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
                 bylineTransformer, transactionId); //byline is optional
 
@@ -191,6 +193,7 @@ public class EomFileProcessor {
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
                 .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
+                .withStoryPackage(storyPackage)
                 .build();
     }
 
