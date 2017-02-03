@@ -130,7 +130,7 @@ public class EomFileProcessorTest {
             UUID mainImageUuid,
             String promoTitle,
             String standfirst,
-            String byline, UUID storyPackageUuid) {
+            String byline, String storyPackageUuid) {
 
         Template mustache = Mustache.compiler().escapeHTML(false).compile(ARTICLE_TEMPLATE);
 
@@ -489,14 +489,21 @@ public class EomFileProcessorTest {
     @Test
     public void testStoryPackage() {
         final UUID storyPackageUuid = UUID.randomUUID();
-        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid);
+        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid.toString());
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getStoryPackage(), notNullValue());
         assertThat(content.getStoryPackage(), equalTo(storyPackageUuid.toString()));
     }
 
-    private static EomFile createStandardEomFileWithStoryPackage(UUID uuid, UUID storyPackageUuid) {
+    @Test(expected = UntransformableMethodeContentException.class)
+    public void testStoryPackageWithInvalidUuid() {
+        final String storyPackageUuid = "invalid-uuid";
+        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid);
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+    }
+
+    private static EomFile createStandardEomFileWithStoryPackage(UUID uuid, String storyPackageUuid) {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())

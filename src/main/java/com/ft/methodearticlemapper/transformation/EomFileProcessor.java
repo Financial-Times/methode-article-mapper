@@ -168,7 +168,7 @@ public class EomFileProcessor {
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
         String postProcessedBody = putMainImageReferenceInBodyXml(xpath, eomFile.getAttributes(), mainImage, transformedBody);
 
-        final String storyPackage = Strings.emptyToNull(StringUtils.substringAfter(xpath.evaluate(EomFile.STORY_PACKAGE_LINK_XPATH, doc), "uuid="));
+        final String storyPackage = getStoryPackage(xpath, doc, uuid);
 
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
                 bylineTransformer, transactionId); //byline is optional
@@ -195,6 +195,18 @@ public class EomFileProcessor {
                 .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
                 .withStoryPackage(storyPackage)
                 .build();
+    }
+
+    private String getStoryPackage(XPath xpath, Document doc, UUID articleUuid) throws XPathExpressionException {
+        String storyPackageUuid = Strings.emptyToNull(StringUtils.substringAfter(xpath.evaluate(EomFile.STORY_PACKAGE_LINK_XPATH, doc), "uuid="));
+        if (storyPackageUuid == null) {
+            return null;
+        }
+        try {
+           return UUID.fromString(storyPackageUuid).toString();
+        } catch (IllegalArgumentException e) {
+            throw new UntransformableMethodeContentException(articleUuid.toString(), String.format("Article has an invalid reference to a story package - invalid uuid=%s", storyPackageUuid));
+        }
     }
 
     private Syndication getSyndication(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
