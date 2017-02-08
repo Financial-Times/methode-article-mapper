@@ -49,7 +49,6 @@ import java.util.regex.Pattern;
 
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
-    private static final Logger LOG = LoggerFactory.getLogger(MethodeLinksBodyProcessor.class);
 	private static final String CONTENT_TAG = "content";
 	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
@@ -193,7 +192,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         ClientResponse clientResponse = null;
 		URI contentUrl = contentUrlBuilder().build(idToCheck);
 		try {
-   			LOG.info("Calling DSAPI at: " + contentUrl);
 			clientResponse = documentStoreApiClient.resource(contentUrl)
 					.accept(MediaType.APPLICATION_JSON_TYPE)
 					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
