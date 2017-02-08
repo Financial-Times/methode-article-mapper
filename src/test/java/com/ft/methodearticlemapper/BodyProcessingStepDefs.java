@@ -168,34 +168,49 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
         rulesAndHandlers.put( "REPLACE BLOCK ELEMENT TAG", "SimpleTransformBlockElementEventHandler");
 
+        documentStoreApiClient = mockDocumentStoreApiClient();
+        concordanceApiClient = mockConcordanceApiClient();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
+    }
 
+    private Client mockConcordanceApiClient() throws Exception{
+        WebResource webResourceNotFound = mock(WebResource.class);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
+        when(webResourceNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
+
+        WebResource webResource = mock(WebResource.class);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
+
+        when(webResource.get(Concordances.class)).thenReturn(concordancesResponse);
+        ClientResponse clientResponseSuccess = mock(ClientResponse.class);
+        when(webResource.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
+        InputStream inputStream = mock(InputStream.class);
+        when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
+        when(clientResponseSuccess.getStatus()).thenReturn(200);
+        return concordanceApiClient;
+    }
+
+    private ResilientClient mockDocumentStoreApiClient(){
         WebResource webResourceNotFound = mock(WebResource.class);
         when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResourceNotFound);
         WebResource.Builder builderNotFound = mock(WebResource.Builder.class);
         when(webResourceNotFound.accept(any(MediaType[].class))).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyObject())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
-        
+
         WebResource webResource = mock(WebResource.class);
         WebResource.Builder builder = mock(WebResource.Builder.class);
         when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
-        when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
-        when(builderNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
-        when(webResource.header(anyString(), anyString())).thenReturn(builder);
         ClientResponse clientResponseSuccess = mock(ClientResponse.class);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
         InputStream inputStream = mock(InputStream.class);
         when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
         when(clientResponseSuccess.getStatus()).thenReturn(200);
-
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
+        return documentStoreApiClient;
     }
-
 
     @Given("^the Methode body contains (.+) the transformer will (.+) and the replacement tag will be (.+)$")
     public void the_methode_body_contains_transforms_into(String tagname, String rule, String replacement) throws Throwable {
