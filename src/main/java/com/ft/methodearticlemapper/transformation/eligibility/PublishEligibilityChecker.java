@@ -46,209 +46,204 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 public abstract class PublishEligibilityChecker {
+  protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
+  
+  protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
+  
+  private static final Logger LOG = LoggerFactory.getLogger(PublishEligibilityChecker.class);
+  
+  private static final String BODY_TAG_XPATH = "/doc/story/text/body";
+  
+  private static final String MARKED_DELETED_ATTR_XPATH =
+      "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted";
+  private static final String EMBARGO_ATTR_XPATH = "/ObjectMetadata/EditorialNotes/EmbargoDate";
+  private static final String LAST_PUB_DATE_ATTR_XPATH =
+      "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
+  private static final String OBJECT_LOCATION_ATTR_XPATH = "//ObjectMetadata/EditorialNotes/ObjectLocation";
 
-    protected static final String METHODE_XML_DATE_TIME_FORMAT = "yyyyMMddHHmmss";
+  protected final XPath xpath = XPathFactory.newInstance().newXPath();
+  protected final EomFile eomFile;
+  protected final UUID uuid;
+  protected final String transactionId;
+  protected String rawBody;
+  protected Document attributesDocument;
+  protected Document systemAttributesDocument;
 
-    protected static final String CHANNEL_SYSTEM_ATTR_XPATH = "/props/productInfo/name";
-
-    private static final Logger LOG = LoggerFactory.getLogger(PublishEligibilityChecker.class);
-
-    private static final String BODY_TAG_XPATH = "/doc/story/text/body";
-
-    private static final String MARKED_DELETED_ATTR_XPATH =
-            "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted";
-    private static final String EMBARGO_ATTR_XPATH = "/ObjectMetadata/EditorialNotes/EmbargoDate";
-    private static final String OBJECT_LOCATION_ATTR_XPATH = "//ObjectMetadata/EditorialNotes/ObjectLocation";
-
-    protected final XPath xpath = XPathFactory.newInstance().newXPath();
-    protected final EomFile eomFile;
-    protected final UUID uuid;
-    protected final String transactionId;
-    protected String rawBody;
-    protected Document attributesDocument;
-    protected Document systemAttributesDocument;
-
-    public PublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
-        this.eomFile = eomFile;
-        this.uuid = uuid;
-        this.transactionId = transactionId;
+  public PublishEligibilityChecker(EomFile eomFile, UUID uuid, String transactionId) {
+    this.eomFile = eomFile;
+    this.uuid = uuid;
+    this.transactionId = transactionId;
+  }
+  
+  protected static Date toDate(String dateString, String format) {
+    if (dateString == null || dateString.equals("")) {
+      return null;
     }
 
-    protected static Date toDate(String dateString, String format) {
-        if (dateString == null || dateString.equals("")) {
-            return null;
-        }
+    try {
+      DateFormat dateFormat = new SimpleDateFormat(format);
+      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+      return dateFormat.parse(dateString);
+    } catch (ParseException e) {
+      LOG.warn("Error parsing date " + dateString, e);
+      return null;
+    }
+  }
+  
+  public static PublishEligibilityChecker forEomFile(EomFile eomFile, UUID uuid, String transactionId) {
+    String type = eomFile.getType();
 
-        try {
-            DateFormat dateFormat = new SimpleDateFormat(format);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-            return dateFormat.parse(dateString);
-        } catch (ParseException e) {
-            LOG.warn("Error parsing date " + dateString, e);
-            return null;
-        }
+    if (EOMStoryPublishEligibilityChecker.TYPE.equals(type)) {
+      return new EOMStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
     }
 
-    public static PublishEligibilityChecker forEomFile(EomFile eomFile, UUID uuid, String transactionId) {
-        String type = eomFile.getType();
+    return new EOMCompoundStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
+  }
 
-        if (EOMStoryPublishEligibilityChecker.TYPE.equals(type)) {
-            return new EOMStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
-        }
+  private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
+      final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
-        return new EOMCompoundStoryPublishEligibilityChecker(eomFile, uuid, transactionId);
+      return documentBuilderFactory.newDocumentBuilder();
+  }
+
+  private String retrieveField(XPath xpath, String expression, Document eomFileDocument) throws TransformerException, XPathExpressionException {
+      final Node node = (Node) xpath.evaluate(expression, eomFileDocument, XPathConstants.NODE);
+      return getNodeAsString(node);
+  }
+
+  private String getNodeAsString(Node node) throws TransformerException {
+      return convertNodeToStringReturningEmptyIfNull(node);
+  }
+
+  private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
+      StringWriter writer = new StringWriter();
+      final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+      Transformer transformer = transformerFactory.newTransformer();
+      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+      transformer.transform(new DOMSource(node), new StreamResult(writer));
+      return writer.toString();
+  }
+  
+  public final ParsedEomFile getEligibleContentForPublishing()
+      throws ParserConfigurationException, SAXException, IOException,
+             XPathExpressionException, TransformerException {
+    
+    final Document eomFileDocument;
+    
+    try {
+      final DocumentBuilder documentBuilder = getDocumentBuilder();
+      
+      attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+      systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+      eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+      rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+    } finally {
+      checkEomType();
+      checkWorkflowStatus();
     }
 
-    private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    checkNotEmbargoed();
+    checkSource();
+    checkObjectType();
+    checkNotDeleted();
+    checkChannel();
+    checkPublicationDate();
+    checkBody();
+    
+    ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
+            attributesDocument, eomFile.getWebUrl());
+    
+    return parsedEomFile;
+  }
 
-        return documentBuilderFactory.newDocumentBuilder();
+  public final ParsedEomFile getEligibleContentForPreview()
+      throws ParserConfigurationException, SAXException, IOException,
+             XPathExpressionException, TransformerException {
+
+    final Document eomFileDocument;
+
+    try {
+      final DocumentBuilder documentBuilder = getDocumentBuilder();
+
+      attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+      eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+      rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+    } finally {
+      checkEomType();
     }
 
-    private String retrieveField(XPath xpath, String expression, Document eomFileDocument) throws TransformerException, XPathExpressionException {
-        final Node node = (Node) xpath.evaluate(expression, eomFileDocument, XPathConstants.NODE);
-        return getNodeAsString(node);
+    ParsedEomFile parsedEomFile = new ParsedEomFile(uuid, eomFileDocument, rawBody,
+            attributesDocument, eomFile.getWebUrl());
+
+    return parsedEomFile;
+  }
+
+  public abstract void checkEomType();
+
+  protected abstract void checkWorkflowStatus() throws XPathExpressionException;
+
+  protected final void checkObjectType() throws XPathExpressionException {
+    String fileType = xpath.evaluate(OBJECT_LOCATION_ATTR_XPATH, attributesDocument);
+    if (Strings.isNullOrEmpty(fileType) || !fileType.toLowerCase().endsWith(".xml")) {
+      throw new UnsupportedObjectTypeException(uuid, fileType);
     }
+  }
 
-    private String getNodeAsString(Node node) throws TransformerException {
-        return convertNodeToStringReturningEmptyIfNull(node);
+  protected final void checkNotEmbargoed()
+      throws XPathExpressionException {
+    
+    String embargoDateAsAString = xpath.evaluate(EMBARGO_ATTR_XPATH, attributesDocument);
+    if (!Strings.isNullOrEmpty(embargoDateAsAString)) {
+      Date embargoDate = toDate(embargoDateAsAString, METHODE_XML_DATE_TIME_FORMAT);
+      if (embargoDate.after(new Date())) {
+        throw new EmbargoDateInTheFutureException(uuid, embargoDate);
+      }
     }
+  }
 
-    private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
-        StringWriter writer = new StringWriter();
-        final TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        transformer.transform(new DOMSource(node), new StreamResult(writer));
-        return writer.toString();
+  protected void checkSource() throws XPathExpressionException {
+    String sourceCode = xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
+    if (!isFTSource(sourceCode)) {
+      throw new SourceNotEligibleForPublishException(uuid, sourceCode);
     }
+  }
 
-    public final ParsedEomFile getEligibleContentForPublishing()
-            throws ParserConfigurationException, SAXException, IOException,
-            XPathExpressionException, TransformerException {
-
-        final Document eomFileDocument;
-
-        try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-
-            attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-            systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
-            eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-            rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
-        } finally {
-            checkEomType();
-            checkWorkflowStatus();
-        }
-
-        checkNotEmbargoed();
-        checkSource();
-        checkObjectType();
-        checkNotDeleted();
-        checkChannel();
-        checkPublicationDate();
-        checkInitialPublicationDate();
-        checkBody();
-
-        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-                attributesDocument, eomFile.getWebUrl());
+  protected final void checkNotDeleted()
+      throws XPathExpressionException {
+    
+    String markedDeletedString = xpath.evaluate(MARKED_DELETED_ATTR_XPATH, attributesDocument);
+    if (Boolean.parseBoolean(markedDeletedString)) {
+      throw new MethodeMarkedDeletedException(uuid);
     }
-
-    public final ParsedEomFile getEligibleContentForPreview()
-            throws ParserConfigurationException, SAXException, IOException,
-            XPathExpressionException, TransformerException {
-
-        final Document eomFileDocument;
-
-        try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-
-            attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-            eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-            rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
-        } finally {
-            checkEomType();
-        }
-
-        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-                attributesDocument, eomFile.getWebUrl());
+  }
+  
+  protected abstract void checkChannel() throws XPathExpressionException;
+  
+  protected final void checkPublicationDate()
+      throws XPathExpressionException {
+    
+    String lastPublicationDateAsString = xpath.evaluate(LAST_PUB_DATE_ATTR_XPATH, attributesDocument);
+    if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
+      throw new MethodeMissingFieldException(uuid, "publishedDate");
     }
+  }
 
-    public abstract void checkEomType();
-
-    protected abstract void checkWorkflowStatus() throws XPathExpressionException;
-
-    protected final void checkObjectType() throws XPathExpressionException {
-        String fileType = xpath.evaluate(OBJECT_LOCATION_ATTR_XPATH, attributesDocument);
-        if (Strings.isNullOrEmpty(fileType) || !fileType.toLowerCase().endsWith(".xml")) {
-            throw new UnsupportedObjectTypeException(uuid, fileType);
-        }
+  protected final void checkBody() {
+    if (Strings.isNullOrEmpty(rawBody)) {
+      throw new MethodeMissingBodyException(uuid);
     }
+  }
 
-    protected final void checkNotEmbargoed()
-            throws XPathExpressionException {
-
-        String embargoDateAsAString = xpath.evaluate(EMBARGO_ATTR_XPATH, attributesDocument);
-        if (!Strings.isNullOrEmpty(embargoDateAsAString)) {
-            Date embargoDate = toDate(embargoDateAsAString, METHODE_XML_DATE_TIME_FORMAT);
-            if (embargoDate.after(new Date())) {
-                throw new EmbargoDateInTheFutureException(uuid, embargoDate);
-            }
-        }
-    }
-
-    protected void checkSource() throws XPathExpressionException {
-        String sourceCode = xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
-        if (!isFTSource(sourceCode)) {
-            throw new SourceNotEligibleForPublishException(uuid, sourceCode);
-        }
-    }
-
-    protected final void checkNotDeleted()
-            throws XPathExpressionException {
-
-        String markedDeletedString = xpath.evaluate(MARKED_DELETED_ATTR_XPATH, attributesDocument);
-        if (Boolean.parseBoolean(markedDeletedString)) {
-            throw new MethodeMarkedDeletedException(uuid);
-        }
-    }
-
-    protected abstract void checkChannel() throws XPathExpressionException;
-
-    protected final void checkPublicationDate()
-            throws XPathExpressionException {
-
-        String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributesDocument);
-        if (Strings.isNullOrEmpty(lastPublicationDateAsString)) {
-            throw new MethodeMissingFieldException(uuid, "publishedDate");
-        }
-    }
-
-    protected final void checkInitialPublicationDate()
-            throws XPathExpressionException {
-
-        String dateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributesDocument);
-        if (Strings.isNullOrEmpty(dateAsString)) {
-            LOG.info("Value missing for initial publication date, content: " + uuid);
-        }
-    }
-
-    protected final void checkBody() {
-        if (Strings.isNullOrEmpty(rawBody)) {
-            throw new MethodeMissingBodyException(uuid);
-        }
-    }
-
-    protected final boolean isValidWorkflowStatusForWebPublication(String workflowStatus) {
-        return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
-    }
-
-    public static boolean isFTSource(String source) {
-        return "FT".equals(source);
-    }
-
-    protected final boolean isWebChannel(String channel) {
-        return EomFile.WEB_CHANNEL.equals(channel);
-    }
+  protected final boolean isValidWorkflowStatusForWebPublication(String workflowStatus) {
+    return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
+  }
+  
+  public static boolean isFTSource(String source) {
+    return "FT".equals(source);
+  }
+  
+  protected final boolean isWebChannel(String channel) {
+      return EomFile.WEB_CHANNEL.equals(channel);
+  }
 }
