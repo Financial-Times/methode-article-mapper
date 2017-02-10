@@ -28,7 +28,6 @@ public class RemoteServiceHealthCheckTest {
 
     private static String HOST = "localhost";
     private static int PORT = 9080;
-    private static String HOST_HEADER = "upp-service-header";
 
     private RemoteServiceHealthCheck healthCheck;
 
@@ -45,9 +44,7 @@ public class RemoteServiceHealthCheckTest {
         URI goodToGoUri = UriBuilder.fromPath("__gtg")
                 .scheme("http").host(HOST).port(PORT).build();
         when(mockClient.resource(goodToGoUri)).thenReturn(mockResource);
-        WebResource.Builder builder = mock(WebResource.Builder.class);
-        when(mockResource.header("Host", HOST_HEADER)).thenReturn(builder);
-        when(builder.get(ClientResponse.class)).thenReturn(mockClientResponse);
+        when(mockResource.get(ClientResponse.class)).thenReturn(mockClientResponse);
 
 
         healthCheck = new RemoteServiceHealthCheck(
@@ -56,7 +53,6 @@ public class RemoteServiceHealthCheckTest {
                 HOST,
                 PORT,
                 "/__gtg",
-                HOST_HEADER,
                 1,
                 "very high impact!",
                 "http://a.panic.guide.url/"
