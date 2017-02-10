@@ -75,6 +75,11 @@ class EomFileAttributesBuilder {
         return this;
     }
 
+    EomFileAttributesBuilder withContentPackage(String contentPackage) {
+        this.attributes.put("contentPackage", contentPackage);
+        return this;
+    }
+
     String build() {
         Template mustache = Mustache.compiler().compile(attributesTemplate);
         return mustache.execute(attributes);
