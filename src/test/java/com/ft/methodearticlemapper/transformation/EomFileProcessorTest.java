@@ -135,14 +135,15 @@ public class EomFileProcessorTest {
                                             String promoTitle,
                                             String standfirst,
                                             String byline) {
-        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null);
+        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null, null);
     }
 
     private static byte[] buildEomFileValueWithContentPackage(UUID mainImageUuid,
                                                               String promoTitle,
                                                               String standfirst,
                                                               String byline,
-                                                              ContentPackage contentPackage) {
+                                                              String contentPackageDesc,
+                                                              String contentPackageListHref) {
 
         Template mustache = Mustache.compiler().escapeHTML(false).compile(ARTICLE_TEMPLATE);
 
@@ -152,10 +153,10 @@ public class EomFileProcessorTest {
         attributes.put("standfirst", standfirst);
         attributes.put("byline", byline);
 
-        if (contentPackage != null) {
+        if (contentPackageDesc != null && contentPackageListHref != null) {
             attributes.put("contentPackage", Boolean.TRUE);
-            attributes.put("contentPackageDesc", contentPackage.getDescription());
-            attributes.put("contentPackageLink", contentPackage.getListLink());
+            attributes.put("contentPackageDesc", contentPackageDesc);
+            attributes.put("contentPackageListHref", contentPackageListHref);
         }
 
         return mustache.execute(attributes).getBytes(UTF_8);
@@ -693,45 +694,74 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testContentPackageWithRegularContent() throws Exception {
-        testContentPackageIsPresent("<p>Description</p>", UUID.randomUUID().toString());
+    public void testContentPackageWithFormattedDescAndHref() throws Exception {
+        final String description = "<p>Description</p>";
+        final String listId = UUID.randomUUID().toString();
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
+
+        testContentPackageIsPresent(description, listHref, listId);
     }
 
     @Test
-    public void testContentPackageWithNonFormattedDesc() throws Exception {
-        testContentPackageIsPresent("Description", UUID.randomUUID().toString());
+    public void testContentPackageWithNonFormattedDescAndDummyTextInLink() throws Exception {
+        final String description = "Description";
+        final String listId = UUID.randomUUID().toString();
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"><?EM-dummyText ...?>\\r\\n</a>";
+
+        testContentPackageIsPresent(description, listHref, listId);
     }
 
-    @Test
-    public void testContentPackageWithNonUuidLink() throws Exception {
-        testContentPackageIsPresent("Description", "<?EM-dummyText ...?>");
-    }
-
-    private void testContentPackageIsPresent(String description, String listLink) {
-        final ContentPackage contentPackage = new ContentPackage(description, listLink);
-
-        final EomFile eomFile = createStandartEomFileWithContentPackage(UUID.randomUUID(), contentPackage);
+    private void testContentPackageIsPresent(final String description,
+                                             final String listHref,
+                                             final String listId) {
+        final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getContentPackage(), is(notNullValue()));
         assertThat(content.getContentPackage().getDescription(), is(description));
-        assertThat(content.getContentPackage().getListLink(), is(listLink));
+        assertThat(content.getContentPackage().getListId(), is(listId));
     }
 
     @Test
     public void testContentPackageWithEmptyDescription() throws Exception {
-        testContentPackageIsAbsent("", UUID.randomUUID().toString());
+        final String description = "";
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + UUID.randomUUID().toString() + "\"/>";
+
+        testContentPackageIsAbsent(description, listHref);
     }
 
     @Test
-    public void testContentPackageWithEmptyLink() throws Exception {
-        testContentPackageIsAbsent("Description", "");
+    public void testContentPackageWithEmptyHref() throws Exception {
+        final String description = "<p>Description</p>";
+        final String listHref = "";
+
+        testContentPackageIsAbsent(description, listHref);
     }
 
-    private void testContentPackageIsAbsent(String description, String listLink) {
-        final ContentPackage contentPackage = new ContentPackage(description, listLink);
+    @Test
+    public void testContentPackageWithNoUuidInHref() throws Exception {
+        final String description = "<p>Description</p>";
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc\"/>";
 
-        final EomFile eomFile = createStandartEomFileWithContentPackage(UUID.randomUUID(), contentPackage);
+        testContentPackageIsAbsent(description, listHref);
+    }
+
+    @Test
+    public void testContentPackageWithInvalidUuidInHref() throws Exception {
+        final String description = "<p>Description</p>";
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=123\"/>";
+
+        testContentPackageIsAbsent(description, listHref);
+    }
+
+    @Test
+    public void testContentPackageAttributeSetButNoValues() throws Exception {
+        testContentPackageIsAbsent(null, null);
+    }
+
+    private void testContentPackageIsAbsent(final String description,
+                                            final String listHref) {
+        final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getContentPackage(), is(nullValue()));
@@ -757,57 +787,68 @@ public class EomFileProcessorTest {
      */
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation, null);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation,
+                null, null, null);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString,
-                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, null);
+                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION, null);
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION,
+                null, null, null);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION, null);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION,
+                null, null, null);
     }
 
-    private EomFile createStandartEomFileWithContentPackage(UUID uuid, ContentPackage contentPackage) {
+    private EomFile createStandardEomFileWithContentPackage(UUID uuid, boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, contentPackage);
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                hasContentPackage, contentPackageDesc, contentPackageHref);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
@@ -815,7 +856,7 @@ public class EomFileProcessorTest {
                                           String lastPublicationDateAsString, String initialPublicationDateAsString,
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
                                           String eomType, URI webUrl, String contributorRights, String objectLocation,
-                                          ContentPackage contentPackage) {
+                                          Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -825,7 +866,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackage))
+                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackageDesc, contentPackageListHref))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
@@ -839,7 +880,7 @@ public class EomFileProcessorTest {
                         .withSourceCode(sourceCode)
                         .withContributorRights(contributorRights)
                         .withObjectLocation(objectLocation)
-                        .withContentPackage(contentPackage != null ? "True" : null)
+                        .withContentPackage(hasContentPackage)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes(channel))

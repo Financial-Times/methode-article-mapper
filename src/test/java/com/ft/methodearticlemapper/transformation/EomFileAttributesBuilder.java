@@ -75,8 +75,11 @@ class EomFileAttributesBuilder {
         return this;
     }
 
-    EomFileAttributesBuilder withContentPackage(String contentPackage) {
-        this.attributes.put("contentPackage", contentPackage);
+    EomFileAttributesBuilder withContentPackage(Boolean contentPackage) {
+        if (Boolean.TRUE.equals(contentPackage)) {
+            this.attributes.put("contentPackage", "True");
+        }
+
         return this;
     }
 

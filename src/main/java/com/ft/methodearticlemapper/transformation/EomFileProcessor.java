@@ -232,19 +232,23 @@ public class EomFileProcessor {
         }
 
         final Node descriptionNode = (Node) xpath.evaluate("/doc/lead/lead-components/content-package/content-package-description", valueDocument, XPathConstants.NODE);
-        final Node linkNode = (Node) xpath.evaluate("/doc/lead/lead-components/content-package/content-package-link", valueDocument, XPathConstants.NODE);
-        if (descriptionNode == null || linkNode == null) {
+        if (descriptionNode == null) {
             return null;
         }
 
         final String description = getNodeAsString(descriptionNode.getFirstChild());
-        final String link = getNodeAsString(linkNode.getFirstChild());
-
-        if (StringUtils.isBlank(description) || StringUtils.isBlank(link)) {
+        if (StringUtils.isBlank(description)) {
             return null;
         }
 
-        return new ContentPackage(description.trim(), link.trim());
+        final String linkHref = xpath.evaluate("/doc/lead/lead-components/content-package/content-package-link/a/@href", valueDocument);
+        final String linkId = StringUtils.substringAfter(linkHref, "uuid=");
+
+        try {
+            return new ContentPackage(description.trim(), UUID.fromString(linkId.trim()).toString());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private Standout buildStandoutSection(final XPath xpath, final Document attributesDocument) throws XPathExpressionException {
