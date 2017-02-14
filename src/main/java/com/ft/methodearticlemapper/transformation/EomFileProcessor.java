@@ -146,8 +146,9 @@ public class EomFileProcessor {
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
 
-        final String lastPublicationDateAsString = xpath
-                .evaluate("/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication", attributes);
+        final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
+
+        final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, attributes);
 
@@ -193,6 +194,7 @@ public class EomFileProcessor {
                 .withPublishReference(transactionId)
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
+                .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
                 .withContentPackage(contentPackage)
                 .build();
     }

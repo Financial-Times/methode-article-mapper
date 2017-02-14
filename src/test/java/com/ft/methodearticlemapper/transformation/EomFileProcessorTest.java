@@ -270,6 +270,7 @@ public class EomFileProcessorTest {
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
+                .withFirstPublishedDate(toDate(initialPublicationDateAsStringPreWfsEnforce, DATE_TIME_FORMAT))
                 .withXmlBody(expectedBody).build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -952,6 +953,7 @@ public class EomFileProcessorTest {
                 .withPublishReference(TRANSACTION_ID)
                 .withLastModified(LAST_MODIFIED)
                 .withCanBeSyndicated(Syndication.VERIFY)
+                .withFirstPublishedDate(toDate(initialPublicationDateAsString, DATE_TIME_FORMAT))
                 .build();
     }
 }
