@@ -63,7 +63,6 @@ public class EomFileProcessor {
 
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
-    private static final Logger log = LoggerFactory.getLogger(EomFileProcessor.class);
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String NO_PICTURE_FLAG = "No picture";
@@ -93,7 +92,7 @@ public class EomFileProcessor {
             dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
             return dateFormat.parse(dateString);
         } catch (ParseException e) {
-            log.warn("Error parsing date " + dateString, e);
+            LOGGER.warn("Error parsing date " + dateString, e);
             return null;
         }
     }
@@ -235,11 +234,13 @@ public class EomFileProcessor {
 
         final Node descriptionNode = (Node) xpath.evaluate("/doc/lead/lead-components/content-package/content-package-description", valueDocument, XPathConstants.NODE);
         if (descriptionNode == null) {
+            LOGGER.warn("Methode attribute isContentPackage was set to True, but no content-package-description was found");
             return null;
         }
 
         final String description = getNodeAsString(descriptionNode.getFirstChild());
         if (StringUtils.isBlank(description)) {
+            LOGGER.warn("Methode attribute isContentPackage was set to True, but the content package description was blank");
             return null;
         }
 
@@ -249,6 +250,7 @@ public class EomFileProcessor {
         try {
             return new ContentPackage(description.trim(), UUID.fromString(linkId.trim()).toString());
         } catch (IllegalArgumentException e) {
+            LOGGER.error("Methode attribute isContentPackage was set to True, but no valid content package list UUID was found", e);
             return null;
         }
     }
