@@ -225,10 +225,15 @@ public class EomFileProcessor {
 
     private AccessLevel getAccessLevel(final XPath xpath, Document attributes, UUID uuid) throws XPathExpressionException {
         SubscriptionLevel subscriptionLevel;
+        String value = null;
         try {
-            subscriptionLevel = SubscriptionLevel.fromInt(Integer.parseInt(xpath.evaluate(SUBSCRIPTION_LEVEL_XPATH, attributes)));
-        } catch (InvalidSubscriptionLevelException | NumberFormatException e) {
+            value = xpath.evaluate(SUBSCRIPTION_LEVEL_XPATH, attributes);
+            subscriptionLevel = SubscriptionLevel.fromInt(Integer.parseInt(value));
+        } catch (InvalidSubscriptionLevelException e) {
             throw new UntransformableMethodeContentException(uuid.toString(), e.getMessage());
+        } catch (NumberFormatException e) {
+            throw new UntransformableMethodeContentException(uuid.toString(),
+                    String.format("Cannot return subscription level for value: %s", value));
         }
 
         switch (subscriptionLevel) {
