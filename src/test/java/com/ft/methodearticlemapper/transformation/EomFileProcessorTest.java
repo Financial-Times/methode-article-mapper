@@ -7,7 +7,6 @@ import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
-import com.ft.content.model.ContentPackage;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
@@ -881,7 +880,7 @@ public class EomFileProcessorTest {
                         .withSourceCode(sourceCode)
                         .withContributorRights(contributorRights)
                         .withObjectLocation(objectLocation)
-                        .withContentPackage(hasContentPackage)
+                        .withContentPackageFlag(hasContentPackage)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes(channel))

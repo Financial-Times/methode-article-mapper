@@ -75,7 +75,7 @@ class EomFileAttributesBuilder {
         return this;
     }
 
-    EomFileAttributesBuilder withContentPackage(Boolean contentPackage) {
+    EomFileAttributesBuilder withContentPackageFlag(Boolean contentPackage) {
         if (Boolean.TRUE.equals(contentPackage)) {
             this.attributes.put("contentPackage", "True");
         }
