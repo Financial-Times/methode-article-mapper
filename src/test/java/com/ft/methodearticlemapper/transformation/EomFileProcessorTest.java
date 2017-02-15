@@ -26,6 +26,7 @@ import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -699,7 +700,7 @@ public class EomFileProcessorTest {
         final String listId = UUID.randomUUID().toString();
         final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
 
-        testContentPackageIsPresent(description, listHref, listId);
+        testContentPackage(description, listHref, listId);
     }
 
     @Test
@@ -708,63 +709,60 @@ public class EomFileProcessorTest {
         final String listId = UUID.randomUUID().toString();
         final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"><?EM-dummyText ...?>\\r\\n</a>";
 
-        testContentPackageIsPresent(description, listHref, listId);
-    }
-
-    private void testContentPackageIsPresent(final String description,
-                                             final String listHref,
-                                             final String listId) {
-        final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
-        final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-
-        assertThat(content.getContentPackage(), is(notNullValue()));
-        assertThat(content.getContentPackage().getDescription(), is(description));
-        assertThat(content.getContentPackage().getListId(), is(listId));
+        testContentPackage(description, listHref, listId);
     }
 
     @Test
     public void testContentPackageWithEmptyDescription() throws Exception {
         final String description = "";
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + UUID.randomUUID().toString() + "\"/>";
+        final String listId = UUID.randomUUID().toString();
+        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
 
-        testContentPackageIsAbsent(description, listHref);
+        testContentPackage(description, listHref, listId);
     }
 
-    @Test
+    @Test(expected = UntransformableMethodeContentException.class)
     public void testContentPackageWithEmptyHref() throws Exception {
         final String description = "<p>Description</p>";
         final String listHref = "";
 
-        testContentPackageIsAbsent(description, listHref);
+        testContentPackage(description, listHref, null);
     }
 
-    @Test
+    @Test(expected = UntransformableMethodeContentException.class)
     public void testContentPackageWithNoUuidInHref() throws Exception {
         final String description = "<p>Description</p>";
         final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc\"/>";
 
-        testContentPackageIsAbsent(description, listHref);
+        testContentPackage(description, listHref, null);
     }
 
-    @Test
+    @Test(expected = UntransformableMethodeContentException.class)
     public void testContentPackageWithInvalidUuidInHref() throws Exception {
         final String description = "<p>Description</p>";
         final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=123\"/>";
 
-        testContentPackageIsAbsent(description, listHref);
+        testContentPackage(description, listHref, null);
     }
 
-    @Test
+    @Test(expected = UntransformableMethodeContentException.class)
     public void testContentPackageAttributeSetButNoValues() throws Exception {
-        testContentPackageIsAbsent(null, null);
+        testContentPackage(null, null, null);
     }
 
-    private void testContentPackageIsAbsent(final String description,
-                                            final String listHref) {
+    private void testContentPackage(final String description,
+                                    final String listHref,
+                                    final String listId) {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(content.getContentPackage(), is(nullValue()));
+        assertThat(content.getType(), is(EomFileProcessor.Type.CONTENT_PACKAGE));
+        if (StringUtils.isBlank(description)) {
+            assertThat(content.getDescription(), is(nullValue()));
+        } else {
+            assertThat(content.getDescription(), is(description));
+        }
+        assertThat(content.getContentPackage(), is(listId));
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {

@@ -8,7 +8,6 @@ import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
-import com.ft.content.model.ContentPackage;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
@@ -59,6 +58,12 @@ public class EomFileProcessor {
     enum TransformationMode {
         PUBLISH,
         PREVIEW
+    }
+
+    interface Type {
+//        String ARTICLE = "http://www.ft.com/ontology/content/Article";
+//        String CONTENT = "http://www.ft.com/ontology/content/Content";
+        String CONTENT_PACKAGE = "http://www.ft.com/ontology/content/ContentPackage";
     }
 
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
@@ -144,14 +149,14 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
+        final String type = determineType(xpath, attributes);
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
-
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
 
         final boolean discussionEnabled = isDiscussionEnabled(xpath, attributes);
 
-        String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
+        final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
         String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
         switch (mode) {
@@ -165,21 +170,22 @@ public class EomFileProcessor {
                     throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
                 }
         }
-
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
-        String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, transformedBody);
+        final String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, transformedBody);
 
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
                 bylineTransformer, transactionId); //byline is optional
 
         final Syndication canBeSyndicated = getSyndication(xpath, attributes);
 
-        final ContentPackage contentPackage = getContentPackage(xpath, attributes, value);
+        final String description = getDescription(type, xpath, value);
+        final String contentPackage = getContentPackage(type, xpath, value, uuid);
 
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
                 .withAlternativeTitles(altTitles)
+                .withType(type)
                 .withStandfirst(standfirst)
                 .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
@@ -194,6 +200,7 @@ public class EomFileProcessor {
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
                 .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))
+                .withDescription(description)
                 .withContentPackage(contentPackage)
                 .build();
     }
@@ -223,24 +230,43 @@ public class EomFileProcessor {
         }
     }
 
-    private ContentPackage getContentPackage(final XPath xpath,
-                                             final Document attributesDocument,
-                                             final Document valueDocument) throws TransformerException, XPathExpressionException {
-
+    private String determineType(final XPath xpath,
+                                 final Document attributesDocument) throws XPathExpressionException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
-        if (!Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
+        if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
+            return Type.CONTENT_PACKAGE;
+        }
+
+        return null;
+    }
+
+    private String getDescription(final String type,
+                                  final XPath xpath,
+                                  final Document valueDocument) throws TransformerException, XPathExpressionException {
+        if (!Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
         final Node descriptionNode = (Node) xpath.evaluate("/doc/lead/lead-components/content-package/content-package-description", valueDocument, XPathConstants.NODE);
         if (descriptionNode == null) {
-            LOGGER.warn("Methode attribute isContentPackage was set to True, but no content-package-description was found");
+            LOGGER.warn("Type is CONTENT_PACKAGE, but no content-package-description was found");
             return null;
         }
 
         final String description = getNodeAsString(descriptionNode.getFirstChild());
         if (StringUtils.isBlank(description)) {
-            LOGGER.warn("Methode attribute isContentPackage was set to True, but the content package description was blank");
+            LOGGER.warn("Type is CONTENT_PACKAGE, but the content package description was blank");
+            return null;
+        }
+
+        return description.trim();
+    }
+
+    private String getContentPackage(final String type,
+                                     final XPath xpath,
+                                     final Document valueDocument,
+                                     final UUID articleUuid) throws TransformerException, XPathExpressionException {
+        if (!Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -248,10 +274,11 @@ public class EomFileProcessor {
         final String linkId = StringUtils.substringAfter(linkHref, "uuid=");
 
         try {
-            return new ContentPackage(description.trim(), UUID.fromString(linkId.trim()).toString());
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Methode attribute isContentPackage was set to True, but no valid content package list UUID was found", e);
-            return null;
+            return UUID.fromString(linkId.trim()).toString();
+        } catch (final IllegalArgumentException e) {
+            throw new UntransformableMethodeContentException(
+                    articleUuid.toString(),
+                    "Type is CONTENT_PACKAGE, but no valid content package collection UUID was found");
         }
     }
 
