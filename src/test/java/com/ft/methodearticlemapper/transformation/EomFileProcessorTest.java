@@ -530,6 +530,7 @@ public class EomFileProcessorTest {
                                 .withSourceCode("FT")
                                 .withContributorRights("")
                                 .withObjectLocation(OBJECT_LOCATION)
+                                .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
                                 .build())
                 .withSystemAttributes(
                         buildEomFileSystemAttributes("FTcom"))
