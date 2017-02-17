@@ -71,7 +71,8 @@ You can find an example of a transformed article below.
   "webUrl": null,
   "publishReference": "tid_dn4kzqpoxf",
   "lastModified": "2016-08-25T06:06:23.532Z",
-  "canBeSyndicated": "yes"
-  "firstPublishedDate": "2016-08-15T10:31:22.000Z"
+  "canBeSyndicated": "yes",
+  "firstPublishedDate": "2016-08-15T10:31:22.000Z",
+  "accessLevel": "subscribed"
 }
 ```
