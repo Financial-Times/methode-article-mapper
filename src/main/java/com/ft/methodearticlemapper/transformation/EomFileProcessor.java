@@ -177,7 +177,7 @@ public class EomFileProcessor {
                 bylineTransformer, transactionId); //byline is optional
 
         final Syndication canBeSyndicated = getSyndication(xpath, attributes);
-        final AccessLevel accessLevel = getAccessLevel(xpath, eomFile.getAttributes(), eomFile.getUUID());
+        final AccessLevel accessLevel = getAccessLevel(xpath, attributes, uuid);
 
         final String description = getDescription(type, xpath, value);
         final String contentPackage = getContentPackage(type, xpath, value, uuid);
