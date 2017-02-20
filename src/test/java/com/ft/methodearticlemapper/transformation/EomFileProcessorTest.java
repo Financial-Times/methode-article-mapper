@@ -1,8 +1,6 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.google.common.collect.ImmutableSortedSet;
-
-import com.ft.common.FileUtils;
+import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
@@ -10,6 +8,9 @@ import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
+import com.google.common.collect.ImmutableSortedSet;
+
+import com.ft.common.FileUtils;
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
@@ -48,6 +49,7 @@ import java.util.UUID;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
 import static com.ft.methodearticlemapper.transformation.EomFileProcessor.METHODE;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
@@ -55,6 +57,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
@@ -89,6 +92,7 @@ public class EomFileProcessorTest {
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
     private static final String EMPTY_BODY = "<body></body>";
     private static final Date LAST_MODIFIED = new Date();
+    private static final String SUBSCRIPTION_LEVEL = Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel());
 
     private final UUID uuid = UUID.randomUUID();
 
@@ -124,6 +128,7 @@ public class EomFileProcessorTest {
                                 .withSourceCode("FT")
                                 .withContributorRights("")
                                 .withObjectLocation(OBJECT_LOCATION)
+                                .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
                                 .build())
                 .withSystemAttributes(
                         buildEomFileSystemAttributes("FTcom"))
@@ -546,6 +551,7 @@ public class EomFileProcessorTest {
         assertThat(content.getCanBeSyndicated(), is(Syndication.YES));
     }
 
+
     @Test
     public void testArticleCanNotBeSyndicated() {
         final EomFile eomFile = createStandardEomFileWithContributorRights(
@@ -594,6 +600,7 @@ public class EomFileProcessorTest {
                         .withEmbargoDate("")
                         .withSourceCode("FT")
                         .withObjectLocation(OBJECT_LOCATION)
+                        .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom"))
@@ -603,6 +610,48 @@ public class EomFileProcessorTest {
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getCanBeSyndicated(), is(Syndication.VERIFY));
     }
+
+    @Test
+    public void testArticleWithNoSubscriptionLevelHasNullAccessLevel(){
+        final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "");
+        expectedException.expect(UntransformableMethodeContentException.class);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertNull(content.getAccessLevel());
+    }
+
+    @Test
+    public void testArticleWithUnknownSubscriptionLevelHasNullAccessLevel(){
+        final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "5");
+        expectedException.expect(UntransformableMethodeContentException.class);
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertNull(content.getAccessLevel());
+    }
+
+    @Test
+    public void testArticleHasSubscribedAccessLevel() {
+        final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()));
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getAccessLevel(), is(AccessLevel.SUBSCRIBED));
+    }
+
+    @Test
+    public void testArticleHasFreeAccessLevel() {
+        final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(SHOWCASE.getSubscriptionLevel()));
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getAccessLevel(), is(AccessLevel.FREE));
+    }
+
+    @Test
+    public void testArticleHasPremiumAccessLevel() {
+        final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(PREMIUM.getSubscriptionLevel()));
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getAccessLevel(), is(AccessLevel.PREMIUM));
+    }
+
 
     /**
      * Tests that a non-standard old type EOM::Story is also a valid type.
@@ -785,67 +834,73 @@ public class EomFileProcessorTest {
      */
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString,
-                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileNonFtSource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION,
+                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                null, null, null);
+    }
+
+    private EomFile createStandardEomFileWithSubscriptionLevel(UUID uuid, String subscriptionLevel) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, subscriptionLevel,
                 null, null, null);
     }
 
     private EomFile createStandardEomFileWithContentPackage(UUID uuid, boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 hasContentPackage, contentPackageDesc, contentPackageHref);
     }
 
@@ -853,7 +908,7 @@ public class EomFileProcessorTest {
                                           String channel, String sourceCode, String workflowStatus,
                                           String lastPublicationDateAsString, String initialPublicationDateAsString,
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
-                                          String eomType, URI webUrl, String contributorRights, String objectLocation,
+                                          String eomType, URI webUrl, String contributorRights, String objectLocation, String subscriptionLevel,
                                           Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref) {
 
         String embargoDate = "";
@@ -878,6 +933,7 @@ public class EomFileProcessorTest {
                         .withSourceCode(sourceCode)
                         .withContributorRights(contributorRights)
                         .withObjectLocation(objectLocation)
+                        .withSubscriptionLevel(subscriptionLevel)
                         .withContentPackageFlag(hasContentPackage)
                         .build()
                 )
@@ -951,6 +1007,7 @@ public class EomFileProcessorTest {
                 .withLastModified(LAST_MODIFIED)
                 .withCanBeSyndicated(Syndication.VERIFY)
                 .withFirstPublishedDate(toDate(initialPublicationDateAsString, DATE_TIME_FORMAT))
+                .withAccessLevel(AccessLevel.SUBSCRIBED)
                 .build();
     }
 }
