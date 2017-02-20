@@ -61,8 +61,6 @@ public class EomFileProcessor {
     }
 
     interface Type {
-//        String ARTICLE = "http://www.ft.com/ontology/content/Article";
-//        String CONTENT = "http://www.ft.com/ontology/content/Content";
         String CONTENT_PACKAGE = "http://www.ft.com/ontology/content/ContentPackage";
     }
 
