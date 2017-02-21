@@ -75,6 +75,19 @@ class EomFileAttributesBuilder {
         return this;
     }
 
+    EomFileAttributesBuilder withContentPackageFlag(Boolean contentPackage) {
+        if (Boolean.TRUE.equals(contentPackage)) {
+            this.attributes.put("contentPackage", "True");
+        }
+
+        return this;
+    }
+
+    EomFileAttributesBuilder withSubscriptionLevel(String subscriptionLevel) {
+        this.attributes.put("subscriptionLevel", subscriptionLevel);
+        return this;
+    }
+
     String build() {
         Template mustache = Mustache.compiler().compile(attributesTemplate);
         return mustache.execute(attributes);
