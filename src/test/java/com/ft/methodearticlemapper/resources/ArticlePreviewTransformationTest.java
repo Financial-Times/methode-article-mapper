@@ -61,7 +61,7 @@ public class ArticlePreviewTransformationTest {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
-        Content actualContent = postContentToTransformResource.doTransform(expectedUuid.toString(), IS_PREVIEW, testEomFile, httpHeaders);
+        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, httpHeaders);
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));
@@ -85,13 +85,12 @@ public class ArticlePreviewTransformationTest {
     }
 
     /* In article preview we don't care about systemAttributes, usageTickets & lastModified date */
-    private EomFile articlePreviewMinimalEomFile(String uuid) {
-        EomFile articlePreviewEomFile = new EomFile(uuid,
+    static EomFile articlePreviewMinimalEomFile(String uuid) {
+        return new EomFile(uuid,
                 VALID_EOM_FILE_TYPE,
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
                 WORFLOW_STATUS[0],
                 null, null, null);
-        return articlePreviewEomFile;
     }
 }

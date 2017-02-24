@@ -46,7 +46,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void previewProcessedOk() {
-        postContentToTransformResource.doTransform(uuid, true, eomFile, httpHeaders);
+        postContentToTransformResource.map(eomFile, true, httpHeaders);
         verify(eomFileProcessor, times(1)).processPreview(eomFile, TRANSACTION_ID);
     }
 
@@ -55,7 +55,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void publicationProcessedOk() {
-        postContentToTransformResource.doTransform(uuid, false, eomFile, httpHeaders);
+        postContentToTransformResource.map(eomFile, false, httpHeaders);
         verify(eomFileProcessor, times(1)).processPublication(eq(eomFile), eq(TRANSACTION_ID), any());
     }
 

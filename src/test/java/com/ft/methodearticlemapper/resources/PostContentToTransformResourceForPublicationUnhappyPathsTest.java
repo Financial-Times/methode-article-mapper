@@ -18,6 +18,7 @@ import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -66,7 +67,8 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow400ExceptionWhenNoUuidPassed() {
         try {
-            postContentToTransformResource.doTransform(null, IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            EomFile eomFile = Mockito.mock(EomFile.class);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -82,7 +84,8 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow400ExceptionWhenInvalidUuidPassed() {
         try {
-            postContentToTransformResource.doTransform("invalid_uuid", IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            EomFile eomFile = ArticlePreviewTransformationTest.articlePreviewMinimalEomFile("invalid_uuid");
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -92,34 +95,14 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     }
 
     /**
-     * Tests that response contains http code 409 and the correct error message
-     * when uuid path variable in the post URI and uuid present in the payload json property are not the same.
-     */
-    @Test
-    public void shouldThrow409ExceptionWhenUuidsMismatch() {
-        String pathUuid = "1-1-1-1-1";
-        String payloadUuid = "1-1-1-1-2";
-        when(eomFile.getUuid()).thenReturn(payloadUuid);
-        try {
-            postContentToTransformResource.doTransform(pathUuid, IS_PREVIEW_FALSE, eomFile, httpHeaders);
-            fail("No exception was thrown, but expected one.");
-        } catch (WebApplicationClientException wace) {
-            assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
-                    equalTo(String.format(PostContentToTransformResource.ErrorMessage.CONFLICTING_UUID.toString(), pathUuid, payloadUuid)));
-            assertThat(wace.getResponse().getStatus(), equalTo(HttpStatus.SC_CONFLICT));
-        }
-    }
-
-    /**
      * Tests that response contains 404 error code and the correct message
      * when content marked as deleted in Methode is attempted to be published.
      */
     @Test
     public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
-
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).thenThrow(new MethodeMarkedDeletedException(uuid));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), false, eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, false, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -138,7 +121,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(uuid, "EOM::DistortedStory"));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), false,  eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, false, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -158,7 +141,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new EmbargoDateInTheFutureException(uuid, embargoDate));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE,  eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -177,7 +160,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new NotWebChannelException(uuid));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -196,7 +179,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new SourceNotEligibleForPublishException(uuid, sourceOtherThanFt));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -216,7 +199,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new WorkflowStatusNotEligibleForPublishException(uuid, workflowStatusNotEligibleForPublishing));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -236,7 +219,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingFieldException(uuid, missingField));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile,  httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -256,7 +239,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
         when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingBodyException(uuid));
         try {
-            postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException e) {
             assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
@@ -275,7 +258,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
                thenThrow(new UntransformableMethodeContentException(uuid.toString(), "it's blank"));
        try {
-           postContentToTransformResource.doTransform(uuid.toString(), IS_PREVIEW_FALSE, eomFile, httpHeaders);
+           postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
            fail("No exception was thrown, but expected one.");
        } catch (WebApplicationClientException e) {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),

@@ -40,24 +40,14 @@ public class PostContentToTransformResource {
 
 	@POST
 	@Timed
-	@Path("/content-transform/{uuidString}")
-	@QueryParam("preview")
-	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
-		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
-
-		validateUuid(uuid, eomFile);
-
-		return processRequest(uuid, preview, eomFile, transactionId);
-	}
-
-	@POST
-	@Timed
 	@Path("/map")
 	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
 	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @Context HttpHeaders httpHeaders) {
-        return doTransform(eomFile.getUuid(), preview, eomFile, httpHeaders);
+		final String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
+		final String uuid = eomFile.getUuid();
+		validateUuid(uuid, eomFile);
+		return processRequest(uuid, preview, eomFile, transactionId);
 	}
 
 	private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
