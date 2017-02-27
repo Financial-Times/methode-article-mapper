@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -104,7 +105,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow422ExceptionWhenPreviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
         when(eomFile.getUuid()).thenReturn(randomUuid.toString());
-        when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date())).
                 thenThrow(new UnsupportedEomTypeException(randomUuid, INVALID_TYPE));
         try {
             postContentToTransformResource.doTransform(randomUuid.toString(), IS_PREVIEW_TRUE, eomFile, httpHeaders);

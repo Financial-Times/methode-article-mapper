@@ -11,6 +11,7 @@ import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
@@ -46,6 +47,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -78,13 +80,13 @@ public class EomFileProcessor {
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
-    private final Brand financialTimesBrand;
+    private final Map<ContentSource, Brand> contentSourceBrandMap;
 
     public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
-                            Brand financialTimesBrand) {
+                            Map<ContentSource, Brand> contentSourceBrandMap) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
-        this.financialTimesBrand = financialTimesBrand;
+        this.contentSourceBrandMap = contentSourceBrandMap;
     }
 
     private static Date toDate(String dateString, String format) {
@@ -101,7 +103,7 @@ public class EomFileProcessor {
         }
     }
 
-    public Content processPreview(EomFile eomFile, String transactionId) {
+    public Content processPreview(EomFile eomFile, String transactionId, Date lastModifiedDate) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
 
         PublishEligibilityChecker eligibilityChecker =
@@ -111,7 +113,7 @@ public class EomFileProcessor {
         try {
             ParsedEomFile parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
 
-            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId, new Date());
+            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId, lastModifiedDate);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
@@ -170,6 +172,8 @@ public class EomFileProcessor {
                 }
         }
 
+        Brand brand = contentSourceBrandMap.get(eomFile.getContentSource());
+
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
         final String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, transformedBody);
 
@@ -191,7 +195,7 @@ public class EomFileProcessor {
                 .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
                 .withMainImage(mainImage)
-                .withBrands(new TreeSet<>(Collections.singletonList(financialTimesBrand)))
+                .withBrands(new TreeSet<>(Collections.singletonList(brand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())

@@ -35,105 +35,106 @@ public class PostContentToTransformResource {
 
     public PostContentToTransformResource(EomFileProcessor eomFileProcessor) {
 
-		this.eomFileProcessor = eomFileProcessor;
-	}
+        this.eomFileProcessor = eomFileProcessor;
+    }
 
-	@POST
-	@Timed
-	@Path("/content-transform/{uuidString}")
-	@QueryParam("preview")
-	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
-		String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
+    @POST
+    @Timed
+    @Path("/content-transform/{uuidString}")
+    @QueryParam("preview")
+    @Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
+    public final Content doTransform(@PathParam("uuidString") String uuid, @QueryParam("preview") boolean preview, EomFile eomFile, @Context HttpHeaders httpHeaders) {
+        String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
 
-		validateUuid(uuid, eomFile);
+        validateUuid(uuid, eomFile);
 
-		return processRequest(uuid, preview, eomFile, transactionId);
-	}
+        return processRequest(uuid, preview, eomFile, transactionId);
+    }
 
-	@POST
-	@Timed
-	@Path("/map")
-	@QueryParam("preview")
-	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @Context HttpHeaders httpHeaders) {
+    @POST
+    @Timed
+    @Path("/map")
+    @QueryParam("preview")
+    @Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
+    public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @Context HttpHeaders httpHeaders) {
         return doTransform(eomFile.getUuid(), preview, eomFile, httpHeaders);
-	}
+    }
 
-	private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
-		try {
-			if(preview) {
-				return eomFileProcessor.processPreview(eomFile, transactionId);
-			}
-			return eomFileProcessor.processPublication(eomFile, transactionId, new Date());
+    private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
+        try {
+            Date lastModifiedDate = new Date();
+            if (preview) {
+                return eomFileProcessor.processPreview(eomFile, transactionId, lastModifiedDate);
+            }
+            return eomFileProcessor.processPublication(eomFile, transactionId, lastModifiedDate);
 
-		}catch(MethodeMarkedDeletedException e){
-			throw ClientError.status(404)
-					.context(uuid)
-					.reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
-					.exception(e);
-		}catch(NotWebChannelException e){
-			throw ClientError.status(422)
-					.reason(ErrorMessage.NOT_WEB_CHANNEL)
-					.exception(e);
-		}catch(MethodeMissingFieldException e){
-			throw ClientError.status(422)
-					.error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
-					.exception(e);
-		}catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
-			throw ClientError.status(422)
-					.error(e.getMessage())
-					.exception(e);
-		}catch(MethodeContentNotEligibleForPublishException e){
-			throw ClientError.status(422)
-					.context(uuid)
-					.error(e.getMessage())
-					.exception(e);
-		}
-	}
+        } catch (MethodeMarkedDeletedException e) {
+            throw ClientError.status(404)
+                    .context(uuid)
+                    .reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
+                    .exception(e);
+        } catch (NotWebChannelException e) {
+            throw ClientError.status(422)
+                    .reason(ErrorMessage.NOT_WEB_CHANNEL)
+                    .exception(e);
+        } catch (MethodeMissingFieldException e) {
+            throw ClientError.status(422)
+                    .error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
+                    .exception(e);
+        } catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
+            throw ClientError.status(422)
+                    .error(e.getMessage())
+                    .exception(e);
+        } catch (MethodeContentNotEligibleForPublishException e) {
+            throw ClientError.status(422)
+                    .context(uuid)
+                    .error(e.getMessage())
+                    .exception(e);
+        }
+    }
 
-	private void validateUuid(String uuid, EomFile eomFile) {
-		if (uuid == null) {
-			throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
-		}
-		try {
+    private void validateUuid(String uuid, EomFile eomFile) {
+        if (uuid == null) {
+            throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
+        }
+        try {
 
-			UUID resourceId = UUID.fromString(uuid);
+            UUID resourceId = UUID.fromString(uuid);
 
-			if(!uuid.equals(eomFile.getUuid())) {
-				String errorMessage = String.format(ErrorMessage.CONFLICTING_UUID.toString(), uuid, eomFile.getUuid());
-				throw ClientError.status(409)
-						.error(errorMessage)
-						.exception(new MethodeContentInvalidException(resourceId, errorMessage));
-			}
-		}catch (IllegalArgumentException iae) {
-			throw ClientError.status(400)
-					.reason(ErrorMessage.INVALID_UUID)
-					.exception(iae);
-		}
-	}
+            if (!uuid.equals(eomFile.getUuid())) {
+                String errorMessage = String.format(ErrorMessage.CONFLICTING_UUID.toString(), uuid, eomFile.getUuid());
+                throw ClientError.status(409)
+                        .error(errorMessage)
+                        .exception(new MethodeContentInvalidException(resourceId, errorMessage));
+            }
+        } catch (IllegalArgumentException iae) {
+            throw ClientError.status(400)
+                    .reason(ErrorMessage.INVALID_UUID)
+                    .exception(iae);
+        }
+    }
 
-	enum ErrorMessage {
-		METHODE_FILE_NOT_FOUND("Article marked as deleted"),
-		UUID_REQUIRED("No UUID was passed"),
-		INVALID_UUID("The UUID passed was invalid"),
-		METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
-		NOT_WEB_CHANNEL("This is not a web channel story"),
-		METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
-		DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable"),
-		CONFLICTING_UUID("UUID in the url [%s] and uuid in the payload [%s] are not the same");
+    enum ErrorMessage {
+        METHODE_FILE_NOT_FOUND("Article marked as deleted"),
+        UUID_REQUIRED("No UUID was passed"),
+        INVALID_UUID("The UUID passed was invalid"),
+        METHODE_CONTENT_TYPE_NOT_SUPPORTED("Invalid request - resource not an article"),
+        NOT_WEB_CHANNEL("This is not a web channel story"),
+        METHODE_FIELD_MISSING("Required methode field [%s] is missing"),
+        DOCUMENT_STORE_API_UNAVAILABLE("Document store API was unavailable"),
+        CONFLICTING_UUID("UUID in the url [%s] and uuid in the payload [%s] are not the same");
 
-		private final String text;
+        private final String text;
 
-		ErrorMessage(String text) {
-			this.text = text;
-		}
+        ErrorMessage(String text) {
+            this.text = text;
+        }
 
-		@Override
-		public String toString() {
-			return text;
-		}
-	}
+        @Override
+        public String toString() {
+            return text;
+        }
+    }
 }
 
 

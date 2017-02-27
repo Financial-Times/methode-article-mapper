@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.message.consumer.MessageListener;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.SystemId;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.EomFileType;
 import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 import com.ft.methodearticlemapper.model.EomFile;
-import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,6 +102,6 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
         // and fall through, to return false
       }
       
-      return PublishEligibilityChecker.isFTSource(sourceCode);
+      return ContentSource.getByCode(sourceCode) != null;
     }
 }

@@ -8,6 +8,7 @@ import com.ft.content.model.Content;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.google.common.collect.ImmutableSortedSet;
 
 import com.ft.common.FileUtils;
@@ -70,6 +71,7 @@ import static org.mockito.Mockito.when;
 
 public class EomFileProcessorTest {
     public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
+    public static final String REUTERS_BRAND = "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7";
 
     private static final String ARTICLE_TEMPLATE = FileUtils.readFile("article/article_value.xml.mustache");
     private static final String ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_attributes.xml.mustache");
@@ -100,7 +102,7 @@ public class EomFileProcessorTest {
     public ExpectedException expectedException = ExpectedException.none();
     private FieldTransformer bodyTransformer;
     private FieldTransformer bylineTransformer;
-    private Brand financialTimesBrand;
+    private Map<ContentSource, Brand> contentSourceBrandMap;
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
@@ -197,12 +199,14 @@ public class EomFileProcessorTest {
         bylineTransformer = mock(FieldTransformer.class);
         when(bylineTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BYLINE);
 
-        financialTimesBrand = new Brand(FINANCIAL_TIMES_BRAND);
+        contentSourceBrandMap = new HashMap<>();
+        contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
+        contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         standardEomFile = createStandardEomFile(uuid);
-        standardExpectedContent = createStandardExpectedContent();
+        standardExpectedContent = createStandardExpectedFtContent();
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, financialTimesBrand);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, contentSourceBrandMap);
     }
 
     @Test(expected = MethodeMarkedDeletedException.class)
@@ -250,7 +254,7 @@ public class EomFileProcessorTest {
     @Test(expected = SourceNotEligibleForPublishException.class)
     public void shouldThrowExceptionIfNotFtSource() {
         final EomFile eomFile = new EomFile.Builder()
-                .withValuesFrom(createStandardEomFileNonFtSource(uuid))
+                .withValuesFrom(createStandardEomFileNonFtOrAgencySource(uuid))
                 .build();
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
@@ -330,7 +334,7 @@ public class EomFileProcessorTest {
     @Test
     public void shouldNotBarfOnExternalDtd() {
         Content content = eomFileProcessor.processPublication(standardEomFile, TRANSACTION_ID, LAST_MODIFIED);
-        Content expectedContent = createStandardExpectedContent();
+        Content expectedContent = createStandardExpectedFtContent();
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -394,7 +398,7 @@ public class EomFileProcessorTest {
     public void thatPreviewEmptyTransformedBodyIsAllowed() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn(EMPTY_BODY);
-        Content actual = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID);
+        Content actual = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
 
@@ -799,6 +803,26 @@ public class EomFileProcessorTest {
         testContentPackage(null, null, null);
     }
 
+    @Test
+    public void testAgencyContentProcessPublication() {
+        final EomFile eomFile = createStandardEomFileAgencySource(uuid);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        final Content expectedContent = createStandardExpectedAgencyContent();
+
+        assertThat(content, equalTo(expectedContent));
+    }
+
+    @Test
+    public void testAgencyContentProcessPreview() {
+        final EomFile eomFile = createStandardEomFileAgencySource(uuid);
+        Content content = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        final Content expectedContent = createStandardExpectedAgencyContent();
+
+        assertThat(content, equalTo(expectedContent));
+    }
+
     private void testContentPackage(final String description,
                                     final String listHref,
                                     final String listId) {
@@ -856,7 +880,7 @@ public class EomFileProcessorTest {
                 null, null, null);
     }
 
-    private EomFile createStandardEomFileNonFtSource(UUID uuid) {
+    private EomFile createStandardEomFileNonFtOrAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
@@ -865,6 +889,12 @@ public class EomFileProcessorTest {
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                null, null, null);
+    }
+
+    private EomFile createStandardEomFileAgencySource(UUID uuid) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "REU2", EomFile.WEB_READY, lastPublicationDateAsString,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null);
     }
 
@@ -992,12 +1022,20 @@ public class EomFileProcessorTest {
         return methodeDateFormat.format(cal.getTime());
     }
 
-    private Content createStandardExpectedContent() {
+    private Content createStandardExpectedFtContent() {
+        return createStandardExpectedContent(ContentSource.FT);
+    }
+
+    private Content createStandardExpectedAgencyContent() {
+        return createStandardExpectedContent(ContentSource.Reuters);
+    }
+
+    private Content createStandardExpectedContent(ContentSource contentSource){
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
-                .withBrands(new TreeSet<>(Collections.singletonList(financialTimesBrand)))
+                .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))
