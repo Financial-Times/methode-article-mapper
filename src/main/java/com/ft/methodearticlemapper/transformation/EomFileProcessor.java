@@ -6,6 +6,7 @@ import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
+import com.ft.content.model.Distribution;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
@@ -185,6 +186,7 @@ public class EomFileProcessor {
 
         final String description = getDescription(type, xpath, value);
         final String contentPackage = getContentPackage(type, xpath, value, uuid);
+        final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource());
 
         return Content.builder()
                 .withUuid(uuid)
@@ -208,6 +210,7 @@ public class EomFileProcessor {
                 .withAccessLevel(accessLevel)
                 .withDescription(description)
                 .withContentPackage(contentPackage)
+                .withCanBeDistributed(canBeDistributed)
                 .build();
     }
 
@@ -417,5 +420,17 @@ public class EomFileProcessor {
         }
 
         return builder.build();
+    }
+
+
+    private Distribution getCanBeDistributed(ContentSource contentSource) {
+        switch (contentSource) {
+            case FT:
+                return Distribution.YES;
+            case Reuters:
+                return Distribution.NO;
+            default:
+                return Distribution.VERIFY;
+        }
     }
 }

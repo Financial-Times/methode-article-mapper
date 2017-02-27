@@ -5,6 +5,7 @@ import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
+import com.ft.content.model.Distribution;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
@@ -1046,6 +1047,9 @@ public class EomFileProcessorTest {
                 .withCanBeSyndicated(Syndication.VERIFY)
                 .withFirstPublishedDate(toDate(initialPublicationDateAsString, DATE_TIME_FORMAT))
                 .withAccessLevel(AccessLevel.SUBSCRIBED)
+                .withCanBeDistributed(contentSource == ContentSource.FT
+                        ? Distribution.YES
+                        : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
                 .build();
     }
 }
