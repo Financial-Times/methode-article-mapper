@@ -34,6 +34,8 @@ import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
+import com.ft.platform.dropwizard.DefaultGoodToGoChecker;
+import com.ft.platform.dropwizard.GoodToGoBundle;
 import com.sun.jersey.api.client.Client;
 
 import java.net.URI;
@@ -58,6 +60,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     @Override
     public void initialize(final Bootstrap<MethodeArticleMapperConfiguration> bootstrap) {
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
+        bootstrap.addBundle(new GoodToGoBundle(new DefaultGoodToGoChecker()));
     }
 
     @Override
