@@ -36,6 +36,7 @@ You can find an example of a transformed article below.
   "alternativeTitles": {
     "promotionalTitle": "Annan to head new Myanmar Rohingya effort"
   },
+  "type": "http://www.ft.com/ontology/content/ContentPackage",
   "byline": "Michael Peel, Bangkok Regional Correspondent",
   "brands": [
     {
@@ -51,7 +52,7 @@ You can find an example of a transformed article below.
   "publishedDate": "2016-08-24T08:18:54.000Z",
   "standfirst": "Former UN chief will lead group to deal with problems that fuelled regional migration crisis",
   "body": "<body>The body of the article</body>",
-  "description": null,
+  "description": "<p>Description text. Sed feugiat turpis at massa tristique sagittis.</p>",
   "mediaType": null,
   "pixelWidth": null,
   "pixelHeight": null,
@@ -59,6 +60,8 @@ You can find an example of a transformed article below.
   "externalBinaryUrl": null,
   "members": null,
   "mainImage": "af6b69ba-69ce-11e6-3ed7-4fe0459ea806",
+  "storyPackage": null,
+  "contentPackage": "45163790-eec9-11e6-abbc-ee7d9c5b3b90",
   "standout": {
     "editorsChoice": false,
     "exclusive": false,
@@ -71,7 +74,8 @@ You can find an example of a transformed article below.
   "webUrl": null,
   "publishReference": "tid_dn4kzqpoxf",
   "lastModified": "2016-08-25T06:06:23.532Z",
-  "canBeSyndicated": "yes"
-  "firstPublishedDate": "2016-08-15T10:31:22.000Z"
+  "canBeSyndicated": "yes",
+  "firstPublishedDate": "2016-08-15T10:31:22.000Z",
+  "accessLevel": "subscribed"
 }
 ```
