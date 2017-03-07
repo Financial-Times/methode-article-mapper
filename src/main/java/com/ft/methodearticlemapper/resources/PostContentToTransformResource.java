@@ -54,9 +54,10 @@ public class PostContentToTransformResource {
 	@POST
 	@Timed
 	@Path("/map")
+	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content map(EomFile eomFile, @Context HttpHeaders httpHeaders) {
-        return doTransform(eomFile.getUuid(), false, eomFile, httpHeaders);
+	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @Context HttpHeaders httpHeaders) {
+        return doTransform(eomFile.getUuid(), preview, eomFile, httpHeaders);
 	}
 
 	private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
