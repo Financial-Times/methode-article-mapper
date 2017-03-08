@@ -382,6 +382,20 @@ public class EomFileProcessorTest {
     }
 
     @Test(expected = UntransformableMethodeContentException.class)
+    public void shouldThrowExceptionIfBodyIsNull() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(null);
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+    }
+
+    @Test(expected = UntransformableMethodeContentException.class)
+    public void shouldThrowExceptionIfBodyIsEmpty() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("");
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+    }
+
+    @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfTransformedBodyIsBlank() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body> \n \n \n </body>");
@@ -401,6 +415,41 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString())).thenReturn(EMPTY_BODY);
         Content actual = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
+    }
+
+    @Test
+    public void thatContentPackageNullBodyIsAllowed() {
+        final EomFile eomFile = createEomFileWithRandomContentPackage();
+
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(null);
+        Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
+        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
+    }
+
+    @Test
+    public void thatContentPackageEmptyBodyIsAllowed() {
+        final EomFile eomFile = createEomFileWithRandomContentPackage();
+
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("");
+        Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
+        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
+    }
+
+    @Test
+    public void thatContentPackageBlankTransformedBodyIsAllowed() {
+        final EomFile eomFile = createEomFileWithRandomContentPackage();
+
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn("<body> \n \n \n </body>");
+        Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
+        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
+    }
+
+    private EomFile createEomFileWithRandomContentPackage() {
+        return createStandardEomFileWithContentPackage(
+                uuid,
+                Boolean.TRUE,
+                "cp",
+                "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + UUID.randomUUID().toString() + "\"/>");
     }
 
     @Test
@@ -929,7 +978,7 @@ public class EomFileProcessorTest {
                 null, null, null);
     }
 
-    private EomFile createStandardEomFileWithContentPackage(UUID uuid, boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
+    private EomFile createStandardEomFileWithContentPackage(UUID uuid, Boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 hasContentPackage, contentPackageDesc, contentPackageHref);
