@@ -47,7 +47,7 @@ public class PostContentToTransformResourceHappyPathsTest {
     @Test
     public void previewProcessedOk() {
         postContentToTransformResource.doTransform(uuid, true, eomFile, httpHeaders);
-        verify(eomFileProcessor, times(1)).processPreview(eomFile, TRANSACTION_ID);
+        verify(eomFileProcessor, times(1)).processPreview(eq(eomFile), eq(TRANSACTION_ID), any());
     }
 
     /**

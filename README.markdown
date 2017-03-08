@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/Financial-Times/methode-article-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-article-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-article-mapper/badge.svg)](https://coveralls.io/github/Financial-Times/methode-article-mapper)
+
 # Methode Article Mapper
 Methode Article Mapper is a Dropwizard application which consumes Kafka events and maps raw Methode articles to content according to UPP JSON format.
 
@@ -76,6 +78,7 @@ You can find an example of a transformed article below.
   "lastModified": "2016-08-25T06:06:23.532Z",
   "canBeSyndicated": "yes",
   "firstPublishedDate": "2016-08-15T10:31:22.000Z",
-  "accessLevel": "subscribed"
+  "accessLevel": "subscribed",
+  "canBeDsitributed": "yes"
 }
 ```
