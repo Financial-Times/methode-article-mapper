@@ -20,6 +20,8 @@ import javax.ws.rs.core.HttpHeaders;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -88,7 +90,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow422ExceptionWhenPreviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
         when(eomFile.getUuid()).thenReturn(randomUuid.toString());
-        when(eomFileProcessor.processPreview(eomFile, TRANSACTION_ID)).
+        when(eomFileProcessor.processPreview(eq(eomFile), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(randomUuid, INVALID_TYPE));
         try {
             postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, httpHeaders);

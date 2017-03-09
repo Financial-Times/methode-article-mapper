@@ -2,6 +2,7 @@ package com.ft.methodearticlemapper.transformation.eligibility;
 
 import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
 
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.google.common.base.Strings;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
@@ -143,7 +144,7 @@ public abstract class PublishEligibilityChecker {
         }
 
         checkNotEmbargoed();
-        checkSource();
+        ContentSource contentSource = processSourceForPublish();
         checkObjectType();
         checkNotDeleted();
         checkChannel();
@@ -151,8 +152,8 @@ public abstract class PublishEligibilityChecker {
         checkInitialPublicationDate();
         checkBody();
 
-        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-                attributesDocument, eomFile.getWebUrl());
+        return new ParsedEomFile(uuid, eomFileDocument, rawBody, attributesDocument, eomFile.getWebUrl(),
+                contentSource);
     }
 
     public final ParsedEomFile getEligibleContentForPreview()
@@ -171,8 +172,10 @@ public abstract class PublishEligibilityChecker {
             checkEomType();
         }
 
+        ContentSource contentSource = processSourceForPreview();
+
         return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-                attributesDocument, eomFile.getWebUrl());
+                attributesDocument, eomFile.getWebUrl(), contentSource);
     }
 
     public abstract void checkEomType();
@@ -198,11 +201,13 @@ public abstract class PublishEligibilityChecker {
         }
     }
 
-    protected void checkSource() throws XPathExpressionException {
-        String sourceCode = xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
-        if (!isFTSource(sourceCode)) {
+    protected ContentSource processSourceForPublish() throws XPathExpressionException {
+        String sourceCode = retrieveSourceCode();
+        ContentSource contentSource = ContentSource.getByCode(sourceCode);
+        if (contentSource == null) {
             throw new SourceNotEligibleForPublishException(uuid, sourceCode);
         }
+        return contentSource;
     }
 
     protected final void checkNotDeleted()
@@ -244,11 +249,20 @@ public abstract class PublishEligibilityChecker {
         return EomFile.WEB_REVISE.equals(workflowStatus) || EomFile.WEB_READY.equals(workflowStatus);
     }
 
-    public static boolean isFTSource(String source) {
-        return "FT".equals(source);
-    }
-
     protected final boolean isWebChannel(String channel) {
         return EomFile.WEB_CHANNEL.equals(channel);
+    }
+
+    private ContentSource processSourceForPreview() throws XPathExpressionException {
+        String sourceCode = retrieveSourceCode();
+        ContentSource contentSource = ContentSource.getByCode(sourceCode);
+        if (contentSource == null) {
+            contentSource = ContentSource.FT;
+        }
+        return contentSource;
+    }
+
+    private String retrieveSourceCode() throws XPathExpressionException {
+        return xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
     }
 }
