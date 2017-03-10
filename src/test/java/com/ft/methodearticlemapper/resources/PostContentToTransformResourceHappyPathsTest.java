@@ -8,15 +8,11 @@ import org.junit.Test;
 
 import javax.ws.rs.core.HttpHeaders;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests that both article preview and published article get transformed by the POST endpoint.
@@ -46,7 +42,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void previewProcessedOk() {
-        postContentToTransformResource.doTransform(uuid, true, eomFile, httpHeaders);
+        postContentToTransformResource.map(eomFile, true, httpHeaders);
         verify(eomFileProcessor, times(1)).processPreview(eq(eomFile), eq(TRANSACTION_ID), any());
     }
 
@@ -55,7 +51,7 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void publicationProcessedOk() {
-        postContentToTransformResource.doTransform(uuid, false, eomFile, httpHeaders);
+        postContentToTransformResource.map(eomFile, false, httpHeaders);
         verify(eomFileProcessor, times(1)).processPublication(eq(eomFile), eq(TRANSACTION_ID), any());
     }
 
