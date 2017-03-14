@@ -1,5 +1,6 @@
 package com.ft.methodearticlemapper.transformation;
 
+import com.ft.common.FileUtils;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
@@ -12,7 +13,6 @@ import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.google.common.collect.ImmutableSortedSet;
 
-import com.ft.common.FileUtils;
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
@@ -116,7 +116,7 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(
-                        buildEomFileValue(mainImageUuid, null, null, null))
+                        buildEomFileValue(mainImageUuid, null, null, null, null))
                 .withAttributes(
                         new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                                 .withLastPublicationDate(lastPublicationDateAsString)
@@ -139,11 +139,12 @@ public class EomFileProcessorTest {
                 .build();
     }
 
-    private static byte[] buildEomFileValue(UUID mainImageUuid,
-                                            String promoTitle,
-                                            String standfirst,
-                                            String byline) {
-        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null, null);
+    private static byte[] buildEomFileValue(
+            UUID mainImageUuid,
+            String promoTitle,
+            String standfirst,
+            String byline, String storyPackageUuid) {
+        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null, null, storyPackageUuid);
     }
 
     private static byte[] buildEomFileValueWithContentPackage(UUID mainImageUuid,
@@ -151,7 +152,8 @@ public class EomFileProcessorTest {
                                                               String standfirst,
                                                               String byline,
                                                               String contentPackageDesc,
-                                                              String contentPackageListHref) {
+                                                              String contentPackageListHref,
+                                                              String storyPackageUuid) {
 
         Template mustache = Mustache.compiler().escapeHTML(false).compile(ARTICLE_TEMPLATE);
 
@@ -160,6 +162,7 @@ public class EomFileProcessorTest {
         attributes.put("promoTitle", promoTitle);
         attributes.put("standfirst", standfirst);
         attributes.put("byline", byline);
+        attributes.put("storyPackageUuid", storyPackageUuid);
 
         if (contentPackageDesc != null && contentPackageListHref != null) {
             attributes.put("contentPackage", Boolean.TRUE);
@@ -477,7 +480,7 @@ public class EomFileProcessorTest {
 
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(buildEomFileValue(null, null, null, byline))
+                .withValue(buildEomFileValue(null, null, null, byline, null))
                 .build();
 
         final Content expectedContent = Content.builder()
@@ -564,6 +567,52 @@ public class EomFileProcessorTest {
     }
 
     @Test
+    public void testStoryPackage() {
+        final UUID storyPackageUuid = UUID.randomUUID();
+        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid.toString());
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(content.getStoryPackage(), notNullValue());
+        assertThat(content.getStoryPackage(), equalTo(storyPackageUuid.toString()));
+    }
+
+    @Test(expected = UntransformableMethodeContentException.class)
+    public void testStoryPackageWithInvalidUuid() {
+        final String storyPackageUuid = "invalid-uuid";
+        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid);
+        eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+    }
+
+    private static EomFile createStandardEomFileWithStoryPackage(UUID uuid, String storyPackageUuid) {
+        return new EomFile.Builder()
+                .withUuid(uuid.toString())
+                .withType(EOMCompoundStory.getTypeName())
+                .withValue(
+                        buildEomFileValue(null, null, null, null, storyPackageUuid))
+                .withAttributes(
+                        new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
+                                .withLastPublicationDate(lastPublicationDateAsString)
+                                .withInitialPublicationDate(initialPublicationDateAsString)
+                                .withMarkedDeleted(FALSE)
+                                .withImageMetadata("No picture")
+                                .withCommentsEnabled(FALSE)
+                                .withEditorsPick("")
+                                .withExclusive("")
+                                .withScoop("")
+                                .withEmbargoDate("")
+                                .withSourceCode("FT")
+                                .withContributorRights("")
+                                .withObjectLocation(OBJECT_LOCATION)
+                                .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
+                                .withContentPackageFlag(Boolean.FALSE)
+                                .build())
+                .withSystemAttributes(
+                        buildEomFileSystemAttributes("FTcom"))
+                .withWorkflowStatus(EomFile.WEB_READY)
+                .build();
+    }
+
+    @Test
     public void testCommentsArePresent() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
@@ -641,7 +690,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(null, null, null, null))
+                .withValue(buildEomFileValue(null, null, null, null, null))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE_NO_CONTRIBUTOR_RIGHTS)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
@@ -723,9 +772,9 @@ public class EomFileProcessorTest {
         final String expectedStandfirst = "Test standfirst";
 
         final EomFile eomFile = (new EomFile.Builder())
-                .withValuesFrom(createStandardEomFile(uuid))
-                .withValue(buildEomFileValue(null, null, expectedStandfirst, null))
-                .build();
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, null, expectedStandfirst, null, null))
+          .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(equalToIgnoringWhiteSpace(expectedStandfirst)));
@@ -736,9 +785,9 @@ public class EomFileProcessorTest {
         final String standfirst = "\n";
 
         final EomFile eomFile = (new EomFile.Builder())
-                .withValuesFrom(createStandardEomFile(uuid))
-                .withValue(buildEomFileValue(null, null, standfirst, null))
-                .build();
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, null, standfirst, null, null))
+          .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(nullValue()));
@@ -757,9 +806,9 @@ public class EomFileProcessorTest {
         String promoTitle = "Test Promo Title";
 
         final EomFile eomFile = (new EomFile.Builder())
-                .withValuesFrom(createStandardEomFile(uuid))
-                .withValue(buildEomFileValue(null, promoTitle, null, null))
-                .build();
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(equalToIgnoringWhiteSpace(promoTitle)));
@@ -780,9 +829,9 @@ public class EomFileProcessorTest {
         String promoTitle = "\n";
 
         final EomFile eomFile = (new EomFile.Builder())
-                .withValuesFrom(createStandardEomFile(uuid))
-                .withValue(buildEomFileValue(null, promoTitle, null, null))
-                .build();
+          .withValuesFrom(createStandardEomFile(uuid))
+          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(nullValue()));
@@ -999,7 +1048,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackageDesc, contentPackageListHref))
+                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackageDesc, contentPackageListHref, null))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
