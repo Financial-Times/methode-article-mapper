@@ -63,7 +63,7 @@ public class EomFileProcessor {
     }
 
     interface Type {
-        String CONTENT_PACKAGE = "http://www.ft.com/ontology/content/ContentPackage";
+        String CONTENT_PACKAGE = "ContentPackage";
     }
 
     public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
