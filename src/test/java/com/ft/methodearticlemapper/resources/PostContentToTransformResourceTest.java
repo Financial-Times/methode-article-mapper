@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -41,7 +42,7 @@ public class PostContentToTransformResourceTest {
         boolean preview = true;
         postContentToTransformResource.map(eomFile, preview, httpHeaders);
 
-        verify(eomFileProcessor).processPreview(eq(eomFile),eq(TRANSACTION_ID));
+        verify(eomFileProcessor).processPreview(eq(eomFile),eq(TRANSACTION_ID), any());
         verify(eomFileProcessor, never()).processPublication(any(), any(), any());
     }
 
@@ -51,6 +52,6 @@ public class PostContentToTransformResourceTest {
         postContentToTransformResource.map(eomFile, notPreview, httpHeaders);
 
         verify(eomFileProcessor).processPublication(eq(eomFile),eq(TRANSACTION_ID), any());
-        verify(eomFileProcessor, never()).processPreview(any(), any());
+        verify(eomFileProcessor, never()).processPreview(any(), any(), any());
     }
 }

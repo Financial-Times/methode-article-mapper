@@ -4,7 +4,6 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
-import com.ft.content.model.Brand;
 import io.dropwizard.Configuration;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
 	private final ConcordanceApiConfiguration concordanceApiConfiguration;
     private final ConsumerConfiguration consumerConfiguration;
     private final ProducerConfiguration producerConfiguration;
-    private final Brand financialTimesBrand;
+    private final List<BrandConfiguration> brands;
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
@@ -24,14 +23,14 @@ public class MethodeArticleMapperConfiguration extends Configuration {
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
                                              @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
                                              @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
-                                             @JsonProperty("financialTimesBrandId") String financialTimesBrandId,
+                                             @JsonProperty("brands") List<BrandConfiguration> brands,
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix) {
 
         this.documentStoreApiConfiguration = documentStoreApiConfiguration;
 		this.concordanceApiConfiguration=concordanceApiConfiguration;
-        this.financialTimesBrand = new Brand(financialTimesBrandId);
+        this.brands = brands;
         this.consumerConfiguration = consumerConfiguration;
         this.producerConfiguration = producerConfiguration;
         this.videoSiteConfig = videoSiteConfig;
@@ -47,9 +46,9 @@ public class MethodeArticleMapperConfiguration extends Configuration {
 	@NotNull
 	public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() { return documentStoreApiConfiguration; }
 
-    @NotNull
-    public Brand getFinancialTimesBrand() {
-        return financialTimesBrand;
+   @NotNull
+    public List<BrandConfiguration> getBrandsConfiguration() {
+        return brands;
     }
 
     @NotNull
