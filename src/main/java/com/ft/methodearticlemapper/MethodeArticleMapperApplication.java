@@ -15,17 +15,20 @@ import com.ft.message.consumer.MessageListener;
 import com.ft.message.consumer.MessageQueueConsumerInitializer;
 import com.ft.messagequeueproducer.MessageProducer;
 import com.ft.messagequeueproducer.QueueProxyProducer;
+import com.ft.methodearticlemapper.configuration.BrandConfiguration;
 import com.ft.methodearticlemapper.configuration.ConcordanceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.ConnectionConfiguration;
 import com.ft.methodearticlemapper.configuration.ConsumerConfiguration;
 import com.ft.methodearticlemapper.configuration.DocumentStoreApiConfiguration;
 import com.ft.methodearticlemapper.configuration.MethodeArticleMapperConfiguration;
 import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
+import com.ft.methodearticlemapper.exception.ConfigurationException;
 import com.ft.methodearticlemapper.health.CanConnectToMessageQueueProducerProxyHealthcheck;
 import com.ft.methodearticlemapper.health.RemoteServiceHealthCheck;
 import com.ft.methodearticlemapper.messaging.MessageBuilder;
 import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
 import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticlemapper.resources.PostContentToTransformResource;
 import com.ft.methodearticlemapper.transformation.BodyProcessingFieldTransformerFactory;
@@ -41,7 +44,9 @@ import com.sun.jersey.api.client.Client;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.UriBuilder;
@@ -66,13 +71,13 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     @Override
     public void run(final MethodeArticleMapperConfiguration configuration, final Environment environment) throws Exception {
         org.slf4j.LoggerFactory.getLogger(MethodeArticleMapperApplication.class)
-            .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
-        
-    	environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
-    		.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content-transform/*", "/map");
+                .info("JVM file.encoding = {}", System.getProperty("file.encoding"));
 
-    	BuildInfoResource buildInfoResource = new BuildInfoResource();
-    	environment.jersey().register(buildInfoResource);
+        environment.servlets().addFilter("transactionIdFilter", new TransactionIdFilter())
+                .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/content-transform/*", "/map");
+
+        BuildInfoResource buildInfoResource = new BuildInfoResource();
+        environment.jersey().register(buildInfoResource);
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
         ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
@@ -81,7 +86,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
         URI documentStoreUri = documentStoreApiBuilder.build();
 
-        ConcordanceApiConfiguration concordanceApiConfiguration=configuration.getConcordanceApiConfiguration();
+        ConcordanceApiConfiguration concordanceApiConfiguration = configuration.getConcordanceApiConfiguration();
         Client concordanceApiClient = configureResilientClient(environment, concordanceApiConfiguration.getEndpointConfiguration(), concordanceApiConfiguration.getConnectionConfiguration());
         EndpointConfiguration concordanceApiEndpointConfiguration = concordanceApiConfiguration.getEndpointConfiguration();
         UriBuilder concordanceApiBuilder = UriBuilder.fromPath(concordanceApiEndpointConfiguration.getPath()).scheme("http").host(concordanceApiEndpointConfiguration.getHost()).port(concordanceApiEndpointConfiguration.getPort());
@@ -90,7 +95,6 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
                 documentStoreUri,
-                configuration.getFinancialTimesBrand(), 
                 configuration,
                 concordanceApiClient,
                 concordanceUri
@@ -128,7 +132,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     }
 
     private Client configureResilientClient(Environment environment, EndpointConfiguration endpointConfiguration, ConnectionConfiguration connectionConfig) {
-        return  ResilientClientBuilder.in(environment)
+        return ResilientClientBuilder.in(environment)
                 .using(endpointConfiguration)
                 .withContinuationPolicy(
                         new ExponentialBackoffContinuationPolicy(
@@ -139,24 +143,23 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 .build();
     }
 
-	private EomFileProcessor configureEomFileProcessorForContentStore(
+    private EomFileProcessor configureEomFileProcessorForContentStore(
             final ResilientClient documentStoreApiClient,
             final URI documentStoreUri,
-            final Brand financialTimesBrand,
             final MethodeArticleMapperConfiguration configuration,
             final Client concordanceApiClient,
             final URI concordanceUri) {
-		return new EomFileProcessor(
-				new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
+        return new EomFileProcessor(
+                new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                         documentStoreUri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
                         new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist()),
                         concordanceApiClient,
                         concordanceUri
                 ).newInstance(),
-				new BylineProcessingFieldTransformerFactory().newInstance(),
-                financialTimesBrand);
-	}
+                new BylineProcessingFieldTransformerFactory().newInstance(),
+                processConfigurationBrands(configuration.getBrandsConfiguration()));
+    }
 
     private void registerHealthChecks(Environment environment, List<AdvancedHealthCheck> advancedHealthChecks) {
         HealthCheckRegistry healthChecks = environment.healthChecks();
@@ -265,5 +268,26 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                         config.getHealthcheckConfiguration(), environment.metrics()
                 )
         );
+    }
+
+    private Map<ContentSource, Brand> processConfigurationBrands(List<BrandConfiguration> brands) {
+        Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
+        for (BrandConfiguration brandConfiguration : brands) {
+            ContentSource contentSource = ContentSource.valueOf(brandConfiguration.getName());
+            contentSourceBrandMap.put(contentSource, new Brand(brandConfiguration.getId()));
+        }
+
+        validateBrandsConfiguration(contentSourceBrandMap);
+
+        return contentSourceBrandMap;
+    }
+
+    private void validateBrandsConfiguration(Map<ContentSource, Brand> contentSourceBrandMap) {
+        for (ContentSource contentSource : ContentSource.values()) {
+            if (!contentSourceBrandMap.containsKey(contentSource)) {
+                throw new ConfigurationException(
+                        "No brand information configured for source with name: " + contentSource.name());
+            }
+        }
     }
 }

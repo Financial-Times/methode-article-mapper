@@ -17,8 +17,8 @@ public class EomFile {
         "/ObjectMetadata//EditorialNotes/Sources/Source/SourceCode";
 
     public static final String LAST_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
-
     public static final String INITIAL_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
+    public static final String STORY_PACKAGE_LINK_XPATH = "/doc/lead/editor-choice/a/@href";
 
     private final String uuid;
     private final String type;
