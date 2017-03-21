@@ -935,6 +935,7 @@ public class EomFileProcessorTest {
             assertThat(content.getDescription(), is(description));
         }
         assertThat(content.getContentPackage(), is(listId));
+        assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {

@@ -183,7 +183,7 @@ public class EomFileProcessor {
 
         final String description = getDescription(type, xpath, value);
         final String contentPackage = getContentPackage(type, xpath, value, uuid);
-        final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource());
+        final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource(), type);
 
         return Content.builder()
                 .withUuid(uuid)
@@ -452,10 +452,10 @@ public class EomFileProcessor {
     }
 
 
-    private Distribution getCanBeDistributed(ContentSource contentSource) {
+    private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {
             case FT:
-                return Distribution.YES;
+                return Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
             case Reuters:
                 return Distribution.NO;
             default:
