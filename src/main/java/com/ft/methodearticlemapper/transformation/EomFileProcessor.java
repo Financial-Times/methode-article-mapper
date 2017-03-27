@@ -1,5 +1,8 @@
 package com.ft.methodearticlemapper.transformation;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
+
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
@@ -16,8 +19,7 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,18 +55,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 
 public class EomFileProcessor {
 
@@ -63,10 +66,10 @@ public class EomFileProcessor {
     }
 
     interface Type {
-        String CONTENT_PACKAGE = "http://www.ft.com/ontology/content/ContentPackage";
+        String CONTENT_PACKAGE = "ContentPackage";
     }
 
-    public static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
+    protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -75,9 +78,11 @@ public class EomFileProcessor {
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
+    private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
+
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
-    private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
+    private static final String EMPTY_VALIDATED_BODY = "<body></body>";
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
@@ -160,23 +165,13 @@ public class EomFileProcessor {
 
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
-        String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
-        switch (mode) {
-            case PREVIEW:
-                if (Strings.isNullOrEmpty(transformedBody)) {
-                    transformedBody = "<body></body>";
-                }
-                break;
-            default:
-                if (Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
-                    throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
-                }
-        }
-
-        Brand brand = contentSourceBrandMap.get(eomFile.getContentSource());
+        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
+        final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
-        final String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, transformedBody);
+        final String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, validatedBody);
+
+        final Brand brand = contentSourceBrandMap.get(eomFile.getContentSource());
 
         final String storyPackage = getStoryPackage(xpath, value, uuid);
 
@@ -215,6 +210,25 @@ public class EomFileProcessor {
                 .withContentPackage(contentPackage)
                 .withCanBeDistributed(canBeDistributed)
                 .build();
+    }
+
+    private String validateBody(final TransformationMode mode,
+                                final String type,
+                                final String transformedBody,
+                                final UUID uuid) {
+        if (!Strings.isNullOrEmpty(transformedBody) && !Strings.isNullOrEmpty(unwrapBody(transformedBody))) {
+            return transformedBody;
+        }
+
+        if (TransformationMode.PREVIEW.equals(mode)) {
+            return EMPTY_VALIDATED_BODY;
+        }
+
+        if (Type.CONTENT_PACKAGE.equals(type)) {
+            return EMPTY_VALIDATED_BODY;
+        }
+
+        throw new UntransformableMethodeContentException(uuid.toString(), "Not a valid Methode article for publication - transformed article body is blank");
     }
 
     private String getStoryPackage(XPath xpath, Document doc, UUID articleUuid) throws XPathExpressionException {
