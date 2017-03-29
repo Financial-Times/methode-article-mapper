@@ -67,6 +67,7 @@ public class EomFileProcessor {
 
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
+        String ARTICLE = "Article";
     }
 
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
@@ -79,6 +80,7 @@ public class EomFileProcessor {
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
+    private static final String BODY_TAG_XPATH = "/doc/story/text/body";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -292,10 +294,16 @@ public class EomFileProcessor {
     }
 
     private String determineType(final XPath xpath,
-                                 final Document attributesDocument) throws XPathExpressionException {
+                                 final Document attributesDocument)
+        throws XPathExpressionException, TransformerException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
+        }
+
+        final String body = retrieveField(xpath, BODY_TAG_XPATH, attributesDocument);
+        if (!Strings.isNullOrEmpty(body)) {
+            return Type.ARTICLE;
         }
 
         return null;
