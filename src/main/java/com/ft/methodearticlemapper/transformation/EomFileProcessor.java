@@ -1,8 +1,5 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
-
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
@@ -19,16 +16,8 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -41,7 +30,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -55,6 +43,14 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class EomFileProcessor {
 
@@ -80,7 +76,6 @@ public class EomFileProcessor {
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
-    private static final String BODY_TAG_XPATH = "/doc/story/text/body";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -301,12 +296,7 @@ public class EomFileProcessor {
             return Type.CONTENT_PACKAGE;
         }
 
-        final String body = retrieveField(xpath, BODY_TAG_XPATH, attributesDocument);
-        if (!Strings.isNullOrEmpty(body)) {
-            return Type.ARTICLE;
-        }
-
-        return null;
+        return Type.ARTICLE;
     }
 
     private String getDescription(final String type,

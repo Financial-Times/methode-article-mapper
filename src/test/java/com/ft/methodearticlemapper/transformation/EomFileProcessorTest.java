@@ -1,5 +1,29 @@
 package com.ft.methodearticlemapper.transformation;
 
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
+import static com.ft.methodearticlemapper.transformation.EomFileProcessor.METHODE;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.ft.common.FileUtils;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
@@ -10,9 +34,6 @@ import com.ft.content.model.Distribution;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
-import com.ft.methodearticlemapper.methode.ContentSource;
-import com.google.common.collect.ImmutableSortedSet;
-
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
@@ -24,17 +45,13 @@ import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
+import com.ft.methodearticlemapper.transformation.EomFileProcessor.Type;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
+import com.google.common.collect.ImmutableSortedSet;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-
-import org.apache.commons.lang.StringUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -47,27 +64,11 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
-
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.EomFileProcessor.METHODE;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class EomFileProcessorTest {
@@ -922,6 +923,14 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
+    @Test
+    public void testTypeArticleIsDefaultSetIfNoContentPackage() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertEquals(Type.ARTICLE, content.getType());
+    }
+
     private void testContentPackage(final String description,
                                     final String listHref,
                                     final String listId) {
@@ -1133,6 +1142,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent(ContentSource contentSource){
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
+                .withType(Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
