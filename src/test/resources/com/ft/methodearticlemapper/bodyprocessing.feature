@@ -59,6 +59,13 @@ Feature: Body processing
     | tagname     |
     | videoPlayer |
 
+  Scenario Outline: Transform and tidy up Brightcove video
+    Given the Methode body has <tagname> the transformer will TRANSFORM THE LINKED TAG TO VIDEO
+
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
+    | tagname     |
+    | content |
+
   Scenario Outline: Transform and tidy web pull quote
     Given the Methode body has <tagname> the transformer will TRANSFORM THE WEB-PULL-QUOTE TO PULL-QUOTE
 
@@ -82,7 +89,6 @@ Feature: Body processing
     | col                        |
     | colgroup                   |
     | command                    |
-    | content                    |
     | datalist                   |
     | del                        |
     | dir                        |

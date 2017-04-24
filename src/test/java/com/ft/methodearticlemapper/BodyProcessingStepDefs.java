@@ -163,6 +163,7 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES", "DataTableXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeVideoXmlEventHandler");
+        rulesAndHandlers.put( "TRANSFORM THE LINKED TAG TO VIDEO", "ContentVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM INTERACTIVE GRAPHICS", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
