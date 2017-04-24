@@ -11,17 +11,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MethodeVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
+public class ContentVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
-    private MethodeVideoXmlEventHandler eventHandler;
+    private ContentVideoXmlEventHandler eventHandler;
     @Mock
     private XMLEventHandler fallbackHandler;
 
@@ -32,10 +30,12 @@ public class MethodeVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     @Mock
     private BodyProcessingContext mockBodyProcessingContext;
 
-    private static final String VIDEO_PLAYER_ELEMENT = "videoPlayer";
-    private static final String VIDEO_ID_ATTRIBUTE_NAME = "videoID";
-    private static final String VIDEO_ID = "3920663836001";
+    private static final String VIDEO_LINK_ELEMENT = "content";
+    private static final String VIDEO_ID_HOLDER_ATTRIBUTE_NAME = "href";
     private static final String VIDEO_UUID = "e21e5235-5f3f-4a53-bafd-73dbcd0552e0";
+    private static final String VIDEO_ID_HOLDER = "/FT/Content/Links/Videos/Video_upload-test.mp4_" + VIDEO_UUID
+            + ".xml?uuid=dcc02264-2438-11e7-a24c-6bbb6ec0bc98&amp;xp=/doc/story/text/body&amp;lt=link\" id=\"U11603526769084aUD\"";
+    private static final String VIDEO_ID_HOLDER_NO_UUID = "/FT/Content/Links/Videos/Video_upload-test.mp4_123456789.xml?uuid=dcc02264-2438-11e7-a24c-6bbb6ec0bc98&amp;xp=/doc/story/text/body&amp;lt=link\" id=\"U11603526769084aUD\"";
     private static final String DATA_EMBEDDED = "data-embedded";
     private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
     private static final String CONTENT_TAG = "content";
@@ -44,35 +44,22 @@ public class MethodeVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Before
     public void setup() throws Exception {
-        eventHandler = new MethodeVideoXmlEventHandler(VIDEO_ID_ATTRIBUTE_NAME, fallbackHandler);
+        eventHandler = new ContentVideoXmlEventHandler(VIDEO_ID_HOLDER_ATTRIBUTE_NAME, fallbackHandler);
     }
 
     @Test
-    public void shouldUseFallbackHandlerIfStartElementVideoIdAttributeValuesAreNull() throws Exception {
-        StartElement startElement = getStartElement(VIDEO_PLAYER_ELEMENT);
+    public void shouldUseFallbackHandlerIfStartElementVideoIdHolderAttributeValueIsMissing() throws Exception {
+        StartElement startElement = getStartElement(VIDEO_LINK_ELEMENT);
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(fallbackHandler).handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
     }
 
     @Test
-    public void shouldUseFallbackHandlerIfStartElementVideoIdAttributeValuesAreEmpty() throws Exception {
-        StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT,
-                buildOneAttributeMap("", ""));
+    public void shouldUseFallbackHandlerIfStartElementVideoIdHolderAttributeValueIsEmpty() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(
+                VIDEO_LINK_ELEMENT, buildOneAttributeMap(VIDEO_ID_HOLDER_ATTRIBUTE_NAME, ""));
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(fallbackHandler).handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-    }
-
-    @Test
-    public void shouldWriteTransformedElementsToWriterWhenBrightcoveId() throws Exception {
-        Map<String, String> transformedAttributes = new HashMap<>();
-        transformedAttributes.put(ID, UUID.nameUUIDFromBytes(VIDEO_ID.getBytes()).toString());
-        transformedAttributes.put(DATA_EMBEDDED, Boolean.TRUE.toString());
-        transformedAttributes.put(TYPE, VIDEO_TYPE);
-        StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT,
-                buildOneAttributeMap(VIDEO_ID_ATTRIBUTE_NAME, VIDEO_ID));
-        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockBodyWriter).writeStartTag(CONTENT_TAG, transformedAttributes);
-        verify(mockBodyWriter).writeEndTag(CONTENT_TAG);
     }
 
     @Test
@@ -81,11 +68,19 @@ public class MethodeVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         transformedAttributes.put(ID, VIDEO_UUID);
         transformedAttributes.put(DATA_EMBEDDED, Boolean.TRUE.toString());
         transformedAttributes.put(TYPE, VIDEO_TYPE);
-        StartElement startElement = getStartElementWithAttributes(VIDEO_PLAYER_ELEMENT,
-                buildOneAttributeMap(VIDEO_ID_ATTRIBUTE_NAME, VIDEO_UUID));
+        StartElement startElement = getStartElementWithAttributes(
+                VIDEO_ID_HOLDER_ATTRIBUTE_NAME, buildOneAttributeMap(VIDEO_ID_HOLDER_ATTRIBUTE_NAME, VIDEO_ID_HOLDER));
         eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
         verify(mockBodyWriter).writeStartTag(CONTENT_TAG, transformedAttributes);
         verify(mockBodyWriter).writeEndTag(CONTENT_TAG);
+    }
+
+    @Test
+    public void shouldUseFallbackHandlerIfStartElementVideoIdHolderAttributeValueIsNotUUID() throws Exception {
+        StartElement startElement = getStartElementWithAttributes(VIDEO_ID_HOLDER_ATTRIBUTE_NAME,
+                buildOneAttributeMap(VIDEO_ID_HOLDER_ATTRIBUTE_NAME, VIDEO_ID_HOLDER_NO_UUID));
+        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
+        verify(fallbackHandler).handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
     }
 
     private Map<String, String> buildOneAttributeMap(String attributeName, String attributeValue) {

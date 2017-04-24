@@ -37,6 +37,6 @@ public class ContentVideoXmlEventHandler extends AbstractVideoXmlEventHandler {
         }
 
         Matcher matcher = UUID_PATTERN.matcher(videoIdHolder);
-        return matcher.find() ? matcher.group() : null;
+        return matcher.find() ? matcher.group(1) : null;
     }
 }

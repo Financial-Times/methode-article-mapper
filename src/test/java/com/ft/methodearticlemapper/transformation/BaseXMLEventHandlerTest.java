@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
@@ -72,7 +73,6 @@ public class BaseXMLEventHandlerTest {
         return null;
 
     }
-
 
 	private Attribute getAttribute(String name, String value) {
 		return new AttributeEventImpl(null, new QName(name), value, false);
