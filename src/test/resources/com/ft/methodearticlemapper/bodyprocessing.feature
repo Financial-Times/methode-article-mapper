@@ -59,8 +59,15 @@ Feature: Body processing
     | tagname     |
     | videoPlayer |
 
-  Scenario Outline: Transform and tidy up Brightcove video
-    Given the Methode body has <tagname> the transformer will TRANSFORM THE LINKED TAG TO VIDEO
+  Scenario Outline: Transform and tidy up Next video
+    Given the Methode body has <tagname> the transformer will TRANSFORM THE NEXT TAG TO VIDEO
+
+  Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
+    | tagname     |
+    | videoPlayer |
+
+  Scenario Outline: Transform and tidy up linked Next video
+    Given the Methode body has <tagname> the transformer will TRANSFORM THE LINK TAG TO VIDEO
 
   Examples: Tidy up and transform tags to remove attributes that probably relate to formatting
     | tagname     |
