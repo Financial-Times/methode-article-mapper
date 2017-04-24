@@ -26,6 +26,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
 
         registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new ContentVideoXmlEventHandler("href", new StripElementAndContentsXMLEventHandler()), "content");
         registerStartAndEndElementEventHandler(
                 new MethodeOtherVideoXmlEventHandler(
                         new InteractiveGraphicHandler(
