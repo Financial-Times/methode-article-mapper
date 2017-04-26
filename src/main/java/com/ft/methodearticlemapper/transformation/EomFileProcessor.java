@@ -76,6 +76,7 @@ public class EomFileProcessor {
     private static final String NO_PICTURE_FLAG = "No picture";
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
+    private static final String ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH = "/doc/lead/package-navigation-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
@@ -443,14 +444,20 @@ public class EomFileProcessor {
 
         AlternativeTitles.Builder builder = AlternativeTitles.builder();
 
-        String promotionalTitle = Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
+        final String promotionalTitle =
+            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
         if (!promotionalTitle.isEmpty()) {
             builder = builder.withPromotionalTitle(promotionalTitle);
         }
 
+        final String contentPackageTitle =
+            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH, doc)).trim();
+        if (!contentPackageTitle.isEmpty()) {
+            builder = builder.withContentPackageTitle(contentPackageTitle);
+        }
+
         return builder.build();
     }
-
 
     private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {

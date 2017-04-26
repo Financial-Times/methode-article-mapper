@@ -116,7 +116,7 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(
-                        buildEomFileValue(mainImageUuid, null, null, null, null))
+                        buildEomFileValue(mainImageUuid, null, null, null, null, null))
                 .withAttributes(
                         new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                                 .withLastPublicationDate(lastPublicationDateAsString)
@@ -142,13 +142,23 @@ public class EomFileProcessorTest {
     private static byte[] buildEomFileValue(
             UUID mainImageUuid,
             String promoTitle,
+            String contentPackageTitle,
             String standfirst,
             String byline, String storyPackageUuid) {
-        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null, null, storyPackageUuid);
+        return buildEomFileValueWithContentPackage(
+            mainImageUuid,
+            promoTitle,
+            contentPackageTitle,
+            standfirst,
+            byline,
+            null,
+            null,
+            storyPackageUuid);
     }
 
     private static byte[] buildEomFileValueWithContentPackage(UUID mainImageUuid,
                                                               String promoTitle,
+                                                              String contentPackageTitle,
                                                               String standfirst,
                                                               String byline,
                                                               String contentPackageDesc,
@@ -160,6 +170,7 @@ public class EomFileProcessorTest {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("mainImageUuid", mainImageUuid);
         attributes.put("promoTitle", promoTitle);
+        attributes.put("contentPackageTitle", contentPackageTitle);
         attributes.put("standfirst", standfirst);
         attributes.put("byline", byline);
         attributes.put("storyPackageUuid", storyPackageUuid);
@@ -480,7 +491,7 @@ public class EomFileProcessorTest {
 
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(buildEomFileValue(null, null, null, byline, null))
+                .withValue(buildEomFileValue(null, null, null, null, byline, null))
                 .build();
 
         final Content expectedContent = Content.builder()
@@ -588,7 +599,7 @@ public class EomFileProcessorTest {
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
                 .withValue(
-                        buildEomFileValue(null, null, null, null, storyPackageUuid))
+                        buildEomFileValue(null, null, null, null, null, storyPackageUuid))
                 .withAttributes(
                         new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                                 .withLastPublicationDate(lastPublicationDateAsString)
@@ -690,7 +701,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(null, null, null, null, null))
+                .withValue(buildEomFileValue(null, null, null, null, null, null))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE_NO_CONTRIBUTOR_RIGHTS)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
@@ -773,7 +784,7 @@ public class EomFileProcessorTest {
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, null, expectedStandfirst, null, null))
+          .withValue(buildEomFileValue(null, null, null, expectedStandfirst, null, null))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -786,7 +797,7 @@ public class EomFileProcessorTest {
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, null, standfirst, null, null))
+          .withValue(buildEomFileValue(null, null, null, standfirst, null, null))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -803,38 +814,53 @@ public class EomFileProcessorTest {
 
     @Test
     public void thatAlternativeTitlesArePresent() {
-        String promoTitle = "Test Promo Title";
+        final String promoTitle = "Test Promo Title";
+        final String contentPackageTitle = "Test Content Package Title";
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .withValue(buildEomFileValue(null, promoTitle, contentPackageTitle, null, null, null))
           .build();
 
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(equalToIgnoringWhiteSpace(promoTitle)));
+        final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content, is(notNullValue()));
+
+        final AlternativeTitles actual = content.getAlternativeTitles();
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getPromotionalTitle(), is(equalToIgnoringWhiteSpace(promoTitle)));
+        assertThat(actual.getContentPackageTitle(), is(equalToIgnoringWhiteSpace(contentPackageTitle)));
     }
 
     @Test
     public void thatAlternativeTitlesAreOptional() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-        AlternativeTitles actual = content.getAlternativeTitles();
+        final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content, is(notNullValue()));
+
+        final AlternativeTitles actual = content.getAlternativeTitles();
         assertThat(actual, is(notNullValue()));
         assertThat(actual.getPromotionalTitle(), is(nullValue()));
+        assertThat(actual.getContentPackageTitle(), is(nullValue()));
     }
 
     @Test
-    public void thatWhitespacePromoTitleIsTreatedAsAbsent() {
-        String promoTitle = "\n";
+    public void thatWhitespaceAlternativeTitlesAreTreatedAsAbsent() {
+        final String promoTitle = " \n";
+        final String contentPackageTitle = "\t ";
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .withValue(buildEomFileValue(null, promoTitle, contentPackageTitle, null, null, null))
           .build();
 
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getAlternativeTitles().getPromotionalTitle(), is(nullValue()));
+        final Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content, is(notNullValue()));
+
+        final AlternativeTitles actual = content.getAlternativeTitles();
+        assertThat(actual, is(notNullValue()));
+        assertThat(actual.getPromotionalTitle(), is(nullValue()));
+        assertThat(actual.getContentPackageTitle(), is(nullValue()));
     }
 
     @Test
@@ -1049,7 +1075,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackageDesc, contentPackageListHref, null))
+                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, null, contentPackageDesc, contentPackageListHref, null))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
