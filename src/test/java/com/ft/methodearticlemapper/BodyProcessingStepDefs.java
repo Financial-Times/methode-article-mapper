@@ -162,7 +162,9 @@ public class BodyProcessingStepDefs {
 		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX WITH MASTER IMAGE", "PromoBoxEventHandler");
         rulesAndHandlers.put( "RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES", "DataTableXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
-        rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeBrightcoveVideoXmlEventHandler");
+        rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeVideoXmlEventHandler");
+        rulesAndHandlers.put( "TRANSFORM THE NEXT TAG TO VIDEO", "MethodeVideoXmlEventHandler");
+        rulesAndHandlers.put( "TRANSFORM THE LINK TAG TO VIDEO", "ContentVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM INTERACTIVE GRAPHICS", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "TRANSFORM OTHER VIDEO TYPES", "MethodeOtherVideoXmlEventHandler");
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
@@ -370,7 +372,7 @@ public class BodyProcessingStepDefs {
         String handler = rulesAndHandlers.get(rule);
         StartElementEventImpl startElement = StartElementEventImpl.construct(null, new QName(name), null, null, null);
         XMLEventHandler eventHandler = registry.getEventHandler(startElement);
-        assertThat("handler incorrect", eventHandler.getClass().getSimpleName(), equalTo(handler));
+        assertThat("handler incorrect", handler, equalTo(eventHandler.getClass().getSimpleName()));
         return eventHandler;
     }
 

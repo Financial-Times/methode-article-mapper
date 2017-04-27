@@ -73,7 +73,6 @@ public class BaseXMLEventHandlerTest {
 
     }
 
-
 	private Attribute getAttribute(String name, String value) {
 		return new AttributeEventImpl(null, new QName(name), value, false);
 	}
