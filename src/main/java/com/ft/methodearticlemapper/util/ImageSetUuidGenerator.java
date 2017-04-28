@@ -16,6 +16,10 @@ public class ImageSetUuidGenerator {
         return otherUuid(imageUuid);
     }
 
+    public static UUID fromImageSetID(String imageSetID) {
+        return UUID.nameUUIDFromBytes(imageSetID.getBytes(UTF8));
+    }
+
     private static UUID otherUuid(UUID uuid) {
         BitSet uuidBits = BitSet.valueOf(leastSignificantUuidPartToBytes(uuid));
         uuidBits.xor(magic);
