@@ -1,9 +1,9 @@
 package com.ft.methodearticlemapper.transformation;
 
+import com.ft.bodyprocessing.BodyProcessor;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
-import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
@@ -87,12 +87,17 @@ public class EomFileProcessor {
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
+    private final BodyProcessor htmlFieldProcessor;
+
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
-    public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
-                            Map<ContentSource, Brand> contentSourceBrandMap) {
+    public EomFileProcessor(final FieldTransformer bodyTransformer,
+                            final FieldTransformer bylineTransformer,
+                            final BodyProcessor htmlFieldProcessor,
+                            final Map<ContentSource, Brand> contentSourceBrandMap) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
+        this.htmlFieldProcessor = htmlFieldProcessor;
         this.contentSourceBrandMap = contentSourceBrandMap;
     }
 
@@ -315,9 +320,9 @@ public class EomFileProcessor {
             return null;
         }
 
-        final String description = getNodeAsString(descriptionNode.getFirstChild());
+        final String description = getNodeAsHTML5String(descriptionNode.getFirstChild());
         if (StringUtils.isBlank(description)) {
-            LOGGER.warn("Type is CONTENT_PACKAGE, but the content package description was blank");
+            LOGGER.warn("Type is CONTENT_PACKAGE, but the content-package-description was blank");
             return null;
         }
 
@@ -416,9 +421,8 @@ public class EomFileProcessor {
     }
 
     private String getNodeAsHTML5String(Node node) throws TransformerException {
-        Html5SelfClosingTagBodyProcessor processor = new Html5SelfClosingTagBodyProcessor();
         String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
-        return processor.process(nodeAsString, null);
+        return htmlFieldProcessor.process(nodeAsString, null);
     }
 
     private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
