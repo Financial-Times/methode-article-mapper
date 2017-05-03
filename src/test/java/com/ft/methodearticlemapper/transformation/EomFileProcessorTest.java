@@ -97,6 +97,18 @@ public class EomFileProcessorTest {
     private static final Date LAST_MODIFIED = new Date();
     private static final String SUBSCRIPTION_LEVEL = Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel());
 
+    private static final String TEMPLATE_PLACEHOLDER_MAINIMAGE = "mainImageUuid";
+    private static final String TEMPLATE_PLACEHOLDER_PROMO_TITLE = "promoTitle";
+    private static final String TEMPLATE_PLACEHOLDER_STANDFIRST = "standfirst";
+    private static final String TEMPLATE_PLACEHOLDER_BYLINE = "byline";
+    private static final String TEMPLATE_PLACEHOLDER_STORY_PACKAGE_UUID = "storyPackageUuid";
+    private static final String TEMPLATE_PLACEHOLDER_IMAGE_SET_UUID = "imageSetID";
+    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE = "contentPackage";
+    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_DESC = "contentPackageDesc";
+    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_LIST_HREF = "contentPackageListHref";
+
+    private static final String IMAGE_SET_UUID = "U116035516646705FC";
+
     private final UUID uuid = UUID.randomUUID();
 
     @Rule
@@ -112,11 +124,12 @@ public class EomFileProcessorTest {
     public static EomFile createStandardEomFileWithMainImage(UUID uuid,
                                                              UUID mainImageUuid,
                                                              String articleImageMetadataFlag) {
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_MAINIMAGE, mainImageUuid);
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(
-                        buildEomFileValue(mainImageUuid, null, null, null, null))
+                .withValue(buildEomFileValue(templateValues))
                 .withAttributes(
                         new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                                 .withLastPublicationDate(lastPublicationDateAsString)
@@ -139,43 +152,12 @@ public class EomFileProcessorTest {
                 .build();
     }
 
-    private static byte[] buildEomFileValue(
-            UUID mainImageUuid,
-            String promoTitle,
-            String standfirst,
-            String byline, String storyPackageUuid) {
-        return buildEomFileValueWithContentPackage(mainImageUuid, promoTitle, standfirst, byline, null, null, storyPackageUuid);
-    }
-
-    private static byte[] buildEomFileValueWithContentPackage(UUID mainImageUuid,
-                                                              String promoTitle,
-                                                              String standfirst,
-                                                              String byline,
-                                                              String contentPackageDesc,
-                                                              String contentPackageListHref,
-                                                              String storyPackageUuid) {
-
+    private static byte[] buildEomFileValue(Map<String, Object> templatePlaceholdersValues) {
         Template mustache = Mustache.compiler().escapeHTML(false).compile(ARTICLE_TEMPLATE);
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("mainImageUuid", mainImageUuid);
-        attributes.put("promoTitle", promoTitle);
-        attributes.put("standfirst", standfirst);
-        attributes.put("byline", byline);
-        attributes.put("storyPackageUuid", storyPackageUuid);
-
-        if (contentPackageDesc != null && contentPackageListHref != null) {
-            attributes.put("contentPackage", Boolean.TRUE);
-            attributes.put("contentPackageDesc", contentPackageDesc);
-            attributes.put("contentPackageListHref", contentPackageListHref);
-        }
-
-        return mustache.execute(attributes).getBytes(UTF_8);
+        return mustache.execute(templatePlaceholdersValues).getBytes(UTF_8);
     }
 
-    private static String buildEomFileSystemAttributes(
-            String channel) {
-
+    private static String buildEomFileSystemAttributes(String channel) {
         Template mustache = Mustache.compiler().compile(SYSTEM_ATTRIBUTES_TEMPLATE);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("channel", channel);
@@ -478,9 +460,12 @@ public class EomFileProcessorTest {
     public void shouldTransformBylineWhenPresentOnPublish() {
         String byline = "By <author-name>Gillian Tett</author-name>";
 
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_BYLINE, byline);
+
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
-                .withValue(buildEomFileValue(null, null, null, byline, null))
+                .withValue(buildEomFileValue(templateValues))
                 .build();
 
         final Content expectedContent = Content.builder()
@@ -584,11 +569,13 @@ public class EomFileProcessorTest {
     }
 
     private static EomFile createStandardEomFileWithStoryPackage(UUID uuid, String storyPackageUuid) {
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_STORY_PACKAGE_UUID, storyPackageUuid);
+
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(
-                        buildEomFileValue(null, null, null, null, storyPackageUuid))
+                .withValue(buildEomFileValue(templateValues))
                 .withAttributes(
                         new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                                 .withLastPublicationDate(lastPublicationDateAsString)
@@ -690,7 +677,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(null, null, null, null, null))
+                .withValue(buildEomFileValue(new HashMap<>()))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE_NO_CONTRIBUTOR_RIGHTS)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)
@@ -771,9 +758,12 @@ public class EomFileProcessorTest {
     public void thatStandfirstIsPresent() {
         final String expectedStandfirst = "Test standfirst";
 
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_STANDFIRST, expectedStandfirst);
+
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, null, expectedStandfirst, null, null))
+          .withValue(buildEomFileValue(templateValues))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -782,11 +772,12 @@ public class EomFileProcessorTest {
 
     @Test
     public void thatWhitespaceStandfirstIsTreatedAsAbsent() {
-        final String standfirst = "\n";
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_STANDFIRST, "\n");
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, null, standfirst, null, null))
+          .withValue(buildEomFileValue(templateValues))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -805,9 +796,12 @@ public class EomFileProcessorTest {
     public void thatAlternativeTitlesArePresent() {
         String promoTitle = "Test Promo Title";
 
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_PROMO_TITLE, promoTitle);
+
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .withValue(buildEomFileValue(templateValues))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -826,11 +820,12 @@ public class EomFileProcessorTest {
 
     @Test
     public void thatWhitespacePromoTitleIsTreatedAsAbsent() {
-        String promoTitle = "\n";
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_PLACEHOLDER_PROMO_TITLE, "\n");
 
         final EomFile eomFile = (new EomFile.Builder())
           .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(null, promoTitle, null, null, null))
+          .withValue(buildEomFileValue(templateValues))
           .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -922,6 +917,36 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
+    @Test
+    public void testImageSet() {
+        String expectedUUID = UUID.nameUUIDFromBytes(IMAGE_SET_UUID.getBytes(UTF_8)).toString();
+        String expectedBody = "<body>"
+            + "<p>random text for now</p>"
+            + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
+            + "</body>";
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(expectedBody);
+
+        EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
+    }
+
+    @Test
+    public void testImageSetPreview() {
+        String expectedUUID = UUID.nameUUIDFromBytes(IMAGE_SET_UUID.getBytes(UTF_8)).toString();
+        String expectedBody = "<body>"
+            + "<p>random text for now</p>"
+            + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
+            + "</body>";
+        when(bodyTransformer.transform(anyString(), anyString())).thenReturn(expectedBody);
+
+        EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
+        Content content = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
+    }
+
     private void testContentPackage(final String description,
                                     final String listHref,
                                     final String listId) {
@@ -942,8 +967,10 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString())).then(returnsFirstArg());
         final UUID imageUuid = UUID.randomUUID();
         final UUID expectedMainImageUuid = ImageSetUuidGenerator.fromImageUuid(imageUuid);
-        final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, articleImageMetadataFlag);
-        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid,
+            articleImageMetadataFlag);
+        Content content = eomFileProcessor
+            .processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
@@ -959,79 +986,85 @@ public class EomFileProcessorTest {
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, "FT", workflowStatus, lastPublicationDateAsString,
                 initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileNonFtOrAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "REU2", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
                 FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithSubscriptionLevel(UUID uuid, String subscriptionLevel) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, subscriptionLevel,
-                null, null, null);
+                null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithContentPackage(UUID uuid, Boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                hasContentPackage, contentPackageDesc, contentPackageHref);
+                hasContentPackage, contentPackageDesc, contentPackageHref, null);
+    }
+
+    private EomFile createStandardEomFileWithImageSet(String imageSetID) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
+            initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+            null, null, null, imageSetID);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
@@ -1039,17 +1072,27 @@ public class EomFileProcessorTest {
                                           String lastPublicationDateAsString, String initialPublicationDateAsString,
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
                                           String eomType, URI webUrl, String contributorRights, String objectLocation, String subscriptionLevel,
-                                          Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref) {
+                                          Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref,
+                                          String imageSetID) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
             embargoDate = dateInTheFutureAsStringInMethodeFormat();
         }
 
+        Map<String, Object> templateValues = new HashMap<>();
+        if (contentPackageDesc != null && contentPackageListHref != null) {
+            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE, Boolean.TRUE);
+            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_DESC, contentPackageDesc);
+            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_LIST_HREF, contentPackageListHref);
+        }
+
+        templateValues.put(TEMPLATE_PLACEHOLDER_IMAGE_SET_UUID, imageSetID);
+
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(eomType)
-                .withValue(buildEomFileValueWithContentPackage(null, null, null, null, contentPackageDesc, contentPackageListHref, null))
+                .withValue(buildEomFileValue(templateValues))
                 .withAttributes(new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
                         .withLastPublicationDate(lastPublicationDateAsString)
                         .withInitialPublicationDate(initialPublicationDateAsString)

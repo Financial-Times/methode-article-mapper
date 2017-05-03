@@ -45,7 +45,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
     private String getIdFromImageSet(StartElement event) {
         Attribute idAttribute = event.getAttributeByName(new QName(ID_ATTRIBUTE));
         if (idAttribute == null || StringUtils.isBlank(idAttribute.getValue())) {
-            LOGGER.info("No id attribute or blank for {} required to generate uuid", event.getName().getLocalPart());
+            LOGGER.warn("No id attribute or blank for {} required to generate uuid", event.getName().getLocalPart());
             return null;
         }
 

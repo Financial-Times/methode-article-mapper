@@ -17,9 +17,9 @@ import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import java.util.Date;
 import java.util.UUID;
 
+import java.util.regex.Pattern;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -30,6 +30,8 @@ import javax.ws.rs.core.MediaType;
 public class PostContentToTransformResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
+
+    private final Pattern uuidPattern = Pattern.compile("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f‌​]{4}-[0-9a-f]{12}$");
 
     private final EomFileProcessor eomFileProcessor;
 
@@ -88,7 +90,9 @@ public class PostContentToTransformResource {
             throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
         try {
-
+            if (!uuidPattern.matcher(uuid).matches()) {
+                throw new IllegalArgumentException();
+            }
             UUID resourceId = UUID.fromString(uuid);
 
             if (!uuid.equals(eomFile.getUuid())) {
