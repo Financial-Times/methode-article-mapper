@@ -86,8 +86,7 @@ public class PostContentToTransformResource {
             throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
         try {
-            UUID modelUUID = UUID.fromString(uuid);
-            if (!uuid.equals(modelUUID.toString())) {
+            if (!UUID.fromString(uuid).toString().equals(uuid)) {
                 throw new IllegalArgumentException("Invalid UUID: " + uuid);
             }
         } catch (IllegalArgumentException iae) {
