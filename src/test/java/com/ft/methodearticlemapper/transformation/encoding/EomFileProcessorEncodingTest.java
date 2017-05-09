@@ -7,8 +7,11 @@ import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +34,7 @@ public class EomFileProcessorEncodingTest {
     
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
+    private BodyProcessor htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
 
     private final UUID uuid = UUID.randomUUID();
     
@@ -42,7 +46,7 @@ public class EomFileProcessorEncodingTest {
         contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, contentSourceBrandMap);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap);
 
         when(bylineTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BYLINE);
     }
