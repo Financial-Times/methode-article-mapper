@@ -1,6 +1,8 @@
 package com.ft.methodearticlemapper.resources;
 
 import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
@@ -26,6 +28,7 @@ import static com.jcabi.matchers.RegexMatchers.matchesPattern;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -46,6 +49,7 @@ public class ArticlePreviewTransformationTest {
     private HttpHeaders httpHeaders= mock(HttpHeaders.class);
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
+    private BodyProcessor htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
     private Brand brand= new Brand(ARBITRARY_BRAND);
 
     /** Classes under test - validation for successful transformation of an article preview occurs in both classes*/
@@ -57,7 +61,7 @@ public class ArticlePreviewTransformationTest {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, contentSourceBrandMap);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap);
         postContentToTransformResource= new PostContentToTransformResource(eomFileProcessor);
 
         when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));

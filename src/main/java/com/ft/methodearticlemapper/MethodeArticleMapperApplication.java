@@ -5,6 +5,7 @@ import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClient;
@@ -37,6 +38,8 @@ import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.InteractiveGraphicsMatcher;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
+import com.ft.platform.dropwizard.DefaultGoodToGoChecker;
+import com.ft.platform.dropwizard.GoodToGoBundle;
 import com.sun.jersey.api.client.Client;
 
 import java.net.URI;
@@ -63,6 +66,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     @Override
     public void initialize(final Bootstrap<MethodeArticleMapperConfiguration> bootstrap) {
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
+        bootstrap.addBundle(new GoodToGoBundle(new DefaultGoodToGoChecker()));
     }
 
     @Override
@@ -155,6 +159,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                         concordanceUri
                 ).newInstance(),
                 new BylineProcessingFieldTransformerFactory().newInstance(),
+                new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()));
     }
 

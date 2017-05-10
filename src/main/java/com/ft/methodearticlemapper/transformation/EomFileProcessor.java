@@ -1,6 +1,9 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
+import com.ft.bodyprocessing.BodyProcessor;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
+
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
@@ -16,8 +19,16 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -30,6 +41,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -43,14 +55,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 public class EomFileProcessor {
 
@@ -73,6 +77,7 @@ public class EomFileProcessor {
     private static final String NO_PICTURE_FLAG = "No picture";
     private static final String HEADLINE_XPATH = "/doc/lead/lead-headline/headline/ln";
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
+    private static final String ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH = "/doc/lead/package-navigation-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
@@ -83,12 +88,17 @@ public class EomFileProcessor {
 
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
+    private final BodyProcessor htmlFieldProcessor;
+
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
-    public EomFileProcessor(FieldTransformer bodyTransformer, FieldTransformer bylineTransformer,
-                            Map<ContentSource, Brand> contentSourceBrandMap) {
+    public EomFileProcessor(final FieldTransformer bodyTransformer,
+                            final FieldTransformer bylineTransformer,
+                            final BodyProcessor htmlFieldProcessor,
+                            final Map<ContentSource, Brand> contentSourceBrandMap) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
+        this.htmlFieldProcessor = htmlFieldProcessor;
         this.contentSourceBrandMap = contentSourceBrandMap;
     }
 
@@ -312,9 +322,9 @@ public class EomFileProcessor {
             return null;
         }
 
-        final String description = getNodeAsString(descriptionNode.getFirstChild());
+        final String description = getNodeAsHTML5String(descriptionNode.getFirstChild());
         if (StringUtils.isBlank(description)) {
-            LOGGER.warn("Type is CONTENT_PACKAGE, but the content package description was blank");
+            LOGGER.warn("Type is CONTENT_PACKAGE, but the content-package-description was blank");
             return null;
         }
 
@@ -413,9 +423,8 @@ public class EomFileProcessor {
     }
 
     private String getNodeAsHTML5String(Node node) throws TransformerException {
-        Html5SelfClosingTagBodyProcessor processor = new Html5SelfClosingTagBodyProcessor();
         String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
-        return processor.process(nodeAsString, null);
+        return htmlFieldProcessor.process(nodeAsString, null);
     }
 
     private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
@@ -441,14 +450,20 @@ public class EomFileProcessor {
 
         AlternativeTitles.Builder builder = AlternativeTitles.builder();
 
-        String promotionalTitle = Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
+        final String promotionalTitle =
+            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
         if (!promotionalTitle.isEmpty()) {
             builder = builder.withPromotionalTitle(promotionalTitle);
         }
 
+        final String contentPackageTitle =
+            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH, doc)).trim();
+        if (!contentPackageTitle.isEmpty()) {
+            builder = builder.withContentPackageTitle(contentPackageTitle);
+        }
+
         return builder.build();
     }
-
 
     private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {
