@@ -5,6 +5,7 @@ import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
 import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClient;
@@ -158,6 +159,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                         concordanceUri
                 ).newInstance(),
                 new BylineProcessingFieldTransformerFactory().newInstance(),
+                new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()));
     }
 
