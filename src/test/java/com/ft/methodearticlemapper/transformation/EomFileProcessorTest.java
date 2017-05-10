@@ -988,7 +988,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFile(uuid);
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertEquals(Type.ARTICLE, content.getType());
+        assertThat(EomFileProcessor.Type.ARTICLE, equalTo(content.getType()));
     }
 
     private void testContentPackage(final String description,
@@ -1199,7 +1199,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent(ContentSource contentSource){
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
-                .withType(Type.ARTICLE)
+                .withType(EomFileProcessor.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
