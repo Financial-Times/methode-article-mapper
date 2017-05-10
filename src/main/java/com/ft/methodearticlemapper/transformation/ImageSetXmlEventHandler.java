@@ -4,16 +4,17 @@ package com.ft.methodearticlemapper.transformation;
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
-import java.util.HashMap;
+import com.ft.uuidutils.GenerateUuid;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
 
 public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
 
@@ -28,7 +29,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
         String imageID = getIdFromImageSet(event);
 
         if (StringUtils.isNotEmpty(imageID)) {
-            String generatedUUID = ImageSetUuidGenerator.fromImageSetID(imageID).toString();
+            String generatedUUID = GenerateUuid.from(imageID).toString();
 
             HashMap<String, String> attributes = new HashMap<>();
             attributes.put("type", "http://www.ft.com/ontology/content/ImageSet");

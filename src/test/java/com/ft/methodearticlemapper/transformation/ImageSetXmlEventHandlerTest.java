@@ -5,11 +5,13 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
-import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
+
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
+
+import com.ft.uuidutils.GenerateUuid;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +27,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String IMAGE_SET_ID = "U11603541372105PPB";
 
     private static final String FT_CONTENT_TAG = "ft-content";
-    private static final String GENERATED_UUID = ImageSetUuidGenerator.fromImageSetID(IMAGE_SET_ID).toString();
+    private static final String GENERATED_UUID = GenerateUuid.from(IMAGE_SET_ID).toString();
 
     @Mock
     private BodyWriter mockEventWriter;
