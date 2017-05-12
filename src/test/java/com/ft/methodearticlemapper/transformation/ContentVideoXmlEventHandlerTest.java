@@ -37,7 +37,7 @@ public class ContentVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
             + ".xml?uuid=dcc02264-2438-11e7-a24c-6bbb6ec0bc98&amp;xp=/doc/story/text/body&amp;lt=link\" id=\"U11603526769084aUD\"";
     private static final String VIDEO_ID_HOLDER_NO_UUID = "/FT/Content/Links/Videos/Video_upload-test.mp4_123456789.xml?uuid=dcc02264-2438-11e7-a24c-6bbb6ec0bc98&amp;xp=/doc/story/text/body&amp;lt=link\" id=\"U11603526769084aUD\"";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
+    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/Video";
     private static final String CONTENT_TAG = "content";
     private static final String ID = "id";
     private static final String TYPE = "type";

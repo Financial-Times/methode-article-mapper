@@ -37,7 +37,7 @@ public class MethodeVideoXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     private static final String VIDEO_ID = "3920663836001";
     private static final String VIDEO_UUID = "e21e5235-5f3f-4a53-bafd-73dbcd0552e0";
     private static final String DATA_EMBEDDED = "data-embedded";
-    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
+    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/Video";
     private static final String CONTENT_TAG = "content";
     private static final String ID = "id";
     private static final String TYPE = "type";

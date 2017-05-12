@@ -18,7 +18,7 @@ public abstract class AbstractVideoXmlEventHandler extends BaseXMLEventHandler {
     private static final String DATA_EMBEDDED = "data-embedded";
     private static final String ID = "id";
     private static final String TYPE = "type";
-    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/MediaResource";
+    private static final String VIDEO_TYPE = "http://www.ft.com/ontology/content/Video";
 
     private final XMLEventHandler fallbackHandler;
 
