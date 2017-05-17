@@ -1,7 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.uuidutils.DeriveUuid;
+import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -56,7 +56,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import static com.ft.uuidutils.DeriveUuid.Salts.IMAGE_SET;
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 
 public class EomFileProcessor {
 
@@ -393,7 +393,7 @@ public class EomFileProcessor {
     private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
         final String imageUuid = StringUtils.substringAfter(xpath.evaluate("/doc/lead/lead-images/web-master/@fileref", eomFileDocument), "uuid=");
         if (!Strings.isNullOrEmpty(imageUuid)) {
-            return DeriveUuid.with(IMAGE_SET).from(UUID.fromString(imageUuid)).toString();
+            return DeriveUUID.with(IMAGE_SET).from(UUID.fromString(imageUuid)).toString();
         }
         return null;
     }

@@ -13,7 +13,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.methode.ContentSource;
-import com.ft.uuidutils.DeriveUuid;
+import com.ft.uuidutils.DeriveUUID;
 import com.google.common.collect.ImmutableSortedSet;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
@@ -504,7 +504,7 @@ public class EomFileProcessorTest {
     @Test
     public void testShouldAddMainImageIfPresent() throws Exception {
         final UUID imageUuid = UUID.randomUUID();
-        final UUID expectedMainImageUuid = DeriveUuid.with(DeriveUuid.Salts.IMAGE_SET).from(imageUuid);
+        final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -1016,7 +1016,7 @@ public class EomFileProcessorTest {
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
         when(bodyTransformer.transform(anyString(), anyString())).then(returnsFirstArg());
         final UUID imageUuid = UUID.randomUUID();
-        final UUID expectedMainImageUuid = DeriveUuid.with(DeriveUuid.Salts.IMAGE_SET).from(imageUuid);
+        final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid,
             articleImageMetadataFlag);
         Content content = eomFileProcessor

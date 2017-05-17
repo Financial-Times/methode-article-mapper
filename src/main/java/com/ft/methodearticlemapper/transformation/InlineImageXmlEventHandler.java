@@ -14,12 +14,12 @@ import javax.xml.stream.events.StartElement;
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-import com.ft.uuidutils.DeriveUuid;
+import com.ft.uuidutils.DeriveUUID;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.ft.uuidutils.DeriveUuid.Salts.IMAGE_SET;
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 
 public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
 
@@ -38,7 +38,7 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
         String uuid = getUuidForImage(event);
 
         if (StringUtils.isNotEmpty(uuid)) {
-            String imageSetUuid = DeriveUuid.with(IMAGE_SET).from(UUID.fromString(uuid)).toString();
+            String imageSetUuid = DeriveUUID.with(IMAGE_SET).from(UUID.fromString(uuid)).toString();
 
             HashMap<String, String> attributes = new HashMap<>();
             attributes.put("id", imageSetUuid);

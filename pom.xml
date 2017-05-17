@@ -23,7 +23,7 @@
         <cucumber.version>1.1.5</cucumber.version>
         <xmlunit.version>1.5</xmlunit.version>
         <wiremock.version>1.40</wiremock.version>
-        <uuid-utils.version>1.0.0</uuid-utils.version>
+        <uuid-utils.version>1.0.1</uuid-utils.version>
         <!-- Plugins -->
         <findbugs.version>2.5.2</findbugs.version>
         <checkstyle.version>2.10</checkstyle.version>
