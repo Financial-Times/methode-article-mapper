@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -18,7 +19,6 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
-import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -55,6 +55,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 
 public class EomFileProcessor {
 
@@ -391,7 +393,7 @@ public class EomFileProcessor {
     private String generateMainImageUuid(XPath xpath, Document eomFileDocument) throws XPathExpressionException {
         final String imageUuid = StringUtils.substringAfter(xpath.evaluate("/doc/lead/lead-images/web-master/@fileref", eomFileDocument), "uuid=");
         if (!Strings.isNullOrEmpty(imageUuid)) {
-            return ImageSetUuidGenerator.fromImageUuid(UUID.fromString(imageUuid)).toString();
+            return DeriveUUID.with(IMAGE_SET).from(UUID.fromString(imageUuid)).toString();
         }
         return null;
     }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
-import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EomFile {

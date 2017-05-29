@@ -1,5 +1,6 @@
 package com.ft.methodearticlemapper.transformation;
 
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -15,7 +16,7 @@ import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.eventhandlers.RetainXMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
-import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
+import com.ft.uuidutils.DeriveUUID;
 import com.google.common.collect.ImmutableMap;
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
@@ -54,7 +55,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler.handleStartElementEvent(webInlinePictureStartElementTag, mockXmlEventReader, mockEventWriter, mockBodyProcessingContext);
 
         Map<String, String> expectedAttributes = new HashMap<>();
-        expectedAttributes.put("id", ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString());
+        expectedAttributes.put("id", DeriveUUID.with(IMAGE_SET).from(java.util.UUID.fromString(UUID)).toString());
         expectedAttributes.put("type", IMAGE_SET_TYPE);
         expectedAttributes.put("data-embedded", "true");
         verify(mockEventWriter).writeStartTag(CONTENT_TAG, expectedAttributes);
@@ -126,7 +127,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         final String actual = processor.process(inputXml, null);
 
         String expectedXml = String.format("<content id=\"%s\" type=\"%s\" data-embedded=\"true\"></content>",
-                ImageSetUuidGenerator.fromImageUuid(java.util.UUID.fromString(UUID)).toString(), IMAGE_SET_TYPE);
+                DeriveUUID.with(IMAGE_SET).from(java.util.UUID.fromString(UUID)).toString(), IMAGE_SET_TYPE);
         assertEquals(expectedXml, actual);
     }
 }

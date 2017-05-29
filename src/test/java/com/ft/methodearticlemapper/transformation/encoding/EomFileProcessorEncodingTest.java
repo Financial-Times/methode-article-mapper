@@ -23,7 +23,7 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
-import com.ft.methodearticlemapper.util.ImageSetUuidGenerator;
+import com.ft.uuidutils.DeriveUUID;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,7 +61,7 @@ public class EomFileProcessorEncodingTest {
             .thenReturn(String.format("<body>%s</body>", bodyText));
         
         final UUID imageUuid = UUID.randomUUID();
-        final UUID expectedMainImageUuid = ImageSetUuidGenerator.fromImageUuid(imageUuid);
+        final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         
         String expectedBody = String.format(
                 "<body><content data-embedded=\"true\" id=\"%s\" type=\"%s\"></content>%s</body>",
