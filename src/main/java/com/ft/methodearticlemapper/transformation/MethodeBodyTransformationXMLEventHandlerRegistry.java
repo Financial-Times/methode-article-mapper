@@ -72,9 +72,10 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
         );
 
-		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
-		registerStartAndEndElementEventHandler(new SimpleTransformBlockElementEventHandler(new StAXTransformingBodyProcessor(this), "ft-timeline"), "timeline");
+        registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
+        registerStartAndEndElementEventHandler(new SimpleTransformBlockElementEventHandler(new StAXTransformingBodyProcessor(this), "ft-timeline"), "timeline");
 
+        registerStartAndEndElementEventHandler(new ImageSetXmlEventHandler(),"image-set");
         registerStartAndEndElementEventHandler(new InlineImageXmlEventHandler(),"web-inline-picture");
         registerStartAndEndElementEventHandler(new WrappedHandlerXmlEventHandler(new InlineImageXmlEventHandler()),"timeline-image");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
