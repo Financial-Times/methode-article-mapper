@@ -26,10 +26,12 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        String imageID = getIdFromImageSet(event);
+        final String uuid = getUuidFromContext(bodyProcessingContext);
+        final String imageID = getIdFromImageSet(event);
 
-        if (StringUtils.isNotEmpty(imageID)) {
-            String generatedUUID = GenerateV3UUID.singleDigested(imageID).toString();
+        if (
+            StringUtils.isNotEmpty(uuid) && StringUtils.isNotEmpty(imageID)) {
+            final String generatedUUID = GenerateV3UUID.singleDigested(uuid + imageID).toString();
 
             HashMap<String, String> attributes = new HashMap<>();
             attributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
@@ -43,8 +45,24 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
         skipUntilMatchingEndTag(event.getName().getLocalPart(), xmlEventReader);
     }
 
+    private String getUuidFromContext(final BodyProcessingContext bodyProcessingContext) {
+        if (!(bodyProcessingContext instanceof MappedDataBodyProcessingContext)) {
+            LOGGER.warn("No mapped data available in body processing context. Cannot retrieve host article UUID");
+            return null;
+        }
+
+        final MappedDataBodyProcessingContext mappedDataBodyProcessingContext = (MappedDataBodyProcessingContext) bodyProcessingContext;
+        final String uuid = mappedDataBodyProcessingContext.get("uuid", String.class);
+
+        if (uuid == null) {
+            LOGGER.warn("No host article UUID found in the context mapped data");
+        }
+
+        return uuid;
+    }
+
     private String getIdFromImageSet(StartElement event) {
-        Attribute idAttribute = event.getAttributeByName(new QName(ID_ATTRIBUTE));
+        final Attribute idAttribute = event.getAttributeByName(new QName(ID_ATTRIBUTE));
         if (idAttribute == null || StringUtils.isBlank(idAttribute.getValue())) {
             LOGGER.warn("No id attribute or blank for {} required to generate uuid", event.getName().getLocalPart());
             return null;
@@ -52,4 +70,5 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
 
         return idAttribute.getValue();
     }
+
 }
