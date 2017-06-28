@@ -97,7 +97,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void testNoMappedDataContextSkipsProcesing() throws Exception {
+    public void testNoMappedDataContextSkipsProcessing() throws Exception {
         final Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(ID_ATTRIBUTE, IMAGE_SET_ID);
         final StartElement imageSetStartElementTag = getStartElementWithAttributes(IMAGE_SET_TAG, attributesMap);
@@ -112,7 +112,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void testNoUuidInMappedDataContextSkipsProcesing() throws Exception {
+    public void testNoUuidInMappedDataContextSkipsProcessing() throws Exception {
         final Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(ID_ATTRIBUTE, IMAGE_SET_ID);
         final StartElement imageSetStartElementTag = getStartElementWithAttributes(IMAGE_SET_TAG, attributesMap);

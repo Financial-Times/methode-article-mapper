@@ -16,8 +16,7 @@ public class MappedDataBodyProcessingContext extends DefaultTransactionIdBodyPro
     super(transactionId);
     this.dataMap =
         Arrays
-            .asList(contextData)
-            .stream()
+            .stream(contextData)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
   }
   

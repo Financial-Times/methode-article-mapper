@@ -29,8 +29,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
         final String uuid = getUuidFromContext(bodyProcessingContext);
         final String imageID = getIdFromImageSet(event);
 
-        if (
-            StringUtils.isNotEmpty(uuid) && StringUtils.isNotEmpty(imageID)) {
+        if (StringUtils.isNotEmpty(uuid) && StringUtils.isNotEmpty(imageID)) {
             final String generatedUUID = GenerateV3UUID.singleDigested(uuid + imageID).toString();
 
             HashMap<String, String> attributes = new HashMap<>();
