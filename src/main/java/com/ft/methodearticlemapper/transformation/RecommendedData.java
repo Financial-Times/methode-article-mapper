@@ -36,11 +36,11 @@ public class RecommendedData {
         this.links.add(new Link(title, address));
     }
 
-    protected class Link {
+    public static class Link {
         String address;
         String title;
 
-        Link(String title, String address) {
+        public Link(String title, String address) {
             this.title = title;
             this.address = address;
         }

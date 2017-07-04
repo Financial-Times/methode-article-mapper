@@ -1,20 +1,17 @@
 package com.ft.methodearticlemapper.transformation;
 
-
 import com.ft.bodyprocessing.BodyProcessingContext;
+import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
-import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SplittableRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,43 +48,39 @@ public class RecommendedXMLEventHandler extends BaseXMLEventHandler {
                     startElement, xmlEventReader, bodyProcessingContext);
             if (recommendedData.getLinks().size() > 0) {
                 eventWriter.writeStartTag(RECOMMENDED_TAG, noAttributes());
-                eventWriter.writeStartTag(RECOMMENDED_TITLE_TAG, noAttributes());
-                if (!StringUtils.isEmpty(recommendedData.getTitle())) {
-                    eventWriter.writeRaw(recommendedData.getTitle());
-                }
-                eventWriter.writeEndTag(RECOMMENDED_TITLE_TAG);
-
-                if (!StringUtils.isEmpty(recommendedData.getIntro())) {
-                    eventWriter.writeStartTag(INTRO_TAG, noAttributes());
-                    eventWriter.writeRaw(recommendedData.getIntro());
-                    eventWriter.writeEndTag(INTRO_TAG);
-                }
-
-                eventWriter.writeStartTag(LIST_TAG, noAttributes());
-                for (RecommendedData.Link link : recommendedData.getLinks()) {
-                    eventWriter.writeStartTag(LIST_ITEM_TAG, noAttributes());
-
-                    Matcher matcher = pattern.matcher(link.address);
-                    Map<String, String> attributes = new HashMap<>();
-//                    if (matcher.find()) {
-//                        attributes.put(TYPE_ATTRIBUTE, TYPE_VALUE);
-//                        attributes.put(URL_ATTRIBUTE, BASE_URL + matcher.group(2));
-//                    } else {
-                        attributes.put(HREF_ATTRIBUTE, link.address);
-//                    }
-
-                    eventWriter.writeStartTag(ANCHOR_TAG, attributes);
-                    eventWriter.writeRaw(link.title);
-                    eventWriter.writeEndTag(ANCHOR_TAG);
-                    eventWriter.writeEndTag(LIST_ITEM_TAG);
-                }
-                eventWriter.writeEndTag(LIST_TAG);
+                writeRecommendedTitle(eventWriter, recommendedData);
+                writeIntro(eventWriter, recommendedData);
+                writeList(eventWriter, recommendedData);
+                eventWriter.writeEndTag(RECOMMENDED_TAG);
             }
-            eventWriter.writeEndTag(RECOMMENDED_TAG);
+        } else {
+            throw new BodyProcessingException("Expected event start element:" + RECOMMENDED_TAG + ". Received start element: " + startElement.getName().getLocalPart());
         }
     }
 
-    protected boolean isElementOfCorrectType(StartElement event) {
+    private void writeList(BodyWriter eventWriter, RecommendedData recommendedData) {
+        eventWriter.writeStartTag(LIST_TAG, noAttributes());
+        for (RecommendedData.Link link : recommendedData.getLinks()) {
+            eventWriter.writeStartTag(LIST_ITEM_TAG, noAttributes());
+            writeAnchor(eventWriter, link.title, getAnchorAttributes(link));
+            eventWriter.writeEndTag(LIST_ITEM_TAG);
+        }
+        eventWriter.writeEndTag(LIST_TAG);
+    }
+
+    private Map<String, String> getAnchorAttributes(RecommendedData.Link link) {
+        Matcher matcher = pattern.matcher(link.address);
+        Map<String, String> attributes = new HashMap<>();
+        if (matcher.find()) {
+            attributes.put(TYPE_ATTRIBUTE, TYPE_VALUE);
+            attributes.put(URL_ATTRIBUTE, BASE_URL + matcher.group(2));
+        } else {
+            attributes.put(HREF_ATTRIBUTE, link.address);
+        }
+        return attributes;
+    }
+
+    private boolean isElementOfCorrectType(StartElement event) {
         return event.getName().getLocalPart().toLowerCase().equals(RECOMMENDED_TAG);
     }
 
@@ -95,13 +88,30 @@ public class RecommendedXMLEventHandler extends BaseXMLEventHandler {
         return Collections.emptyMap();
     }
 
-    private void writeRecommendedTitleElement(BodyWriter eventWriter, RecommendedData recommendedData) {
-        writeElementIfDataNotEmpty(eventWriter, recommendedData.getTitle(), RECOMMENDED_TITLE_TAG);
+
+    private void writeRecommendedTitle(BodyWriter eventWriter, RecommendedData recommendedData) {
+        writeElement(eventWriter, recommendedData.getTitle(), RECOMMENDED_TITLE_TAG, noAttributes());
     }
 
-    private void writeElementIfDataNotEmpty(BodyWriter eventWriter, String dataField, String elementName) {
+    private void writeIntro(BodyWriter eventWriter, RecommendedData recommendedData) {
+        writeElementIfDataNotEmpty(eventWriter, recommendedData.getIntro(), INTRO_TAG, noAttributes());
+    }
+
+    private void writeAnchor(BodyWriter eventWriter, String title, Map<String, String> attributes) {
+        writeElement(eventWriter, title, ANCHOR_TAG, attributes);
+    }
+
+    private void writeElement(BodyWriter eventWriter, String dataField, String elementName, Map<String, String> attributes) {
+        eventWriter.writeStartTag(elementName, attributes);
         if (StringUtils.isNotEmpty(dataField)) {
-            eventWriter.writeStartTag(elementName, noAttributes());
+            eventWriter.writeRaw(dataField);
+        }
+        eventWriter.writeEndTag(elementName);
+    }
+
+    private void writeElementIfDataNotEmpty(BodyWriter eventWriter, String dataField, String elementName, Map<String, String> attributes) {
+        if (StringUtils.isNotEmpty(dataField)) {
+            eventWriter.writeStartTag(elementName, attributes);
             eventWriter.writeRaw(dataField);
             eventWriter.writeEndTag(elementName);
         }

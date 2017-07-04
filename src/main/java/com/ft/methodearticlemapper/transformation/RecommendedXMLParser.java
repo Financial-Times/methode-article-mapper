@@ -41,9 +41,13 @@ public class RecommendedXMLParser extends BaseXMLParser<RecommendedData> {
             recommendedData.setIntro(parseRawContent(PARAGRAPH_TAG, xmlEventReader));
         } else if (isElementNamed(elementName, ANCHOR_ELEMENT)) {
             Attribute hrefAttribute = nextStartElement.getAttributeByName(new QName(HREF_ATTRIBUTE));
-            if (hrefAttribute != null) {
+            if (validHref(hrefAttribute)) {
                 recommendedData.addLink(parseRawContent(ANCHOR_ELEMENT, xmlEventReader), hrefAttribute.getValue());
             }
         }
+    }
+
+    private boolean validHref(Attribute hrefAttribute) {
+        return hrefAttribute != null && !hrefAttribute.getValue().trim().isEmpty();
     }
 }
