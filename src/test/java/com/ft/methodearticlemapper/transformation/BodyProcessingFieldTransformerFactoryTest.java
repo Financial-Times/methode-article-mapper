@@ -1187,7 +1187,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void shouldRemoveDummyTextIntroFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><p><!-- Dummy Text --></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
+		String contentWithNotes = "<body><recommended><p><?EM-dummyText [Title]?></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
