@@ -39,7 +39,6 @@ public class RecommendedXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     @Mock
     private RecommendedData mockRecommendedData;
 
-
     private RecommendedXMLEventHandler eventHandler;
 
     @Before
