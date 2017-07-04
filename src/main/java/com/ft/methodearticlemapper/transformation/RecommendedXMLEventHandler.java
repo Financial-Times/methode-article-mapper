@@ -1,7 +1,6 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLEventHandler;
 import org.apache.commons.lang.StringUtils;
@@ -43,18 +42,13 @@ public class RecommendedXMLEventHandler extends BaseXMLEventHandler {
                                         XMLEventReader xmlEventReader,
                                         BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        if (isElementOfCorrectType(startElement)) {
-            RecommendedData recommendedData = recommendedXMLParser.parseElementData(
-                    startElement, xmlEventReader, bodyProcessingContext);
-            if (recommendedData.getLinks().size() > 0) {
-                eventWriter.writeStartTag(RECOMMENDED_TAG, noAttributes());
-                writeRecommendedTitle(eventWriter, recommendedData);
-                writeIntro(eventWriter, recommendedData);
-                writeList(eventWriter, recommendedData);
-                eventWriter.writeEndTag(RECOMMENDED_TAG);
-            }
-        } else {
-            throw new BodyProcessingException("Expected event start element:" + RECOMMENDED_TAG + ". Received start element: " + startElement.getName().getLocalPart());
+        RecommendedData recommendedData = recommendedXMLParser.parseElementData(startElement, xmlEventReader, bodyProcessingContext);
+        if (recommendedData.getLinks().size() > 0) {
+            eventWriter.writeStartTag(RECOMMENDED_TAG, noAttributes());
+            writeRecommendedTitle(eventWriter, recommendedData);
+            writeIntro(eventWriter, recommendedData);
+            writeList(eventWriter, recommendedData);
+            eventWriter.writeEndTag(RECOMMENDED_TAG);
         }
     }
 
@@ -78,10 +72,6 @@ public class RecommendedXMLEventHandler extends BaseXMLEventHandler {
             attributes.put(HREF_ATTRIBUTE, link.address);
         }
         return attributes;
-    }
-
-    private boolean isElementOfCorrectType(StartElement event) {
-        return event.getName().getLocalPart().toLowerCase().equals(RECOMMENDED_TAG);
     }
 
     private Map<String, String> noAttributes() {

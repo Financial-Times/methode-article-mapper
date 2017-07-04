@@ -46,12 +46,6 @@ public class RecommendedXMLEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler = new RecommendedXMLEventHandler(mockRecommendedXMLParser);
     }
 
-    @Test(expected=BodyProcessingException.class)
-    public void testShouldThrowBodyProcessingExceptionIfSTartElementIsNotRecommended() throws XMLStreamException {
-        StartElement startElement = getStartElementWithAttributes("wrong-element", noAttributes());
-        eventHandler.handleStartElementEvent(startElement, mockXmlEventReader, mockBodyWriter, mockBodyProcessingContext);
-    }
-
     @Test
     public void testShouldNotWriteRecommendedTagIfNoLinksArePresent() throws Exception {
         StartElement startElement = getStartElementWithAttributes(RECOMMENDED_TAG, noAttributes());
