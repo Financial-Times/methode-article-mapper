@@ -971,6 +971,14 @@ public class EomFileProcessorTest {
     }
 
     @Test
+    public void testTypeArticleIsDefaultSetIfNoContentPackage() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(EomFileProcessor.Type.ARTICLE, equalTo(content.getType()));
+    }
+
+    @Test
     public void testImageSet() {
         String expectedUUID = UUID.nameUUIDFromBytes(IMAGE_SET_UUID.getBytes(UTF_8)).toString();
         String expectedBody = "<body>"
@@ -1226,6 +1234,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent(ContentSource contentSource){
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
+                .withType(EomFileProcessor.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))

@@ -69,6 +69,7 @@ public class EomFileProcessor {
 
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
+        String ARTICLE = "Article";
     }
 
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
@@ -300,13 +301,14 @@ public class EomFileProcessor {
     }
 
     private String determineType(final XPath xpath,
-                                 final Document attributesDocument) throws XPathExpressionException {
+                                 final Document attributesDocument)
+        throws XPathExpressionException, TransformerException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
         }
 
-        return null;
+        return Type.ARTICLE;
     }
 
     private String getDescription(final String type,
