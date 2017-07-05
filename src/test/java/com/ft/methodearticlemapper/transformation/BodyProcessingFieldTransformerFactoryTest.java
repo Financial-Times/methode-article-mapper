@@ -1172,9 +1172,16 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
 	@Test
-	public void shouldKeepAnchorTagsFromRecommended() throws Exception {
+	public void shouldKeepAnchorTagsFromRecommended() {
 		String contentWithNotes = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
+		checkTransformation(contentWithNotes, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveDummyTextFromAnchorTagsFromRecommended() {
+		String contentWithNotes = "<body><recommended><recommended-title/><ul><li><a href=\"link\"><?EM-dummyText [Headline]?></a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\"/></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
@@ -1207,56 +1214,56 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
-	public void shouldNotAddRecommendedIfAnchorsAreMissingFromRecommended() throws Exception {
+	public void shouldNotAddRecommendedIfAnchorsAreMissingFromRecommended() {
 		String contentWithNotes = "<body><recommended></recommended></body>";
 		String transformedContent = "<body></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldTransformMethodeLinkFromRecommended() throws Exception {
+	public void shouldTransformMethodeLinkFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"/Content/2007/Path/To/Methode/Article.xml?uuid=e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a type=\"http://www.ft.com/ontology/content/Article\" url=\"http://api.ft.com/content/e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldKeepManualLinkFromRecommended() throws Exception {
+	public void shouldKeepManualLinkFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldKeepExternalLinkFromRecommended() throws Exception {
+	public void shouldKeepExternalLinkFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldRemoveListItemIfAnchorIsEmptyFromRecommended() throws Exception {
+	public void shouldRemoveListItemIfAnchorIsEmptyFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a/></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldRemoveListItemIfAnchorIsMissingHrefFromRecommended() throws Exception {
+	public void shouldRemoveListItemIfAnchorIsMissingHrefFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a>Some text</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldRemoveListItemIfHrefIsEmptyFromRecommended() throws Exception {
+	public void shouldRemoveListItemIfHrefIsEmptyFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"link\">Valid</a></li><li><a href=\" \">Invalid</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Valid</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldKeepAnchorTagsWithDummyTextThatHaveHrefFromRecommended() throws Exception {
+	public void shouldKeepAnchorTagsWithDummyTextThatHaveHrefFromRecommended() {
 		String contentWithNotes = "<body><recommended><ul><li><a href=\"link\"><?EM-dummyText [Article Title]?></a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\"></a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
