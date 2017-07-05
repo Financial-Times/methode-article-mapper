@@ -1186,28 +1186,28 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
-	public void shouldRemoveEmptyIntroFromRecommended() throws Exception {
+	public void shouldRemoveEmptyIntroFromRecommended() {
 		String contentWithNotes = "<body><recommended><p></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldRemoveDummyTextIntroFromRecommended() throws Exception {
+	public void shouldRemoveDummyTextIntroFromRecommended() {
 		String contentWithNotes = "<body><recommended><p><?EM-dummyText [Title]?></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldKeepIntroIfNotEmptyFromRecommended() throws Exception {
+	public void shouldKeepIntroIfNotEmptyFromRecommended() {
 		String contentWithNotes = "<body><recommended><p>Intro</p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><p>Intro</p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
 	}
 
 	@Test
-	public void shouldAddMissingRecommendedTitleFromRecommended() throws Exception {
+	public void shouldAddMissingRecommendedTitleFromRecommended() {
 		String contentWithNotes = "<body><recommended><p></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
 		checkTransformation(contentWithNotes, transformedContent);
