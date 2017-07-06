@@ -1,8 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessorChain;
-import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
+import java.util.Map;
 
 public class BylineProcessingFieldTransformer implements FieldTransformer {
 
@@ -13,9 +12,10 @@ public class BylineProcessingFieldTransformer implements FieldTransformer {
     }
 
     @Override
-    public String transform(String originalBody, String transactionId) {
-        BodyProcessingContext bodyProcessingContext = new DefaultTransactionIdBodyProcessingContext(transactionId);
-        return bodyProcessorChain.process(originalBody, bodyProcessingContext);
+    public String transform(String originalBody, String transactionId, Map.Entry<String, Object>... contextData) {
+        return bodyProcessorChain.process(
+            originalBody,
+            new MappedDataBodyProcessingContext(transactionId, contextData));
     }
 
 }

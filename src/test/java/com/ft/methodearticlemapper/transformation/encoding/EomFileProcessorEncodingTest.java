@@ -6,6 +6,7 @@ import static com.ft.methodearticlemapper.transformation.EomFileProcessorTest.RE
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -57,7 +58,7 @@ public class EomFileProcessorEncodingTest {
                 + "to court in an apparent attempt to block the broadcast of a hit miniseries detailing her "
                 + "colourful family and business history.</p>";
         
-        when(bodyTransformer.transform(anyString(), anyString()))
+        when(bodyTransformer.transform(anyString(), anyString(), anyVararg()))
             .thenReturn(String.format("<body>%s</body>", bodyText));
         
         final UUID imageUuid = UUID.randomUUID();
