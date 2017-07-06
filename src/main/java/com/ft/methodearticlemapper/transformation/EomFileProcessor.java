@@ -20,6 +20,8 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 
+import com.google.common.collect.Maps;
+import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +71,7 @@ public class EomFileProcessor {
 
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
+        String ARTICLE = "Article";
     }
 
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
@@ -173,7 +176,9 @@ public class EomFileProcessor {
 
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
-        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId);
+        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId,
+            Maps.immutableEntry("uuid", uuid.toString())
+        );
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
@@ -300,13 +305,14 @@ public class EomFileProcessor {
     }
 
     private String determineType(final XPath xpath,
-                                 final Document attributesDocument) throws XPathExpressionException {
+                                 final Document attributesDocument)
+        throws XPathExpressionException, TransformerException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
         }
 
-        return null;
+        return Type.ARTICLE;
     }
 
     private String getDescription(final String type,
@@ -403,10 +409,14 @@ public class EomFileProcessor {
         return getNodeAsString(node);
     }
 
-    private String transformField(String originalFieldAsString, FieldTransformer transformer, String transactionId) {
+    private String transformField(final String originalFieldAsString,
+        final FieldTransformer transformer,
+        final String transactionId,
+        final Entry<String, Object>... contextData) {
+
         String transformedField = "";
         if (!Strings.isNullOrEmpty(originalFieldAsString)) {
-            transformedField = transformer.transform(originalFieldAsString, transactionId);
+            transformedField = transformer.transform(originalFieldAsString, transactionId, contextData);
         }
         return transformedField;
     }
