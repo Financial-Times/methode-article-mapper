@@ -27,7 +27,7 @@ public class RecommendedXMLEventHandler extends BaseXMLEventHandler {
     private static final String URL_ATTRIBUTE = "url";
     private static final String TYPE_VALUE = "http://www.ft.com/ontology/content/Article";
     private static final String BASE_URL = "http://api.ft.com/content/";
-    private static final String REGEX = "(^\\/[A-Za-z0-9/.?]*=)([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$";
+    private static final String REGEX = "^(\\/[^=]*=)([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$";
 
     private Pattern pattern;
     private RecommendedXMLParser recommendedXMLParser;
