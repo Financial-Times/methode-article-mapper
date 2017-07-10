@@ -3,9 +3,12 @@ package com.ft.methodearticlemapper.transformation;
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
@@ -41,13 +44,18 @@ public class RecommendedXMLParser extends BaseXMLParser<RecommendedData> {
             recommendedData.setIntro(parseRawContent(PARAGRAPH_TAG, xmlEventReader));
         } else if (isElementNamed(elementName, ANCHOR_ELEMENT)) {
             Attribute hrefAttribute = nextStartElement.getAttributeByName(new QName(HREF_ATTRIBUTE));
-            if (validHref(hrefAttribute)) {
-                recommendedData.addLink(parseRawContent(ANCHOR_ELEMENT, xmlEventReader), hrefAttribute.getValue());
+            String headline = parseRawContent(ANCHOR_ELEMENT, xmlEventReader);
+            if (validHref(hrefAttribute) && validHeadline(headline)) {
+                recommendedData.addLink(headline, hrefAttribute.getValue());
             }
         }
     }
 
     private boolean validHref(Attribute hrefAttribute) {
         return hrefAttribute != null && !hrefAttribute.getValue().trim().isEmpty();
+    }
+
+    private boolean validHeadline(String headline) {
+        return headline != null && !headline.trim().isEmpty();
     }
 }

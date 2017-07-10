@@ -480,13 +480,16 @@
             <a href="http://example.com/manually/added/document1.pdf">External link’s manually added title</a>
         </li>
         <li>
-            <a href=" ">Some text</a>
+            <a href="http://example.com/manually/added/document1.pdf"/>
         </li>
         <li>
-            <a><?EM-dummyText [Title]?></a>
+            <a href=" ">Headline</a>
         </li>
         <li>
-            <a>Some text</a>
+            <a><?EM-dummyText [Headline]?></a>
+        </li>
+        <li>
+            <a>Headline</a>
         </li>
         <li>
             <a/>
