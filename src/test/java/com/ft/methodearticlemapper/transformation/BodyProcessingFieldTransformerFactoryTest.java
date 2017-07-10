@@ -1262,7 +1262,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
-	public void shouldRemoveListItemIfAnchorContainsDummyTextFromRecommended() {
+	public void shouldRemoveListItemIfAnchorHeadlineContainsDummyTextFromRecommended() {
 		String originalRecommendedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li><li><a href=\"link\"><?EM-dummyText [Headline]?></a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
 		checkTransformation(originalRecommendedContent, transformedContent);
@@ -1290,7 +1290,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
-	public void shouldRemoveListItemIfHrefIsEmptyFromRecommended() {
+	public void shouldRemoveListItemIfAnchorHrefIsEmptyFromRecommended() {
 		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"link\">Valid</a></li><li><a href=\" \">Invalid</a></li></ul></recommended></body>";
 		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Valid</a></li></ul></recommended></body>";
 		checkTransformation(originalRecommendedContent, transformedContent);
