@@ -48,17 +48,19 @@ import java.util.regex.Pattern;
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
 
+    public static final String FT_COM_WWW_URL = "http://www.ft.com/";
+    public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
+    public static final String TYPE = "type";
+    public static final List<String> WHITELISTED_TAGS = Collections.singletonList("recommended");
+
 	private static final String CONTENT_TAG = "content";
-	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
+    private static final String ANCHOR_PREFIX = "#";
 
-	private static final String ANCHOR_PREFIX = "#";
-    public static final String FT_COM_WWW_URL = "http://www.ft.com/";
-	public static final String TYPE = "type";
-	private ResilientClient documentStoreApiClient;
+    private ResilientClient documentStoreApiClient;
     private URI uri;
 
 	public MethodeLinksBodyProcessor(ResilientClient documentStoreApiClient, URI uri) {
@@ -84,11 +86,14 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                 final NodeList aTags = (NodeList) xpath.evaluate("//a[count(ancestor::promo-link)=0]", document, XPathConstants.NODESET);
                 for (int i = 0; i < aTags.getLength(); i++) {
                     final Element aTag = (Element)aTags.item(i);
-                    
-                    if (isRemovable(aTag)) {
-                    	removeATag(aTag);
+
+                    if (isInsideWhitelistedTag(aTag)) {
+                        continue;
                     }
-                    else if (containsUuid(getHref(aTag))) {
+
+                    if (isRemovable(aTag)) {
+                        removeATag(aTag);
+                    } else if (containsUuid(getHref(aTag))) {
                         aTagsToCheck.add(aTag);
                     }
                 }
@@ -114,6 +119,18 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 			}
         }
         return body;
+    }
+
+    private boolean isInsideWhitelistedTag(Element aTag) {
+        Node parent = aTag.getParentNode();
+        while (parent != null) {
+            String nodeName = parent.getNodeName();
+            if (WHITELISTED_TAGS.contains(nodeName)) {
+                return true;
+            }
+            parent = parent.getParentNode();
+        }
+        return false;
     }
 
     /**

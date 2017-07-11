@@ -1180,23 +1180,121 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
-		public void shouldUseArticleUuidAndImageSetId() throws Exception {
-			final String bodyWithImageSets = readFromFile("body/embedded_image_set_body.xml");
-			final String articleUuid = UUID.randomUUID().toString();
+	public void shouldUseArticleUuidAndImageSetId() throws Exception {
+		final String bodyWithImageSets = readFromFile("body/embedded_image_set_body.xml");
+		final String articleUuid = UUID.randomUUID().toString();
 
-			final String transformedBody =
-					bodyTransformer
+		final String transformedBody =
+				bodyTransformer
 						.transform(
 								bodyWithImageSets,
 								TRANSACTION_ID,
 								Maps.immutableEntry("uuid", articleUuid));
 
-			final UUID firstImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + FIRST_EMBEDDED_IMAGE_SET_ID);
-			final UUID secondImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + SECOND_EMBEDDED_IMAGE_SET_ID);
+		final UUID firstImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + FIRST_EMBEDDED_IMAGE_SET_ID);
+		final UUID secondImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + SECOND_EMBEDDED_IMAGE_SET_ID);
 
-			assertThat(transformedBody, containsString(firstImageSetUuid.toString()));
-			assertThat(transformedBody, containsString(secondImageSetUuid.toString()));
-		}
+		assertThat(transformedBody, containsString(firstImageSetUuid.toString()));
+		assertThat(transformedBody, containsString(secondImageSetUuid.toString()));
+	}
+
+	@Test
+	public void shouldKeepAnchorTagsFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveEmptyIntroFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><p></p><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveDummyTextIntroFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><p><?EM-dummyText [Headline]?></p><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldKeepIntroIfNotEmptyFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><p>Intro</p><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><p>Intro</p><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldAddMissingRecommendedTitleFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><p></p><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldNotAddRecommendedIfAnchorsAreMissingFromRecommended() {
+		String originalRecommendedContent = "<body><recommended></recommended></body>";
+		String transformedContent = "<body></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldTransformMethodeLinkFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"/FT/Content/Companies/Stories/Live/GB/New%20UUID%20Generation%20for%20image-sets/rj/Article01%20without%20imageset.xml?uuid=e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a type=\"http://www.ft.com/ontology/content/Article\" url=\"http://api.ft.com/content/e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldKeepManualLinkFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldKeepExternalLinkFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveListItemIfAnchorHeadlineContainsDummyTextFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li><li><a href=\"link\"><?EM-dummyText [Headline]?></a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveListItemIfAnchorHeadlineIsEmptyFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li><li><a href=\"link\"/></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Headline</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveListItemIfAnchorIsEmptyFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a/></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveListItemIfAnchorIsMissingHrefFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a>Some text</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemoveListItemIfAnchorHrefIsEmptyFromRecommended() {
+		String originalRecommendedContent = "<body><recommended><ul><li><a href=\"link\">Valid</a></li><li><a href=\" \">Invalid</a></li></ul></recommended></body>";
+		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Valid</a></li></ul></recommended></body>";
+		checkTransformation(originalRecommendedContent, transformedContent);
+	}
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
         String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
