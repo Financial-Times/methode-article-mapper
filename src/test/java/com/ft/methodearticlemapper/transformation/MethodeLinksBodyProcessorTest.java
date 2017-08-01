@@ -218,16 +218,6 @@ public class MethodeLinksBodyProcessorTest {
         String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
         assertThat(processedBody, is(identicalXmlTo(body)));
     }
-
-    @Test
-    public void thatAnchorTagsInsideWhitelistedTagsAreIgnored() {
-        bodyProcessor = new MethodeLinksBodyProcessor(documentStoreApiClient, uri);
-
-        String body = "<body><recommended><a type=\"http://www.ft.com/ontology/content/Article\" url=\"http://api.ft.com/content/e30ce78c-59fe-11e7-b553-e2df1b0c3220\"/><a href=\"/Content/2007/Path/To/Methode/Article.xml?uuid=e30ce78c-59fe-11e7-b553-e2df1b0c3220\"/></recommended></body>";
-
-        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
-        assertThat(processedBody, is(identicalXmlTo(body)));
-    }
     
 	private ClientResponse clientResponseWithCode(int status) {
 		return new ClientResponse(status, headers, entity, workers);
