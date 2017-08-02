@@ -406,4 +406,7 @@
 </p>
 
 <recommended><recommended-title>Title</recommended-title><p>Intro</p><ul><li><a type="http://www.ft.com/ontology/content/Article" url="http://api.ft.com/content/e30ce78c-59fe-11e7-b553-e2df1b0c3220">Internal articles’s title added by methode automatically</a></li><li><a href="http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b">Manually added FT article’s manual title</a></li><li><a href="http://example.com/manually/added/document1.pdf">External link’s manually added title</a></li></ul></recommended>
+<blockquote><p>Quoted text <strong>here</strong></p><cite>Cite text here<a href="https://www.twitter.com/blah">Optional link</a></cite></blockquote>
+
+
 </body>

@@ -496,4 +496,17 @@
         </li>
     </ul>
 </recommended>
+<blockquote>
+    <p>Quoted text <strong>here</strong></p>
+    <cite>Cite text here<a href="https://www.twitter.com/blah">Optional link</a></cite>
+</blockquote>
+<blockquote>
+    <p><?EM-dummyText [Quote]?></p>
+    <p> </p>
+    <p></p>
+    <cite>This blockquote should be stripped</cite>
+</blockquote>
+<blockquote>
+    <cite>This blockquote should be stripped</cite>
+</blockquote>
 </body>

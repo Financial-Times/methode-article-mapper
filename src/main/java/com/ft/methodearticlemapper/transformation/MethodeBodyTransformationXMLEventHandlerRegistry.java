@@ -24,6 +24,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(this), inlineImageXmlEventHandler)), "web-pull-quote");
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(this), inlineImageXmlEventHandler)), "promo-box");
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
+        registerStartElementEventHandler(new BlockquoteXMLEventHandler(new BlockquoteXMLParser(new StAXTransformingBodyProcessor(this))), "blockquote");
 
         registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
         registerStartAndEndElementEventHandler(new ContentVideoXmlEventHandler("href", new StripElementAndContentsXMLEventHandler()), "content");
@@ -56,7 +57,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
                 "s", "select", "source", "strike", "style", "tbody",
-                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr"
+                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr", "cite"
         );
         // strip methode tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
