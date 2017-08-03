@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import static com.ft.methodetesting.xml.XmlMatcher.identicalXmlTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
@@ -17,10 +18,13 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import com.ft.uuidutils.GenerateV3UUID;
+import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,6 +61,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
             "http://www.ft.com/ig/widgets/sortable-table/v1/widget/index.html?key=1EbhZ99KsC8xd0Aj4UN6DnrZfjWAvsaaUn2AK4IGHC_o",
             "http://interactive.ftdata.co.uk/features/2013-04-11_renminbiUpdate/index.html"
     );
+	private static final String FIRST_EMBEDDED_IMAGE_SET_ID = "U11603507121721xBE";
+	private static final String SECOND_EMBEDDED_IMAGE_SET_ID = "U11703507121721xBE";
 
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -1182,7 +1188,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 								bodyWithImageSets,
 								TRANSACTION_ID,
 								Maps.immutableEntry("uuid", articleUuid));
-
 		final UUID firstImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + FIRST_EMBEDDED_IMAGE_SET_ID);
 		final UUID secondImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + SECOND_EMBEDDED_IMAGE_SET_ID);
 
@@ -1191,164 +1196,73 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
-	public void shouldKeepAnchorTagsFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldRemoveEmptyIntroFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><p></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldRemoveDummyTextIntroFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><p><!-- Dummy Text --></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldKeepIntroIfNotEmptyFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><p>Intro</p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><p>Intro</p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldAddMissingRecommendedTitleFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><p></p><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldNotAddRecommendedIfAnchorsAreMissingFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended></recommended></body>";
-		String transformedContent = "<body></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldTransformMethodeLinkFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"/Content/2007/Path/To/Methode/Article.xml?uuid=e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a type=\"http://www.ft.com/ontology/content/Article\" url=\"http://api.ft.com/content/e30ce78c-59fe-11e7-b553-e2df1b0c3220\">Internal articles’s title added by methode automatically</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldKeepManualLinkFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://ft.com/content/71ece778-5a53-11e7-9bc8-8055f264aa8b\">Manually added FT article’s manual title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldKeepExternalLinkFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldRemoveListItemIfAnchorIsEmptyFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a/></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldRemoveListItemIfAnchorIsMissingHrefFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li><li><a>Some text</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"http://example.com/manually/added/document1.pdf\">External link’s manually added title</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldRemoveListItemIfHrefIsEmptyFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"link\">Valid</a></li><li><a href=\" \">Invalid</a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\">Valid</a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
-	public void shouldKeepAnchorTagsWithDummyTextThatHaveHrefFromRecommended() throws Exception {
-		String contentWithNotes = "<body><recommended><ul><li><a href=\"link\"><?EM-dummyText [Article Title]?></a></li></ul></recommended></body>";
-		String transformedContent = "<body><recommended><recommended-title/><ul><li><a href=\"link\"></a></li></ul></recommended></body>";
-		checkTransformation(contentWithNotes, transformedContent);
-	}
-
-	@Test
 	public void shouldKeepBlockquoteWithValidParagraph() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldKeepCiteTagInsideBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveCiteTagOutsideBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p></blockquote><cite>Cite text</cite></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p></blockquote><cite>Cite text</cite></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveBlockquoteWithoutParagraphs() {
-		String originalRecommendedContent = "<body><blockquote><cite>Cite text</cite></blockquote></body>";
+		String originalContent = "<body><blockquote><cite>Cite text</cite></blockquote></body>";
 		String transformedContent = "<body/>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveEmptyParagraphFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p></p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p></p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveDummyTextParagraphFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p><?EM-dummyText [Quote]?></p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p><?EM-dummyText [Quote]?></p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveWhitespaceParagraphFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p> </p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p> </p><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p><cite>Cite text</cite></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveEmptyCiteFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p><cite></cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p><cite></cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveDummyTextCiteFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p><cite><?EM-dummyText [Quote]?></cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p><cite><?EM-dummyText [Quote]?></cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
 	@Test
 	public void shouldRemoveWhitespaceCiteFromBlockquote() {
-		String originalRecommendedContent = "<body><blockquote><p>Quoted text</p><cite>  </cite></blockquote></body>";
+		String originalContent = "<body><blockquote><p>Quoted text</p><cite>  </cite></blockquote></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
-		checkTransformation(originalRecommendedContent, transformedContent);
+		checkTransformation(originalContent, transformedContent);
 	}
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
