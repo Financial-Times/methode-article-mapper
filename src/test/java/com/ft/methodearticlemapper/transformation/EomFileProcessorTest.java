@@ -650,6 +650,21 @@ public class EomFileProcessorTest {
         assertThat(content.getCanBeSyndicated(), is(Syndication.YES));
     }
 
+    @Test
+    public void testArticleCanBeSyndicatedWithContributorPayment() {
+        String[] contributorRights = {
+                ContributorRights.FIFTY_FIFTY_NEW.getValue(),
+                ContributorRights.FIFTY_FIFTY_OLD.getValue()
+        };
+
+        for (String contributorRight : contributorRights) {
+            final EomFile eomFileContractContributorRights = createStandardEomFileWithContributorRights(
+                    uuid, contributorRight);
+
+            Content content = eomFileProcessor.processPublication(eomFileContractContributorRights, TRANSACTION_ID, LAST_MODIFIED);
+            assertThat(content.getCanBeSyndicated(), is(Syndication.WITH_CONTRIBUTOR_PAYMENT));
+        }
+    }
 
     @Test
     public void testArticleCanNotBeSyndicated() {
@@ -664,8 +679,6 @@ public class EomFileProcessorTest {
     public void testArticleNeedsToBeVerifiedForSyndication() {
         String[] contributorRights = {
                 ContributorRights.CONTRACT.getValue(),
-                ContributorRights.FIFTY_FIFTY_NEW.getValue(),
-                ContributorRights.FIFTY_FIFTY_OLD.getValue(),
                 "",
                 "invalid value",
                 "-1",

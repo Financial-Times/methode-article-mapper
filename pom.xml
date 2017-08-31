@@ -135,7 +135,7 @@
         <dependency>
             <groupId>com.github.Financial-Times</groupId>
             <artifactId>content-model</artifactId>
-            <version>0.1.47</version>
+            <version>0.3.0-rj-contributor-payment-rc1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
