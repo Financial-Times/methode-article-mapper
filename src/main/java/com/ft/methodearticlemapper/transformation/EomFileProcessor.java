@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -85,6 +86,7 @@ public class EomFileProcessor {
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
+    private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -198,6 +200,10 @@ public class EomFileProcessor {
         final String contentPackage = getContentPackage(type, xpath, value, uuid);
         final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource(), type);
 
+        final AlternativeStandfirsts alternativeStandfirsts = AlternativeStandfirsts.builder()
+                .withPromotionalStandfirst(Strings.nullToEmpty(xpath.evaluate(PROMOTIONAL_STANDFIRST_XPATH, value)).trim())
+                .build();
+
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
@@ -222,6 +228,7 @@ public class EomFileProcessor {
                 .withDescription(description)
                 .withContentPackage(contentPackage)
                 .withCanBeDistributed(canBeDistributed)
+                .withAlternativeStandfirsts(alternativeStandfirsts)
                 .build();
     }
 
