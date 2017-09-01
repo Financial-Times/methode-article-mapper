@@ -33,7 +33,6 @@ import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 
-import joptsimple.internal.Strings;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1035,7 +1034,7 @@ public class EomFileProcessorTest {
                 .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(equalToIgnoringWhiteSpace(Strings.EMPTY)));
+        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(equalToIgnoringWhiteSpace("")));
     }
 
     private void testContentPackage(final String description,
@@ -1281,7 +1280,7 @@ public class EomFileProcessorTest {
                 .withCanBeDistributed(contentSource == ContentSource.FT
                         ? Distribution.YES
                         : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
-                .withAlternativeStandfirsts(new AlternativeStandfirsts(Strings.EMPTY))
+                .withAlternativeStandfirsts(new AlternativeStandfirsts(""))
                 .build();
     }
 }
