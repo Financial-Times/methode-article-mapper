@@ -25,6 +25,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,9 +53,10 @@ public class MethodeLinksBodyProcessorTest {
 	public void setup() throws Exception {
 		bodyProcessor = new MethodeLinksBodyProcessor(documentStoreApiClient, new URI("www.document-store-api.com"));
 		when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResource);
-		when(webResource.accept(any(MediaType[].class))).thenReturn(builder);
+		when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+		when(builder.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
 		when(builder.header(anyString(), anyObject())).thenReturn(builder);
-		when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+		when(builder.post(eq(ClientResponse.class), anyObject())).thenReturn(clientResponse);
 		when(clientResponse.getStatus()).thenReturn(200);
 		when(clientResponse.getEntity(String.class)).thenReturn("[]");
 	}
@@ -106,7 +108,7 @@ public class MethodeLinksBodyProcessorTest {
 
 	@Test(expected = BodyProcessingException.class)
 	public void shouldThrowBodyProcessingExceptionWhenDocumentStoreUnavailable() {
-		when(builder.get(ClientResponse.class)).thenThrow(clientHandlerException);
+		when(builder.post(eq(ClientResponse.class), anyObject())).thenThrow(clientHandlerException);
 		when(clientHandlerException.getCause()).thenReturn(new IOException());
 
 		String body = "<body><a href=\"" + uuid + "\" title=\"Some absurd text here\"> Link Text</a></body>";
@@ -115,7 +117,7 @@ public class MethodeLinksBodyProcessorTest {
 
 	@Test(expected = BodyProcessingException.class)
 	public void shouldThrowBodyProcessingExceptionWhenClientFailsToProcessTheRequestOrResponse() {
-		when(builder.get(ClientResponse.class)).thenThrow(clientHandlerException);
+		when(builder.post(eq(ClientResponse.class), anyObject())).thenThrow(clientHandlerException);
 
 		String body = "<body><a href=\"" + uuid + "\" title=\"Some absurd text here\"> Link Text</a></body>";
 		bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));

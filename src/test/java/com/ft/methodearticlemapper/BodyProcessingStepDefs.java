@@ -9,6 +9,7 @@ import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -188,9 +188,11 @@ public class BodyProcessingStepDefs {
         when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_CONCORDED, "UTF-8") + "&identifierValue=" + TME_ID_NOT_CONCORDED))).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(webResource.header(anyString(), anyString())).thenReturn(builder);
+        when(builder.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(builder.header(anyString(), anyString())).thenReturn(builder);
         when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
         when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+        when(builder.post(eq(ClientResponse.class), anyObject())).thenReturn(clientResponse);
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + CONTENT_STORE_UUID + "\", \"type\": \"Article\"}]");
 
