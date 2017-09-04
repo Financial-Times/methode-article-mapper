@@ -1,12 +1,8 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.content.model.AlternativeStandfirsts;
-import com.ft.uuidutils.DeriveUUID;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
-
 import com.ft.content.model.AccessLevel;
+import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
@@ -20,9 +16,10 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
-
+import com.ft.uuidutils.DeriveUUID;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
-import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,19 +28,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,6 +42,19 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 
@@ -199,10 +196,7 @@ public class EomFileProcessor {
         final String description = getDescription(type, xpath, value);
         final String contentPackage = getContentPackage(type, xpath, value, uuid);
         final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource(), type);
-
-        final AlternativeStandfirsts alternativeStandfirsts = AlternativeStandfirsts.builder()
-                .withPromotionalStandfirst(Strings.nullToEmpty(xpath.evaluate(PROMOTIONAL_STANDFIRST_XPATH, value)).trim())
-                .build();
+        final AlternativeStandfirsts alternativeStandfirsts = buildAlternativeStandfirsts(xpath, value);
 
         return Content.builder()
                 .withUuid(uuid)
@@ -491,5 +485,14 @@ public class EomFileProcessor {
             default:
                 return Distribution.VERIFY;
         }
+    }
+
+    private AlternativeStandfirsts buildAlternativeStandfirsts(XPath xpath, Document value) throws XPathExpressionException {
+        AlternativeStandfirsts.Builder builder = AlternativeStandfirsts.builder();
+        String promotionalStandfirst = Strings.nullToEmpty(xpath.evaluate(PROMOTIONAL_STANDFIRST_XPATH, value)).trim();
+        if (!promotionalStandfirst.isEmpty()) {
+            builder = builder.withPromotionalStandfirst(promotionalStandfirst);
+        }
+        return builder.build();
     }
 }
