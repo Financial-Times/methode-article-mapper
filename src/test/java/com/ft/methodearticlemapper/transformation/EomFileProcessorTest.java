@@ -1034,7 +1034,7 @@ public class EomFileProcessorTest {
                 .build();
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(equalToIgnoringWhiteSpace("")));
+        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(nullValue()));
     }
 
     private void testContentPackage(final String description,
@@ -1280,7 +1280,7 @@ public class EomFileProcessorTest {
                 .withCanBeDistributed(contentSource == ContentSource.FT
                         ? Distribution.YES
                         : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
-                .withAlternativeStandfirsts(new AlternativeStandfirsts(""))
+                .withAlternativeStandfirsts(new AlternativeStandfirsts(null))
                 .build();
     }
 }
