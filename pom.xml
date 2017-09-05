@@ -135,7 +135,7 @@
         <dependency>
             <groupId>com.github.Financial-Times</groupId>
             <artifactId>content-model</artifactId>
-            <version>0.3.0-fd-rc2</version>
+            <version>0.3.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
