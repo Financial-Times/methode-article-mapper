@@ -4,6 +4,7 @@ import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.common.FileUtils;
 import com.ft.content.model.AccessLevel;
+import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
@@ -110,6 +111,7 @@ public class EomFileProcessorTest {
     private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_DESC = "contentPackageDesc";
     private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_LIST_HREF = "contentPackageListHref";
     private static final String TEMPLATE_CONTENT_PACKAGE_TITLE = "contentPackageTitle";
+    private static final String TEMPLATE_WEB_SUBHEAD = "webSubhead";
 
     private static final String IMAGE_SET_UUID = "U116035516646705FC";
 
@@ -1022,6 +1024,32 @@ public class EomFileProcessorTest {
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
 
+    @Test
+    public void thatAlternativeStandfirtstIsPresent() {
+        final String expectedPromotionalStandfirst = "Test promotional Standfirst";
+
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put(TEMPLATE_WEB_SUBHEAD, expectedPromotionalStandfirst);
+
+        final EomFile eomFile = (new EomFile.Builder())
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(equalToIgnoringWhiteSpace(expectedPromotionalStandfirst)));
+    }
+
+    @Test
+    public void thatAlternativeStandfirtstIsNotPresent() {
+        final EomFile eomFile = (new EomFile.Builder())
+                .withValuesFrom(createStandardEomFile(uuid))
+                .build();
+
+        Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(nullValue()));
+    }
+
     private void testContentPackage(final String description,
                                     final String listHref,
                                     final String expectedDescription,
@@ -1265,6 +1293,7 @@ public class EomFileProcessorTest {
                 .withCanBeDistributed(contentSource == ContentSource.FT
                         ? Distribution.YES
                         : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
+                .withAlternativeStandfirsts(new AlternativeStandfirsts(null))
                 .build();
     }
 }
