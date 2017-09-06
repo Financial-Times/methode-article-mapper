@@ -273,6 +273,9 @@ public class EomFileProcessor {
         }
 
         switch (contributorRights) {
+            case FIFTY_FIFTY_NEW:
+            case FIFTY_FIFTY_OLD:
+                return Syndication.WITH_CONTRIBUTOR_PAYMENT;
             case ALL_NO_PAYMENT:
                 return Syndication.YES;
             case NO_RIGHTS:
