@@ -9,6 +9,7 @@ import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -102,6 +102,7 @@ public class BodyProcessingStepDefs {
 	private static final String TME_ID_NOT_CONCORDED = "notconcorded";
 	private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
 	private static final String API_URL_CONCORDED ="http://api.ft.com/organisations/704a3225-9b5c-3b4f-93c7-8e6a6993bfb0";
+    private static final String CONTENT_STORE_UUID = "fbbee07f-5054-4a42-b596-64e0625d19a6";
     private static  final Identifier identifier = new Identifier(TME_AUTHORITY, TME_ID_CONCORDED);
     private static final  ConceptView concept= new ConceptView(API_URL_CONCORDED , API_URL_CONCORDED );
     private Concordance concordance;
@@ -145,8 +146,8 @@ public class BodyProcessingStepDefs {
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
         registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
         concordance = new Concordance(concept, identifier);
-        concordancesResponse = new Concordances(Arrays.asList(concordance));  
-        concordancesEmpty = new Concordances(new ArrayList<Concordance>());
+        concordancesResponse = new Concordances(Collections.singletonList(concordance));
+        concordancesEmpty = new Concordances(new ArrayList<>());
 
         rulesAndHandlers = new HashMap<>();
         rulesAndHandlers.put( "STRIP ELEMENT AND CONTENTS" , "StripElementAndContentsXMLEventHandler");
@@ -170,30 +171,30 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "WRAP AND TRANSFORM A INLINE IMAGE", "WrappedHandlerXmlEventHandler");
         rulesAndHandlers.put( "REPLACE BLOCK ELEMENT TAG", "SimpleTransformBlockElementEventHandler");
 
-
+        WebResource webResource = mock(WebResource.class);
         WebResource webResourceNotFound = mock(WebResource.class);
-        when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResourceNotFound);
+        WebResource.Builder builder = mock(WebResource.Builder.class);
         WebResource.Builder builderNotFound = mock(WebResource.Builder.class);
+        ClientResponse clientResponse = mock(ClientResponse.class);
+
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
         when(webResourceNotFound.accept(any(MediaType[].class))).thenReturn(builderNotFound);
         when(builderNotFound.header(anyString(), anyObject())).thenReturn(builderNotFound);
         when(builderNotFound.get(ClientResponse.class)).thenReturn(clientResponseWithCode(404));
-        
-        WebResource webResource = mock(WebResource.class);
-        WebResource.Builder builder = mock(WebResource.Builder.class);
-        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")+"&identifierValue="+TME_ID_NOT_CONCORDED))).thenReturn(webResource);
-        when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
-        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL+ URLEncoder.encode(TME_ID_NOT_CONCORDED, "UTF-8")))).thenReturn(webResourceNotFound);
         when(builderNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
+
+        when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
+        when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_CONCORDED, "UTF-8") + "&identifierValue=" + TME_ID_NOT_CONCORDED))).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
-        when(builder.header(anyString(), anyString())).thenReturn(builder);
         when(webResource.header(anyString(), anyString())).thenReturn(builder);
-        ClientResponse clientResponseSuccess = mock(ClientResponse.class);
-        when(builder.get(ClientResponse.class)).thenReturn(clientResponseSuccess);
-        InputStream inputStream = mock(InputStream.class);
-        when(clientResponseSuccess.getEntityInputStream()).thenReturn(inputStream);
-        when(clientResponseSuccess.getStatus()).thenReturn(200);
+        when(builder.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
+        when(builder.header(anyString(), anyString())).thenReturn(builder);
+        when(builder.get(Concordances.class)).thenReturn(concordancesResponse);
+        when(builder.get(ClientResponse.class)).thenReturn(clientResponse);
+        when(builder.post(eq(ClientResponse.class), anyObject())).thenReturn(clientResponse);
+        when(clientResponse.getStatus()).thenReturn(200);
+        when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + CONTENT_STORE_UUID + "\", \"type\": \"Article\"}]");
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
     }
