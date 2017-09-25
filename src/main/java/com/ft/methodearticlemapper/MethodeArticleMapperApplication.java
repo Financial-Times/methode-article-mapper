@@ -179,6 +179,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 concordanceApiConfiguration.getHost(),
                 concordanceApiConfiguration.getPort(),
                 "/__gtg",
+                "public-concordances-api",
                 1,
                 "Articles will not be annotated with company tearsheet information.",
                 "https://dewey.ft.com/up-mam.html")
@@ -189,6 +190,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 documentStoreApiEndpointConfiguration.getHost(),
                 documentStoreApiEndpointConfiguration.getPort(),
                 "/__health",
+                "document-store-api",
                 1,
                 "Clients will be unable to query the content service using alternative identifiers.",
                 "https://dewey.ft.com/up-mam.html")
