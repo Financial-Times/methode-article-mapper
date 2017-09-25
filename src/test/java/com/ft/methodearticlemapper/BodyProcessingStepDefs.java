@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -194,7 +195,7 @@ public class BodyProcessingStepDefs {
         return concordanceApiClient;
     }
 
-    private ResilientClient mockDocumentStoreApiClient(){
+    private ResilientClient mockDocumentStoreApiClient() throws Exception {
         WebResource webResource = mock(WebResource.class);
         WebResource webResourceNotFound = mock(WebResource.class);
         WebResource.Builder builder = mock(WebResource.Builder.class);
@@ -208,12 +209,10 @@ public class BodyProcessingStepDefs {
         when(builderNotFound.get(Concordances.class)).thenReturn(concordancesEmpty);
 
         when(documentStoreApiClient.resource(any(URI.class))).thenReturn(webResource);
+        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_CONCORDED, "UTF-8")))).thenReturn(webResource);
         when(concordanceApiClient.resource(URI.create(CONCORDANCE_URL + URLEncoder.encode(TME_ID_CONCORDED, "UTF-8") + "&identifierValue=" + TME_ID_NOT_CONCORDED))).thenReturn(webResource);
 
-        WebResource webResource = mock(WebResource.class);
-        WebResource.Builder builder = mock(WebResource.Builder.class);
-        when(documentStoreApiClient.resource(UriBuilder.fromUri(documentStoreUri).path("fbbee07f-5054-4a42-b596-64e0625d19a6").build())).thenReturn(webResource);
         when(webResource.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
         when(webResource.header(anyString(), anyString())).thenReturn(builder);
         when(builder.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builder);
