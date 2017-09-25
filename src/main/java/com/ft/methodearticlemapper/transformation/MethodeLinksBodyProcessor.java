@@ -1,26 +1,29 @@
 package com.ft.methodearticlemapper.transformation;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
+import com.ft.methodearticlemapper.exception.DocumentStoreApiInvalidRequestException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
-import com.google.common.base.Optional;
+import com.ft.methodearticlemapper.exception.DocumentStoreApiUnmarshallingException;
+import com.ft.methodearticlemapper.model.Content;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,34 +35,40 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
-
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.sun.jersey.api.client.ClientResponse.Status.getFamilyByStatusCode;
 
 public class MethodeLinksBodyProcessor implements BodyProcessor {
-	private static final String CONTENT_TAG = "content";
-	public static final String ARTICLE_TYPE = "http://www.ft.com/ontology/content/Article";
+
+    static final String BASE_CONTENT_TYPE = "http://www.ft.com/ontology/content/";
+    static final String DEFAULT_CONTENT_TYPE = "http://www.ft.com/ontology/content/Content";
+
+    private static final String CONTENT_TAG = "content";
+    private static final String ANCHOR_PREFIX = "#";
+    private static final String TYPE = "type";
+
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
+    private static final String FT_COM_URL_REGEX = "^https*:\\/\\/www.ft.com\\/.*";
+    private static final Pattern FT_COM_URL_REGEX_PATTERN = Pattern.compile(FT_COM_URL_REGEX);
 
-	private static final String ANCHOR_PREFIX = "#";
-    public static final String FT_COM_WWW_URL = "http://www.ft.com/";
-	public static final String TYPE = "type";
-	private ResilientClient documentStoreApiClient;
+    private ResilientClient documentStoreApiClient;
     private URI uri;
 
 	public MethodeLinksBodyProcessor(ResilientClient documentStoreApiClient, URI uri) {
@@ -69,52 +78,42 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     @Override
     public String process(String body, BodyProcessingContext bodyProcessingContext) throws BodyProcessingException {
-        if (body != null && !body.trim().isEmpty()) {
-
-            final Document document;
-            try {
-                final DocumentBuilder documentBuilder = getDocumentBuilder();
-                document = documentBuilder.parse(new InputSource(new StringReader(body)));
-            } catch (ParserConfigurationException | SAXException | IOException e) {
-                throw new BodyProcessingException(e);
-            }
-
-            final List<Node> aTagsToCheck = new ArrayList<>();
-            final XPath xpath = XPathFactory.newInstance().newXPath();
-            try {
-                final NodeList aTags = (NodeList) xpath.evaluate("//a[count(ancestor::promo-link)=0]", document, XPathConstants.NODESET);
-                for (int i = 0; i < aTags.getLength(); i++) {
-                    final Element aTag = (Element)aTags.item(i);
-                    
-                    if (isRemovable(aTag)) {
-                    	removeATag(aTag);
-                    }
-                    else if (containsUuid(getHref(aTag))) {
-                        aTagsToCheck.add(aTag);
-                    }
-                }
-            } catch (XPathExpressionException e) {
-                throw new BodyProcessingException(e);
-            }
-
-            final Set<String> uuidsToCheck = extractUuids(aTagsToCheck);
-
-			if (bodyProcessingContext instanceof TransactionIdBodyProcessingContext) {
-				TransactionIdBodyProcessingContext transactionIdBodyProcessingContext =
-						(TransactionIdBodyProcessingContext) bodyProcessingContext;
-				
-				final List<String> uuidsPresentInContentStore = getUuidsPresentInContentStore(uuidsToCheck, transactionIdBodyProcessingContext.getTransactionId());
-
-				processATags(aTagsToCheck, uuidsPresentInContentStore);
-
-				final String modifiedBody = serializeBody(document);
-				return modifiedBody;
-			} else {
-				IllegalStateException up = new IllegalStateException("bodyProcessingContext should provide transaction id.");
-				throw up;
-			}
+        if (StringUtils.isBlank(body)) {
+            return body;
         }
-        return body;
+        try {
+            final DocumentBuilder documentBuilder = getDocumentBuilder();
+            final Document document = documentBuilder.parse(new InputSource(new StringReader(body)));
+
+            final Map<Node, String> aTagsToCheck = new HashMap<>();
+            final XPath xpath = XPathFactory.newInstance().newXPath();
+            final NodeList aTags = (NodeList) xpath.evaluate("//a[count(ancestor::promo-link)=0]", document, XPathConstants.NODESET);
+            for (int i = 0; i < aTags.getLength(); i++) {
+                final Element aTag = (Element) aTags.item(i);
+
+                if (isRemovable(aTag)) {
+                    removeATag(aTag);
+                } else {
+                    Optional<String> optionalUuid = extractUuid(aTag);
+                    optionalUuid.ifPresent(uuid -> aTagsToCheck.put(aTag, uuid));
+                }
+            }
+
+            if (!(bodyProcessingContext instanceof TransactionIdBodyProcessingContext)) {
+                throw new IllegalStateException("bodyProcessingContext should provide transaction id.");
+            }
+
+            TransactionIdBodyProcessingContext transactionIdBodyProcessingContext = (TransactionIdBodyProcessingContext) bodyProcessingContext;
+            String transactionId = transactionIdBodyProcessingContext.getTransactionId();
+            if (StringUtils.isBlank(transactionId)) {
+                throw new IllegalStateException("bodyProcessingContext should provide transaction id.");
+            }
+            final List<Content> content = getContentFromDocumentStore(aTagsToCheck, transactionId);
+            processATags(aTagsToCheck, content);
+            return serializeBody(document);
+        } catch (Exception e) {
+            throw new BodyProcessingException(e);
+        }
     }
 
     /**
@@ -124,6 +123,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
      * <li>with hrefs that contain only a fragment identifier (a part of the current document);</li>
      * <li>with no non-whitespace content <i>and</i> no <code>data-*</code> attributes.</li>
      * </ul>
+     *
      * @param aTag the tag
      * @return true if removable, otherwise false.
      */
@@ -152,7 +152,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
                     
                 default: // any other node type
                     return false;
-                
             }
         }
         
@@ -170,69 +169,56 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         }
         
         return true;
-	}
-	
-    private List<String> getUuidsPresentInContentStore(Set<String> uuidsToCheck, String transactionId) {
-        if(uuidsToCheck.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        List<String> uuidsPresentInContentStore = new ArrayList<>();
-        
-        for (String uuidToCheck: uuidsToCheck) {
-            if (existsInDocumentStore(uuidToCheck, transactionId)) {
-                uuidsPresentInContentStore.add(uuidToCheck);
-            }
-        }
-        return uuidsPresentInContentStore;
     }
 
-	private boolean existsInDocumentStore(String idToCheck, String transactionId) {
-        int responseStatusCode;
-        ClientResponse clientResponse = null;
-		URI contentUrl = contentUrlBuilder().build(idToCheck);
-		try {
-			clientResponse = documentStoreApiClient.resource(contentUrl)
-					.accept(MediaType.APPLICATION_JSON_TYPE)
-					.header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
-					.get(ClientResponse.class);
-            
-            responseStatusCode = clientResponse.getStatus();
+    private List<Content> getContentFromDocumentStore(Map<Node, String> tags, String transactionId) {
+        if (tags.isEmpty()) {
+            return Collections.emptyList();
         }
-        catch (ClientHandlerException che) {
-			Throwable cause = che.getCause();
-			if(cause instanceof IOException) {
-				throw new DocumentStoreApiUnavailableException(che);
-			}
-			throw che;
-		}
-        finally {
+
+        Collection<String> uuids = tags.values();
+        URI documentsUri = UriBuilder.fromUri(uri).queryParam("mget", true).build();
+        ClientResponse clientResponse = null;
+        try {
+            clientResponse = documentStoreApiClient.resource(documentsUri)
+                    .accept(MediaType.APPLICATION_JSON_TYPE)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .header(TransactionIdUtils.TRANSACTION_ID_HEADER, transactionId)
+                    .header("Host", "document-store-api")
+                    .post(ClientResponse.class, uuids);
+
+            int responseStatusCode = clientResponse.getStatus();
+            Family statusFamily = getFamilyByStatusCode(responseStatusCode);
+
+            if (statusFamily == Family.SERVER_ERROR) {
+                String msg = String.format("Document Store API returned %s", responseStatusCode);
+                throw new DocumentStoreApiUnavailableException(msg);
+            } else if (statusFamily == Family.CLIENT_ERROR) {
+                String msg = String.format("Document Store API returned %s", responseStatusCode);
+                throw new DocumentStoreApiInvalidRequestException(msg);
+            }
+
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            String jsonAsString = clientResponse.getEntity(String.class);
+            Content[] returnedContent = mapper.readValue(jsonAsString, Content[].class);
+
+            return Arrays.asList(returnedContent);
+        } catch (ClientHandlerException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw new DocumentStoreApiUnavailableException(e);
+            }
+            throw e;
+        } catch (IOException e) {
+            throw new DocumentStoreApiUnmarshallingException("Failed to parse content received from Document Store API", e);
+        } finally {
             if (clientResponse != null) {
                 clientResponse.close();
             }
         }
+    }
 
-		int responseStatusFamily = responseStatusCode / 100;
-        
-        if (responseStatusFamily == 5) {
-            // can't tell whether it exists
-            String msg = String.format("Document store API returned %s", responseStatusCode);
-            throw new DocumentStoreApiUnavailableException(msg);
-        }
-
-		return responseStatusFamily == 2;
-	}
-
-	private UriBuilder contentUrlBuilder() {
-		return UriBuilder.fromUri(uri).path("{uuid}");
-
-	}
-
-	private String serializeBody(Document document) {
-//        final DOMImplementationLS implementation = (DOMImplementationLS) document.getImplementation();
-//        final LSSerializer serializer = implementation.createLSSerializer();
-//        final String result = serializer.writeToString(document);
-//        return result;
+    private String serializeBody(Document document) {
         final DOMSource domSource = new DOMSource(document);
         final StringWriter writer = new StringWriter();
         final StreamResult result = new StreamResult(writer);
@@ -243,89 +229,86 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             transformer.setOutputProperty("standalone", "yes");
             transformer.transform(domSource, result);
             writer.flush();
-            final String body = writer.toString();
-            return body;
+            return writer.toString();
         } catch (TransformationException | TransformerException e) {
             throw new BodyProcessingException(e);
         }
     }
-	
 
-
-    private void processATags(List<Node> aTagsToCheck, List<String> uuidsPresentInContentStore) {
-        for(Node node : aTagsToCheck){
-            Optional<String> assetUuid = extractUuid(node);
-            if(assetUuid.isPresent()){
-                String uuid = assetUuid.get();
-                if (uuidsPresentInContentStore.contains(uuid)) {
-                    replaceLinkToContentPresentInDocumentStore(node, uuid);
-                } else if (isConvertableToAssetOnFtCom(node)){
-                    transformLinkToAssetOnFtCom(node, uuid); // e.g slideshow galleries
-                } else {
-                    // leave it alone, we don't know what to do with it
-                }
+    private void processATags(Map<Node, String> aTags, List<Content> content) {
+        for (Node aTag : aTags.keySet()) {
+            Optional<Content> matchingContent = getMatchingContent(content, aTags.get(aTag));
+            if (matchingContent.isPresent()) {
+                replaceLinkToContentPresentInDocumentStore(aTag, matchingContent.get());
+            } else if (isConvertibleToAssetOnFtCom(aTag)) {
+                transformLinkToAssetOnFtCom(aTag, aTags.get(aTag));
             }
         }
     }
-	
-	private boolean isConvertableToAssetOnFtCom(Node node) {
-		String href = getHref(node);
-		if (href.startsWith(FT_COM_WWW_URL)) {
-			return true;
-		} else if (href.startsWith("/")) { // i.e. it's a relative path in Methode with a UUID param		
-			Matcher matcher = UUID_PARAM_REGEX_PATTERN.matcher(href);
-			if(matcher.matches()){
-				return true;
-			}
-		}
+
+    private Optional<Content> getMatchingContent(List<Content> content, String uuid) {
+        return content.stream().filter(c -> c.getUuid().equals(uuid)).findFirst();
+    }
+
+    private void replaceLinkToContentPresentInDocumentStore(Node node, Content content) {
+        Element newElement = node.getOwnerDocument().createElement(CONTENT_TAG);
+        newElement.setAttribute("id", content.getUuid());
+
+        if (!StringUtils.isBlank(content.getType())) {
+            newElement.setAttribute("type", BASE_CONTENT_TYPE + content.getType());
+        } else {
+            newElement.setAttribute("type", DEFAULT_CONTENT_TYPE);
+        }
+
+        Optional<String> nodeValue = getTitleAttributeIfExists(node);
+        nodeValue.ifPresent(s -> newElement.setAttribute("title", s));
+        newElement.setTextContent(node.getTextContent());
+        node.getParentNode().replaceChild(newElement, node);
+    }
+
+    private Optional<String> getTitleAttributeIfExists(Node node) {
+        if (getAttribute(node, "title") != null) {
+            String nodeValue = getAttribute(node, "title").getNodeValue();
+            return Optional.ofNullable(nodeValue);
+        }
+        return Optional.empty();
+    }
+
+    private boolean isConvertibleToAssetOnFtCom(Node node) {
+        String href = getHref(node);
+        Matcher matcher = FT_COM_URL_REGEX_PATTERN.matcher(href);
+        if (matcher.matches()) {
+            return true;
+        } else if (href.startsWith("/")) { // i.e. it's a relative path in Methode with a UUID param
+            matcher = UUID_PARAM_REGEX_PATTERN.matcher(href);
+            if (matcher.matches()) {
+                return true;
+            }
+        }
         return false;
-		
-	}
+    }
 
-	private void replaceLinkToContentPresentInDocumentStore(Node node, String uuid) {
-		Element newElement = node.getOwnerDocument().createElement(CONTENT_TAG);
-		newElement.setAttribute("id", uuid);
-		newElement.setAttribute("type", ARTICLE_TYPE);
-		Optional<String> nodeValue = getTitleAttributeIfExists(node);
-		if(nodeValue.isPresent()){
-			newElement.setAttribute("title", nodeValue.get());
-		}
-		newElement.setTextContent(node.getTextContent());
-		node.getParentNode().replaceChild(newElement, node);
-	}
-
-	private Optional<String> getTitleAttributeIfExists(Node node) {
-		if(getAttribute(node, "title") != null){
-			String nodeValue = getAttribute(node, "title").getNodeValue();
-			return Optional.fromNullable(nodeValue);
-		}
-		return Optional.absent();
-	}
-
-	private void transformLinkToAssetOnFtCom(Node aTag, String uuid) {
-
+    private void transformLinkToAssetOnFtCom(Node aTag, String uuid) {
         String oldHref = getHref(aTag);
         String newHref;
 
-        if(oldHref.startsWith(FT_COM_WWW_URL)) {
-
+        Matcher matcher = FT_COM_URL_REGEX_PATTERN.matcher(oldHref);
+        if (matcher.matches()) {
             URI ftAssetUri = URI.create(oldHref);
-
             String path = ftAssetUri.getPath();
 
-            if(path.startsWith("/intl")) {
-                newHref =  ftAssetUri.resolve(path.substring(5)).toString();
+            if (path.startsWith("/intl")) {
+                newHref = ftAssetUri.resolve(path.substring(5)).toString();
             } else {
                 if (isSlideshowUrl(aTag)) {
                     newHref = oldHref;
                 } else {
                     // do this to get rid of query params and fragment identifiers from the url
-                    newHref =  ftAssetUri.resolve(path).toString();                    
+                    newHref = ftAssetUri.resolve(path).toString();
                 }
             }
-
         } else {
-            newHref = "http://www.ft.com/cms/s/"+ uuid + ".html";
+            newHref = "http://www.ft.com/cms/s/" + uuid + ".html";
         }
 
         getAttribute(aTag, "href").setNodeValue(newHref);
@@ -335,19 +318,19 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 		removeTypeAttributeIfPresent(aTag);
 	}
 
-	private void removeTypeAttributeIfPresent(Node aTag) {
-		if (getAttribute(aTag, TYPE) != null) {
-			aTag.getAttributes().removeNamedItem(TYPE);
-		}
-	}
-
-	private boolean isSlideshowUrl(Node aTag) {
-		return getAttribute(aTag, TYPE) != null && getAttribute(aTag, TYPE).getNodeValue().equals("slideshow");
+    private boolean isSlideshowUrl(Node aTag) {
+        return getAttribute(aTag, TYPE) != null && getAttribute(aTag, TYPE).getNodeValue().equals("slideshow");
     }
 
-	private Node getAttribute(Node aTag, String attributeName) {
-		return aTag.getAttributes().getNamedItem(attributeName);
-	}
+    private void removeTypeAttributeIfPresent(Node aTag) {
+        if (getAttribute(aTag, TYPE) != null) {
+            aTag.getAttributes().removeNamedItem(TYPE);
+        }
+    }
+
+    private Node getAttribute(Node aTag, String attributeName) {
+        return aTag.getAttributes().getNamedItem(attributeName);
+    }
 
 	private Optional<String> extractUuid(Node node) {
         return extractUuid(getHref(node));
@@ -355,10 +338,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     private Optional<String> extractUuid(String href) {
         Matcher matcher = UUID_REGEX_PATTERN.matcher(href);
-        if(matcher.matches()){
-            return Optional.fromNullable(matcher.group(1));
+        if (matcher.matches()) {
+            return Optional.ofNullable(matcher.group(1));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private String getHref(Node aTag) {
@@ -366,11 +349,13 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         final Node hrefAttr = attributes.getNamedItem("href");
         return hrefAttr == null ? "" : hrefAttr.getNodeValue();
     }
-    
-    /** Strips out a tag.
-     *  If the child content of the tag is empty or only whitespace, it is removed;
-     *  any other child content of the tag is preserved in place.
-     *  @param aTag the tag
+
+    /**
+     * Strips out a tag.
+     * If the child content of the tag is empty or only whitespace, it is removed;
+     * any other child content of the tag is preserved in place.
+     *
+     * @param aTag the tag
      */
     private void removeATag(Element aTag) {
     	Node parentNode = aTag.getParentNode();
@@ -385,22 +370,6 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     	    }
     	}
         parentNode.removeChild(aTag);
-	}
-    
-    private Set<String> extractUuids(List<Node> aTagsToCheck) {
-        final List<String> uuids = new ArrayList<>(aTagsToCheck.size());
-
-        for (Node node : aTagsToCheck) {
-            Optional<String> optionalUuid = extractUuid(node);
-            if(optionalUuid.isPresent())
-				uuids.add(optionalUuid.get());
-        }
-
-        return new HashSet<>(uuids);
-    }
-
-    private boolean containsUuid(String href) {
-        return extractUuid(href).isPresent();
     }
 
     private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
@@ -409,5 +378,4 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
         return documentBuilderFactory.newDocumentBuilder();
     }
-
 }

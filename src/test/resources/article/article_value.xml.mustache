@@ -2,16 +2,16 @@
 <!DOCTYPE doc SYSTEM "/SysConfig/Rules/ftpsi.dtd">
 <doc>
     <lead>
-{{#mainImageUuid}}
-        <lead-images id="U2701877253086gfF">
-            <web-master width="2048" height="1152" id="U2701877253086TGC"
-                        fileref="/FT/Graphics/Online/Master_2048x1152/dummy.jpg?uuid={{mainImageUuid}}"/>
-            <web-skybox-picture/>
-            <web-alt-picture/>
-            <web-popup-preview width="167" height="96"/>
-            <web-popup/>
-        </lead-images>
-{{/mainImageUuid}}
+        {{#mainImageUuid}}
+            <lead-images id="U2701877253086gfF">
+                <web-master width="2048" height="1152" id="U2701877253086TGC"
+                            fileref="/FT/Graphics/Online/Master_2048x1152/dummy.jpg?uuid={{mainImageUuid}}"/>
+                <web-skybox-picture/>
+                <web-alt-picture/>
+                <web-popup-preview width="167" height="96"/>
+                <web-popup/>
+            </lead-images>
+        {{/mainImageUuid}}
         <lead-headline>
             <headline>
                 <ln>
@@ -19,32 +19,58 @@
                 </ln>
             </headline>
         </lead-headline>
-{{#promoTitle}}
-        <web-index-headline><ln>{{promoTitle}}</ln>
-        </web-index-headline>
-{{/promoTitle}}
-{{#standfirst}}
-        <web-stand-first><p>{{standfirst}}</p>
-        </web-stand-first>
-{{/standfirst}}
-{{#storyPackageUuid}}
-        <editor-choice id="U2701877253086gfF"><a href="/FT/Content/World%20News/dummy.dwc?uuid={{storyPackageUuid}}">/FT/Content/World%20News/dummy.dwc</a>
-        </editor-choice>
-{{/storyPackageUuid}}
-{{#contentPackage}}
-        <lead-components>
-            <content-package>
-              <content-package-description>{{contentPackageDesc}}</content-package-description>
-              <content-package-link>{{contentPackageListHref}}</content-package-link>
-            </content-package>
-        </lead-components>
-{{/contentPackage}}
+        {{#promoTitle}}
+            <web-index-headline>
+                <ln>{{promoTitle}}</ln>
+            </web-index-headline>
+        {{/promoTitle}}
+        {{#contentPackageTitle}}
+            <package-navigation-headline>
+                <ln>{{contentPackageTitle}}</ln>
+            </package-navigation-headline>
+        {{/contentPackageTitle}}
+        {{#standfirst}}
+            <web-stand-first><p>{{standfirst}}</p>
+            </web-stand-first>
+        {{/standfirst}}
+        {{#storyPackageUuid}}
+            <editor-choice id="U2701877253086gfF"><a
+                    href="/FT/Content/World%20News/dummy.dwc?uuid={{storyPackageUuid}}">/FT/Content/World%20News/dummy.dwc</a>
+            </editor-choice>
+        {{/storyPackageUuid}}
+        {{#contentPackage}}
+            <lead-components>
+                <content-package>
+                    <content-package-description>{{contentPackageDesc}}</content-package-description>
+                    <content-package-link>{{contentPackageListHref}}</content-package-link>
+                </content-package>
+            </lead-components>
+        {{/contentPackage}}
+        {{#webSubhead}}
+            <web-subhead>
+                <p>{{webSubhead}}</p>
+            </web-subhead>
+        {{/webSubhead}}
     </lead>
     <story>
         <text>
-{{#byline}}<byline>{{byline}}</byline>{{/byline}}
+            {{#byline}}
+                <byline>{{byline}}</byline>{{/byline}}
             <body>
-                <p>random text for now</p>
+            <p>random text for now</p>
+            {{#imageSetID}}
+                <image-set id="{{imageSetID}}">
+                    <image-small id="U11603551664670Dp"
+                                 fileref="/FT/Content/Companies/Stories/Live/GB/image%20SET/rj/New07.jpg?uuid=069ece4e-2a5d-11e7-9b32-1fc36bdf8f7d"
+                                 xtransform=" scale(0.0729167 0.0729167)" tmx="2048 1152 71 84"/>
+                    <image-medium id="U11603551664670MgH"
+                                  fileref="/FT/Content/Companies/Stories/Live/GB/image%20SET/rj/New06.jpg?uuid=077aa180-2a5d-11e7-9b32-1fc36bdf8f7d"
+                                  xtransform=" scale(0.0842014 0.0842014)" tmx="2048 1152 150 97"/>
+                    <image-large id="U11603551664670OGB"
+                                 fileref="/FT/Content/Companies/Stories/Live/GB/image%20SET/rj/New05.jpg?uuid=0848103e-2a5d-11e7-9b32-1fc36bdf8f7d"
+                                 xtransform=" scale(0.0976563 0.0976563)" tmx="2048 1152 200 87"/>
+                </image-set>
+            {{/imageSetID}}
             </body>
         </text>
     </story>

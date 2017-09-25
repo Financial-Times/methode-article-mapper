@@ -24,8 +24,10 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new PullQuoteEventHandler(new PullQuoteXMLParser(new StAXTransformingBodyProcessor(this), inlineImageXmlEventHandler)), "web-pull-quote");
         registerStartAndEndElementEventHandler(new PromoBoxEventHandler(new PromoBoxXMLParser(new StAXTransformingBodyProcessor(this), inlineImageXmlEventHandler)), "promo-box");
         registerStartAndEndElementEventHandler(new DataTableXMLEventHandler(new DataTableXMLParser(new StAXTransformingBodyProcessor(new StructuredMethodeSourcedBodyXMLEventHandlerRegistryInnerTable(this))), new StripElementAndContentsXMLEventHandler()), "table");
+        registerStartElementEventHandler(new BlockquoteXMLEventHandler(new BlockquoteXMLParser(new StAXTransformingBodyProcessor(this))), "blockquote");
 
-        registerStartAndEndElementEventHandler(new MethodeBrightcoveVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new MethodeVideoXmlEventHandler("videoid", new StripElementAndContentsXMLEventHandler()), "videoPlayer");
+        registerStartAndEndElementEventHandler(new ContentVideoXmlEventHandler("href", new StripElementAndContentsXMLEventHandler()), "content");
         registerStartAndEndElementEventHandler(
                 new MethodeOtherVideoXmlEventHandler(
                         new InteractiveGraphicHandler(
@@ -55,11 +57,11 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
                 "s", "select", "source", "strike", "style", "tbody",
-                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr"
+                "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr", "cite"
         );
         // strip methode tags whose bodies we don't want
         registerStartElementEventHandler(new StripElementAndContentsXMLEventHandler(),
-                "annotation", "byline", "content", "editor-choice", "headline", "inlineDwc", "interactive-chart",
+                "annotation", "byline", "editor-choice", "headline", "inlineDwc", "interactive-chart",
                 "lead-body", "lead-text", "ln", "photo", "photo-caption", "photo-group",
                 "plainHtml", "promo-headline", "promo-image", "promo-intro",
                 "promo-link", "promo-title", "promobox-body", "pull-quote", "pull-quote-header",
@@ -68,12 +70,14 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "story", "strap", "videoObject", "web-alt-picture", "web-background-news",
                 "web-background-news-header", "web-background-news-text",
                 "web-picture", "web-pull-quote-source", "web-pull-quote-text",
-                "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs"
+                "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs",
+                "recommended"
         );
 
-		registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
-		registerStartAndEndElementEventHandler(new SimpleTransformBlockElementEventHandler(new StAXTransformingBodyProcessor(this), "ft-timeline"), "timeline");
+        registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
+        registerStartAndEndElementEventHandler(new SimpleTransformBlockElementEventHandler(new StAXTransformingBodyProcessor(this), "ft-timeline"), "timeline");
 
+        registerStartAndEndElementEventHandler(new ImageSetXmlEventHandler(),"image-set");
         registerStartAndEndElementEventHandler(new InlineImageXmlEventHandler(),"web-inline-picture");
         registerStartAndEndElementEventHandler(new WrappedHandlerXmlEventHandler(new InlineImageXmlEventHandler()),"timeline-image");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");

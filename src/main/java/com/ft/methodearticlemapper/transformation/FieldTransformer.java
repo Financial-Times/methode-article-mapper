@@ -1,7 +1,12 @@
 package com.ft.methodearticlemapper.transformation;
 
+import java.util.Map;
+
 public interface FieldTransformer {
 
-    String transform(String originalField, String transactionId);
+    String transform(
+        String originalField,
+        String transactionId,
+        Map.Entry<String, Object>... contextData);
 
 }
