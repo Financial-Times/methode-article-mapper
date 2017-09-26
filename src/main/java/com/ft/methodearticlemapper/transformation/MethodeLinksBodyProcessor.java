@@ -8,9 +8,9 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
 import com.ft.jerseyhttpwrapper.ResilientClient;
-import com.ft.methodearticlemapper.exception.DocumentStoreApiUnmarshallingException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiInvalidRequestException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
+import com.ft.methodearticlemapper.exception.DocumentStoreApiUnmarshallingException;
 import com.ft.methodearticlemapper.model.Content;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -60,6 +60,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     private static final String CONTENT_TAG = "content";
     private static final String ANCHOR_PREFIX = "#";
     private static final String TYPE = "type";
+
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;

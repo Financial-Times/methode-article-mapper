@@ -178,9 +178,9 @@ public class TearSheetLinksTransformerTest {
 
   private void mockConcordanceQueryResponse(String queryUrl, Concordances response) {
     WebResource resource = mock(WebResource.class);
-    WebResource.Builder builder = mock(WebResource.Builder.class);
     when(client.resource(URI.create(queryUrl))).thenReturn(resource);
-    when(resource.header(anyString(), anyObject())).thenReturn(builder);
+    WebResource.Builder builder = mock(WebResource.Builder.class);
+    when(resource.header("Host", "public-concordances-api")).thenReturn(builder);
     when(builder.get(Concordances.class)).thenReturn(response);
   }
 

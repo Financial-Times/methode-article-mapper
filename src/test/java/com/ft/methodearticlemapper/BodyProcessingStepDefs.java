@@ -96,19 +96,19 @@ public class BodyProcessingStepDefs {
     private static final String CONVERSION_TEMPLATE = "%ss";
     private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(CONVERT_FROM_PARAMETER, CONVERTED_TO_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
-    
-	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
-	private static final String TME_ID_CONCORDED = "TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0M=-T04=";
-	private static final String TME_ID_NOT_CONCORDED = "notconcorded";
-	private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
-	private static final String API_URL_CONCORDED ="http://api.ft.com/organisations/704a3225-9b5c-3b4f-93c7-8e6a6993bfb0";
+
+    private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
+    private static final String TME_ID_CONCORDED = "TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0M=-T04=";
+    private static final String TME_ID_NOT_CONCORDED = "notconcorded";
+    private static final URI CONCORDANCE_URL = URI.create("concordanceuri/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
+    private static final String API_URL_CONCORDED ="http://api.ft.com/organisations/704a3225-9b5c-3b4f-93c7-8e6a6993bfb0";
     private static final String CONTENT_STORE_UUID = "fbbee07f-5054-4a42-b596-64e0625d19a6";
     private static  final Identifier identifier = new Identifier(TME_AUTHORITY, TME_ID_CONCORDED);
     private static final  ConceptView concept= new ConceptView(API_URL_CONCORDED , API_URL_CONCORDED );
     private Concordance concordance;
     private Concordances concordancesResponse;
     private Concordances concordancesEmpty;
-	
+
 
     public static List<VideoSiteConfiguration> VIDEO_CONFIGS = Arrays.asList(
             new VideoSiteConfiguration("https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)", "https://www.youtube.com/watch?v=%s", true, T, null, true),
@@ -159,8 +159,8 @@ public class BodyProcessingStepDefs {
         rulesAndHandlers.put( "TRANSFORM THE WEB-PULL-QUOTE TO PULL-QUOTE", "PullQuoteEventHandler");
         rulesAndHandlers.put( "TRANSFORM WEB-PULL-QUOTE W/ IMAGE TO PULL-QUOTE", "PullQuoteEventHandler");
         rulesAndHandlers.put( "TRANSFORM TAG IF BIG NUMBER", "PromoBoxEventHandler");
-		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX", "PromoBoxEventHandler");
-		rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX WITH MASTER IMAGE", "PromoBoxEventHandler");
+        rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX", "PromoBoxEventHandler");
+        rulesAndHandlers.put( "TRANSFORM TAG IF PROMO BOX WITH MASTER IMAGE", "PromoBoxEventHandler");
         rulesAndHandlers.put( "RETAIN ELEMENT AND REMOVE FORMATTING ATTRIBUTES", "DataTableXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE SCRIPT ELEMENT TO PODCAST", "PodcastXMLEventHandler");
         rulesAndHandlers.put( "TRANSFORM THE TAG TO VIDEO", "MethodeVideoXmlEventHandler");
@@ -339,7 +339,7 @@ public class BodyProcessingStepDefs {
     @When("^it is transformed, (.+) becomes (.+)$")
     public void the_before_becomes_after(String before, String after) throws Throwable {
         transformedBodyText = bodyTransformer.transform(wrapped(before), TRANSACTION_ID);
-        
+
         Diff diff = new Diff(wrapped(after), transformedBodyText);
         diff.overrideElementQualifier(new ElementNameAndTextQualifier());
         XMLAssert.assertXMLEqual("transformed body does not match expected text", diff, true);
@@ -380,11 +380,11 @@ public class BodyProcessingStepDefs {
     private ClientResponse clientResponseWithCode(int status) {
         return new ClientResponse(status, headers, entity, workers);
     }
-    
-    
-@Given("^There is a company tag in a Methode article body$")
-public void There_is_a_company_tag_in_a_Methode_article_body() throws Throwable {
-    // no op!
-}
+
+
+    @Given("^There is a company tag in a Methode article body$")
+    public void There_is_a_company_tag_in_a_Methode_article_body() throws Throwable {
+        // no op!
+    }
 
 }
