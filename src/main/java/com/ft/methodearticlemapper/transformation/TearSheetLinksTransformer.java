@@ -69,7 +69,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 			
 			URI concordanceApiQuery = builder.buildFromEncoded();
 			Concordances responseConcordances = client.resource(concordanceApiQuery)
-					.header("Host", "public-concordances-api").get(Concordances.class)
+					.header("Host", "public-concordances-api").get(Concordances.class);
 			if (responseConcordances != null && responseConcordances.getConcordances() != null
 					&& !responseConcordances.getConcordances().isEmpty()) {
 
