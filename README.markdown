@@ -29,6 +29,7 @@ This `preview` setting will not trigger an exception in case of empty article bo
 A GET request to http://localhost:11071/healthcheck or http://localhost:11070/__health
 
 ## Example of transformation output 
+
 You can find an example of a transformed article below. 
 
 ```
