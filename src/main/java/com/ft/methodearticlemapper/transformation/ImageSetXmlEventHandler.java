@@ -26,8 +26,8 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
     @Override
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
-        final String uuid = getUuidFromContext(bodyProcessingContext);
-        final String apiHost = getApiHostFromContext(bodyProcessingContext);
+        final String uuid = getDataFromContext("uuid", bodyProcessingContext);
+        final String apiHost = getDataFromContext("apiHost", bodyProcessingContext);
         final String imageID = getIdFromImageSet(event);
 
         if (StringUtils.isNotEmpty(uuid) && StringUtils.isNotEmpty(imageID)) {
@@ -45,36 +45,20 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
         skipUntilMatchingEndTag(event.getName().getLocalPart(), xmlEventReader);
     }
 
-    private String getUuidFromContext(final BodyProcessingContext bodyProcessingContext) {
+    private String getDataFromContext(String key, final BodyProcessingContext bodyProcessingContext) {
         if (!(bodyProcessingContext instanceof MappedDataBodyProcessingContext)) {
-            LOGGER.warn("No mapped data available in body processing context. Cannot retrieve host article UUID");
+            LOGGER.warn(String.format("No mapped data available in body processing context. Cannot retrieve %s", key));
             return null;
         }
 
         final MappedDataBodyProcessingContext mappedDataBodyProcessingContext = (MappedDataBodyProcessingContext) bodyProcessingContext;
-        final String uuid = mappedDataBodyProcessingContext.get("uuid", String.class);
+        final String data = mappedDataBodyProcessingContext.get(key, String.class);
 
-        if (uuid == null) {
-            LOGGER.warn("No host article UUID found in the context mapped data");
+        if (data == null) {
+            LOGGER.warn(String.format("No %s found in the context mapped data", key));
         }
 
-        return uuid;
-    }
-
-    private String getApiHostFromContext(final BodyProcessingContext bodyProcessingContext) {
-        if (!(bodyProcessingContext instanceof MappedDataBodyProcessingContext)) {
-            LOGGER.warn("No mapped data available in body processing context. Cannot retrieve apiHost");
-            return null;
-        }
-
-        final MappedDataBodyProcessingContext mappedDataBodyProcessingContext = (MappedDataBodyProcessingContext) bodyProcessingContext;
-        final String apiHost = mappedDataBodyProcessingContext.get("apiHost", String.class);
-
-        if (apiHost == null) {
-            LOGGER.warn("No apiHost found in the context mapped data");
-        }
-
-        return apiHost;
+        return data;
     }
 
     private String getIdFromImageSet(StartElement event) {
