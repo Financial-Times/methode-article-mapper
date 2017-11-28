@@ -31,21 +31,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-/**
- * Tests article preview transformation logic.
- *
- * Created by julia.fernee on 29/01/2016.
- */
 public class ArticlePreviewTransformationTest {
 
-    public static final String ARBITRARY_BRAND = "any brand";
+    private static final String ARBITRARY_BRAND = "any brand";
     private static final boolean IS_PREVIEW = true;
     private static final String TRANSACTION_ID = "tid_test";
     private static final String VALID_EOM_FILE_TYPE = "EOM::CompoundStory";
     private static final String VALUE_PROPERTY = FileUtils.readFile("preview/article_preview_value.xml");
     private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
-    private static final String[] WORFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
-    private static String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
+    private static final String[] WORKFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
+    private static final String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
+    private static final String API_HOST = "test.api.ft.com";
     private HttpHeaders httpHeaders= mock(HttpHeaders.class);
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
@@ -61,7 +57,7 @@ public class ArticlePreviewTransformationTest {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
         postContentToTransformResource= new PostContentToTransformResource(eomFileProcessor);
 
         when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
@@ -71,7 +67,7 @@ public class ArticlePreviewTransformationTest {
      * Tests that an unpublished article preview contains minimal required data to transform it to UP content.
      */
     @Test
-    public void minimalReqirementsMetForContentPreview() {
+    public void minimalRequirementsMetForContentPreview() {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
@@ -104,7 +100,7 @@ public class ArticlePreviewTransformationTest {
                 VALID_EOM_FILE_TYPE,
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
-                WORFLOW_STATUS[0],
+                WORKFLOW_STATUS[0],
                 null, null, null);
     }
 }

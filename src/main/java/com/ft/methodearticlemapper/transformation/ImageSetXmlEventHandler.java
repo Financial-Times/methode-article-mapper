@@ -27,6 +27,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
     public void handleStartElementEvent(StartElement event, XMLEventReader xmlEventReader, BodyWriter eventWriter,
                                         BodyProcessingContext bodyProcessingContext) throws XMLStreamException {
         final String uuid = getUuidFromContext(bodyProcessingContext);
+        final String apiHost = getApiHostFromContext(bodyProcessingContext);
         final String imageID = getIdFromImageSet(event);
 
         if (StringUtils.isNotEmpty(uuid) && StringUtils.isNotEmpty(imageID)) {
@@ -34,7 +35,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
 
             HashMap<String, String> attributes = new HashMap<>();
             attributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
-            attributes.put("url", "http://api.ft.com/content/" + generatedUUID);
+            attributes.put("url", String.format("http://%s/content/%s", apiHost, generatedUUID));
             attributes.put("data-embedded", "true");
 
             eventWriter.writeStartTag(FT_CONTENT_TAG, attributes);
@@ -58,6 +59,22 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
         }
 
         return uuid;
+    }
+
+    private String getApiHostFromContext(final BodyProcessingContext bodyProcessingContext) {
+        if (!(bodyProcessingContext instanceof MappedDataBodyProcessingContext)) {
+            LOGGER.warn("No mapped data available in body processing context. Cannot retrieve apiHost");
+            return null;
+        }
+
+        final MappedDataBodyProcessingContext mappedDataBodyProcessingContext = (MappedDataBodyProcessingContext) bodyProcessingContext;
+        final String apiHost = mappedDataBodyProcessingContext.get("apiHost", String.class);
+
+        if (apiHost == null) {
+            LOGGER.warn("No apiHost found in the context mapped data");
+        }
+
+        return apiHost;
     }
 
     private String getIdFromImageSet(StartElement event) {

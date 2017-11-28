@@ -18,6 +18,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
+    private final String apiHost;
 
     public MethodeArticleMapperConfiguration(@JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
@@ -26,7 +27,8 @@ public class MethodeArticleMapperConfiguration extends Configuration {
                                              @JsonProperty("brands") List<BrandConfiguration> brands,
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
-                                             @JsonProperty("contentUriPrefix") String contentUriPrefix) {
+                                             @JsonProperty("contentUriPrefix") String contentUriPrefix,
+                                             @JsonProperty("apiHost") String apiHost) {
 
         this.documentStoreApiConfiguration = documentStoreApiConfiguration;
 		this.concordanceApiConfiguration=concordanceApiConfiguration;
@@ -36,6 +38,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
         this.videoSiteConfig = videoSiteConfig;
         this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
         this.contentUriPrefix = contentUriPrefix;
+        this.apiHost = apiHost;
     }
 
 	@NotNull
@@ -72,5 +75,10 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     @NotNull
     public String getContentUriPrefix() {
         return contentUriPrefix;
+    }
+
+    @NotNull
+    public String getApiHost() {
+        return apiHost;
     }
 }
