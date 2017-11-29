@@ -137,3 +137,5 @@ producer:
     panicGuideUrl: "https://dewey.ft.com/up-mam.html"
 
 contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
+
+apiHost: "api.ft.com"

@@ -160,7 +160,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 ).newInstance(),
                 new BylineProcessingFieldTransformerFactory().newInstance(),
                 new Html5SelfClosingTagBodyProcessor(),
-                processConfigurationBrands(configuration.getBrandsConfiguration()));
+                processConfigurationBrands(configuration.getBrandsConfiguration()),
+                configuration.getApiHost());
     }
 
     private void registerHealthChecks(Environment environment, List<AdvancedHealthCheck> advancedHealthChecks) {

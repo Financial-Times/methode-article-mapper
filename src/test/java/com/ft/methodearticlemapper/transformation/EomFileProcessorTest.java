@@ -86,6 +86,7 @@ public class EomFileProcessorTest {
     private static final String TRANSACTION_ID = "tid_test";
     private static final String FALSE = "False";
     private static final String TRUE = "True";
+    private static final String API_HOST = "test.api.ft.com";
 
     private static final String lastPublicationDateAsString = "20130813145815";
     private static final String initialPublicationDateAsString = "20120813145815";
@@ -203,7 +204,7 @@ public class EomFileProcessorTest {
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap);
+        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
     }
 
     @Test(expected = MethodeMarkedDeletedException.class)
@@ -281,7 +282,11 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        verify(bodyTransformer).transform(anyString(), eq(TRANSACTION_ID), eq(Maps.immutableEntry("uuid", eomFile.getUuid())));
+        verify(bodyTransformer).transform(
+                anyString(),
+                eq(TRANSACTION_ID),
+                eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
+                eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -308,7 +313,11 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        verify(bodyTransformer).transform(anyString(), eq(TRANSACTION_ID), eq(Maps.immutableEntry("uuid", eomFile.getUuid())));
+        verify(bodyTransformer).transform(
+                anyString(),
+                eq(TRANSACTION_ID),
+                eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
+                eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -347,7 +356,11 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        verify(bodyTransformer).transform(anyString(), eq(TRANSACTION_ID), eq(Maps.immutableEntry("uuid", eomFile.getUuid())));
+        verify(bodyTransformer).transform(
+                anyString(),
+                eq(TRANSACTION_ID),
+                eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
+                eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -366,7 +379,11 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        verify(bodyTransformer).transform(anyString(), eq(TRANSACTION_ID), eq(Maps.immutableEntry("uuid", eomFile.getUuid())));
+        verify(bodyTransformer).transform(
+                anyString(),
+                eq(TRANSACTION_ID),
+                eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
+                eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
     }
 

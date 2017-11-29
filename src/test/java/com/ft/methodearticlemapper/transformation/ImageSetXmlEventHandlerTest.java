@@ -8,10 +8,12 @@ import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.uuidutils.GenerateV3UUID;
 import com.google.common.collect.Maps;
+
 import java.util.HashMap;
 import java.util.Map;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
+
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(value = MockitoJUnitRunner.class)
 public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
+    private static final String API_HOST = "test.api.ft.com";
     private static final String TEST_TID = "test_tid";
     private static final String ARTICLE_UUID = "edf0d3db-6497-406a-9d40-79176b0ffadb";
 
@@ -46,11 +49,14 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     public void setUp() throws Exception {
         eventHandler = new ImageSetXmlEventHandler();
 
-        bodyProcessingContext = new MappedDataBodyProcessingContext(TEST_TID, Maps.immutableEntry("uuid", ARTICLE_UUID));
+        bodyProcessingContext = new MappedDataBodyProcessingContext(
+                TEST_TID,
+                Maps.immutableEntry("uuid", ARTICLE_UUID),
+                Maps.immutableEntry("apiHost", API_HOST));
 
         expectedAttributes = new HashMap<>();
         expectedAttributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
-        expectedAttributes.put("url", "http://api.ft.com/content/" + GENERATED_UUID);
+        expectedAttributes.put("url", String.format("http://%s/content/%s", API_HOST, GENERATED_UUID));
         expectedAttributes.put("data-embedded", "true");
     }
 

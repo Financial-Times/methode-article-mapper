@@ -93,16 +93,19 @@ public class EomFileProcessor {
     private final FieldTransformer bylineTransformer;
     private final BodyProcessor htmlFieldProcessor;
 
+    private final String apiHost;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
     public EomFileProcessor(final FieldTransformer bodyTransformer,
                             final FieldTransformer bylineTransformer,
                             final BodyProcessor htmlFieldProcessor,
-                            final Map<ContentSource, Brand> contentSourceBrandMap) {
+                            final Map<ContentSource, Brand> contentSourceBrandMap,
+                            final String apiHost) {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.htmlFieldProcessor = htmlFieldProcessor;
         this.contentSourceBrandMap = contentSourceBrandMap;
+        this.apiHost = apiHost;
     }
 
     private static Date toDate(String dateString, String format) {
@@ -176,8 +179,7 @@ public class EomFileProcessor {
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
         final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId,
-            Maps.immutableEntry("uuid", uuid.toString())
-        );
+            Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
