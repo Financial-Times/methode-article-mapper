@@ -2,8 +2,6 @@ package com.ft.methodearticlemapper.transformation;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -52,19 +50,14 @@ public class TearSheetLinksTransformerTest {
   private static final String ORG_ID = UUID.randomUUID().toString();
   private static final String API_URL2 = "http://api.ft.com/organisations/" + ORG_ID;
 
-  private static final String BODY_1 = "<body> <p>Some text</p></body>";
+  private static final String BODY_TEMPLATE = "<body><p>Some text</p>%s</body>";
 
-  private static final String BODY_2 =
-      "<body>" + "<p>Some text</p>" + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1
-          + "\"  >not concorded company name</company></p>" + "</body>";
-  private static final String BODY_3 =
-      "<body>" + "<p>Some text</p>" + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2
-          + "\" >concorded company name</company></p>" + "</body>";
-  private static final String BODY_4 =
-      "<body>" + "<p>Some text</p>" + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1
-          + "\"  > not concorded company name</company></p>"
-          + "<p><company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2
-          + "\"  >concorded company name</company></p>" + "</body>";
+  private static final String COMPANY_NOT_CONCORDED =
+    "<company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1 + "\" >not concorded company name</company>";
+  private static final String COMPANY_CONCORDED =
+    "<company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 + "\" >concorded company name</company>";
+  private static final String COMPANY_NO_COMPOSITE_ID =
+    "<company  DICoSEDOL=\"2297907\" >company without compositeId</company>";
 
 
   private Document doc;
@@ -89,31 +82,34 @@ public class TearSheetLinksTransformerTest {
 
   @Test
   public void shouldNotChangeBodyIfNoCompanyTags() throws Exception {
-    doc = db.parse(new InputSource(new StringReader(BODY_1)));
+    final String body = String.format(BODY_TEMPLATE, "");
+    doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     toTest.handle(doc, nodes);
     String actual = serializeDocument(doc);
-    assertThat(actual, equalTo(BODY_1));
+    assertThat(actual, equalTo(body));
 
     verifyZeroInteractions(client);
   }
 
   @Test
   public void shouldNotChangeBodyIfCompanyTMEIdNotConcorded() throws Exception {
-    doc = db.parse(new InputSource(new StringReader(BODY_2)));
+    final String body = String.format(BODY_TEMPLATE, COMPANY_NOT_CONCORDED);
+    doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     String queryUrl = CONCORDANCE_URL + TME_ID_1;
     mockConcordanceQueryResponse(queryUrl, null);
     toTest.handle(doc, nodes);
     String actual = serializeDocument(doc);
-    Diff diff = new Diff(BODY_2, actual);
+    Diff diff = new Diff(body, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
   }
 
   @Test
   public void shouldTransformCompanyIfCompanyTMEIdIsConcorded() throws Exception {
-    doc = db.parse(new InputSource(new StringReader(BODY_3)));
+    final String body = String.format(BODY_TEMPLATE, "<p>" + COMPANY_CONCORDED + "</p>");
+    doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     String queryUrl = CONCORDANCE_URL + TME_ID_2;
     mockConcordanceQueryResponse(queryUrl, concordances);
@@ -123,7 +119,7 @@ public class TearSheetLinksTransformerTest {
     String expectedBody = "<body>" + "<p>Some text</p>"
         + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
         + "\">concorded company name</concept></p>" + "</body>";
-
+    
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
@@ -132,7 +128,8 @@ public class TearSheetLinksTransformerTest {
 
   @Test
   public void shouldTransformMultipleCompanies() throws Exception {
-    doc = db.parse(new InputSource(new StringReader(BODY_4)));
+    final String body = String.format(BODY_TEMPLATE, "<p>" + COMPANY_NOT_CONCORDED + "</p>" + "<p>" + COMPANY_CONCORDED + "</p>");
+    doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     String queryUrl1 = CONCORDANCE_URL + TME_ID_2 + "&identifierValue=" + TME_ID_1;
     mockConcordanceQueryResponse(queryUrl1, concordances);
@@ -140,13 +137,46 @@ public class TearSheetLinksTransformerTest {
     String actual = serializeDocument(doc);
 
     String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p><company CompositeId=\"tmeid1\" DICoSEDOL=\"2297907\"> not concorded company name</company></p>"
+        + "<p>" + COMPANY_NOT_CONCORDED + "</p>"
         + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
         + "\">concorded company name</concept></p>" + "</body>";
 
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
+  }
+
+  @Test
+  public void shouldTransformCompanyIfCompositeIdAttributeIsLowerCase() throws Exception {
+    final String body = String.format(BODY_TEMPLATE, "<p>" + COMPANY_CONCORDED.replace("CompositeId", "compositeid") + "</p>");
+    doc = db.parse(new InputSource(new StringReader(body)));
+    nodes = getNodeList(doc);
+    String queryUrl = CONCORDANCE_URL + TME_ID_2;
+    mockConcordanceQueryResponse(queryUrl, concordances);
+    toTest.handle(doc, nodes);
+    String actual = serializeDocument(doc);
+
+    String expectedBody = "<body>" + "<p>Some text</p>"
+        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+        + "\">concorded company name</concept></p>" + "</body>";
+    
+    Diff diff = new Diff(expectedBody, actual);
+    diff.overrideElementQualifier(new ElementNameAndTextQualifier());
+    XMLAssert.assertXMLEqual(diff, true);
+  }
+
+  @Test
+  public void shouldNotCallConcordancesIfCompanyHasNoCompositeId() throws Exception {
+    final String body = String.format(BODY_TEMPLATE, COMPANY_NO_COMPOSITE_ID);
+    doc = db.parse(new InputSource(new StringReader(body)));
+    nodes = getNodeList(doc);
+    toTest.handle(doc, nodes);
+    String actual = serializeDocument(doc);
+    Diff diff = new Diff(body, actual);
+    diff.overrideElementQualifier(new ElementNameAndTextQualifier());
+    XMLAssert.assertXMLEqual(diff, true);
+    
+    verifyZeroInteractions(client);
   }
 
 

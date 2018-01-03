@@ -3,6 +3,8 @@ package com.ft.methodearticlemapper.transformation;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -29,6 +31,7 @@ import com.sun.jersey.api.client.Client;
 public class TearSheetLinksTransformer implements XPathHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(TearSheetLinksTransformer.class);
 
+	private static final String UTF8 = StandardCharsets.UTF_8.name();
 	private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
 	private final static String CONCEPT_TAG="concept";
 	private final static String COMPANY_TYPE= "http://www.ft.com/ontology/company/PublicCompany";
@@ -47,24 +50,32 @@ public class TearSheetLinksTransformer implements XPathHandler {
 	@Override
 	public void handle(Document document, NodeList nodes) {
 		int len = nodes.getLength();
-		if (len > 0) {
+		if (len == 0) {
+		    return;
+		}
+		
+		List<String> values = new ArrayList<>();
+        for (int i = len - 1; i >= 0; i--) {
+            Element el = (Element) nodes.item(i);
+            // this is because the previous processor changes attribute
+            // names to be all lower case, makes the handler less
+            // dependent on processor order
+            // lazily rely on getAttribute() returning an empty string if the attribute is not present
+            String id = el.getAttribute("CompositeId") + el.getAttribute("compositeid");
+            if (StringUtils.isNotBlank(id)) {
+                values.add(id.trim());
+            }
+        }
+		
+		if (!values.isEmpty()) {
 			UriBuilder builder = UriBuilder.fromUri(concordanceAPI);
 			try {
-				builder.queryParam("authority", URLEncoder.encode(TME_AUTHORITY, "UTF-8"));
-				for (int i = len - 1; i >= 0; i--) {
-					Element el = (Element) nodes.item(i);
-					// this is because the previous processor changes attribute
-					// names to be all lower case, makes the handler less
-					// dependent on processor order
-					String id = StringUtils.isNotBlank(el.getAttribute("CompositeId")) ? el.getAttribute("CompositeId")
-							: el.getAttribute("compositeid");
-					if (StringUtils.isNotBlank(id)) {	
-						builder.queryParam("identifierValue", URLEncoder.encode(id, "UTF-8"));
-					}
+				builder.queryParam("authority", URLEncoder.encode(TME_AUTHORITY, UTF8));
+				for (String id : values) {
+				    builder.queryParam("identifierValue", URLEncoder.encode(id, UTF8));
 				}
-				
-			} catch ( UnsupportedEncodingException e) {
-				throw  new RuntimeException("Encoding for concordance call failed  ");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException("Encoding for concordance call failed  ");
 			}
 			
 			URI concordanceApiQuery = builder.buildFromEncoded();
@@ -75,7 +86,7 @@ public class TearSheetLinksTransformer implements XPathHandler {
 
 				transformTearSheetLink(responseConcordances.getConcordances(), nodes);
 			} else {
-				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, "UTF-8").stream()
+				List<String> identifiers = URLEncodedUtils.parse(concordanceApiQuery, UTF8).stream()
 						.filter(item -> item.getName().equals("identifierValue")).map(NameValuePair::getValue)
 						.collect(Collectors.toList());
 				identifiers.forEach(item -> LOG.warn("Composite Id is not concorded CompositeId=" + item));
