@@ -10,6 +10,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.richcontent.RichContentItem;
 import com.ft.bodyprocessing.richcontent.Video;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
-import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.sun.jersey.api.client.Client;
@@ -66,7 +66,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     private FieldTransformer bodyTransformer;
 
-    @Mock private ResilientClient documentStoreApiClient;
+    @Mock private Client documentStoreApiClient;
     @Mock private VideoMatcher videoMatcher;
     @Mock private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     @Mock private WebResource webResourceNotFound;
@@ -1257,8 +1257,36 @@ public class BodyProcessingFieldTransformerFactoryTest {
 		checkTransformation(originalContent, transformedContent);
 	}
 
+    @Test
+    public void thatSuggestModeSkipsDocumentStoreAPICalls() {
+        String input = "<body>"
+                + "A story with <a href=\"/FT/Content/Companies/Stories/Live/ProdStory1.xml?uuid=9b9fed88-d986-11e2-bce1-002128161462\">a link that does not need to be checked for suggest mode</a>."
+                + "</body>";
+        
+        checkTransformation(input, input, TransformationMode.SUGGEST);
+        
+        verifyZeroInteractions(documentStoreApiClient);
+    }
+
+    @Test
+    public void thatSuggestModeSkipsConcordanceAPICalls() {
+        String input = "<body>"
+                + "The usual body text for a story about "
+                + "<company DICoName=\"Google Inc\" DICoFTMWTickercode=\"us:GOOG\" DICoCOFlag=\"\" DICoSEDOL=\"B020QX2\" DICoISIN=\"\" DICoFTCode=\"GOOGL00000\" DICoTickerSymbol=\"GOOG\" DICoTickerExchangeCode=\"\" DICoTickerExchangeCountry=\"us\" Version=\"\" CompositeId=\"TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0dPT0c=-T04=\">Google</company>."
+                + "</body>";
+        
+        String expected = input.replaceAll("<\\/?company[^>]*>", "");
+        checkTransformation(input, expected, TransformationMode.SUGGEST);
+        
+        verifyZeroInteractions(concordanceClient);
+    }
+
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, TransformationMode.PUBLISH);
+        checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH);
+    }
+    
+    private void checkTransformation(String originalBody, String expectedTransformedBody, TransformationMode mode) {
+        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, mode);
 
         System.out.println("TRANSFORMED BODY:\n" + actualTransformedBody);
 
