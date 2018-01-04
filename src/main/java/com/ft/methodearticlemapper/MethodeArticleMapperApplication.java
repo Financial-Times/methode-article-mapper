@@ -8,7 +8,6 @@ import com.ft.api.util.transactionid.TransactionIdFilter;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.content.model.Brand;
-import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
@@ -81,7 +80,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         environment.jersey().register(buildInfoResource);
 
         DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
-        ResilientClient documentStoreApiClient = (ResilientClient) configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
+        Client documentStoreApiClient = configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
 
         EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
         UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
@@ -145,7 +144,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     }
 
     private EomFileProcessor configureEomFileProcessorForContentStore(
-            final ResilientClient documentStoreApiClient,
+            final Client documentStoreApiClient,
             final URI documentStoreUri,
             final MethodeArticleMapperConfiguration configuration,
             final Client concordanceApiClient,
@@ -173,7 +172,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
 
     private List<AdvancedHealthCheck> buildClientHealthChecks(
             Client concordanceApiClient, EndpointConfiguration concordanceApiConfiguration,
-            ResilientClient documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
+            Client documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
 
         List<AdvancedHealthCheck> healthchecks = new ArrayList<>();
         healthchecks.add(new RemoteServiceHealthCheck(

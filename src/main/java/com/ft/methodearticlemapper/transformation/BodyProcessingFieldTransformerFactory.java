@@ -17,7 +17,6 @@ import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.dom.DOMTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.dom.XPathHandler;
-import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodearticlemapper.transformation.xslt.ModularXsltBodyProcessor;
 import com.ft.methodearticlemapper.transformation.xslt.XsltFile;
 import com.google.common.base.Charsets;
@@ -27,14 +26,14 @@ import com.sun.jersey.api.client.Client;
 
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
 
-	private ResilientClient documentStoreApiClient;
+	private Client documentStoreApiClient;
 	private URI documentStoreUri;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private final Map<String,XPathHandler> xpathHandlers;
     
 
-	public BodyProcessingFieldTransformerFactory(final ResilientClient documentStoreApiClient,
+	public BodyProcessingFieldTransformerFactory(final Client documentStoreApiClient,
             final URI uri,
             final VideoMatcher videoMatcher,
             final InteractiveGraphicsMatcher interactiveGraphicsMatcher, Client concordanceApiClient, URI concordanceApiUri) {

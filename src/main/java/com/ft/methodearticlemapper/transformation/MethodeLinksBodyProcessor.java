@@ -7,11 +7,11 @@ import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.TransactionIdBodyProcessingContext;
-import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiInvalidRequestException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnmarshallingException;
 import com.ft.methodearticlemapper.model.Content;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.lang.StringUtils;
@@ -68,10 +68,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     private static final String FT_COM_URL_REGEX = "^https*:\\/\\/www.ft.com\\/.*";
     private static final Pattern FT_COM_URL_REGEX_PATTERN = Pattern.compile(FT_COM_URL_REGEX);
 
-    private ResilientClient documentStoreApiClient;
+    private Client documentStoreApiClient;
     private URI uri;
 
-	public MethodeLinksBodyProcessor(ResilientClient documentStoreApiClient, URI uri) {
+	public MethodeLinksBodyProcessor(Client documentStoreApiClient, URI uri) {
 		this.documentStoreApiClient = documentStoreApiClient;
         this.uri = uri;
 	}
