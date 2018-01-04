@@ -12,6 +12,7 @@ import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import java.util.Date;
 import java.util.UUID;
@@ -39,22 +40,26 @@ public class PostContentToTransformResource {
 	@POST
 	@Timed
 	@Path("/map")
-	@QueryParam("preview")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @Context HttpHeaders httpHeaders) {
+	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode, @Context HttpHeaders httpHeaders) {
 		final String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
 		final String uuid = eomFile.getUuid();
 		validateUuid(uuid);
-		return processRequest(uuid, preview, eomFile, transactionId);
+		
+		TransformationMode transformationMode = null;
+		if (mode == null) {
+		    transformationMode = preview ? TransformationMode.PREVIEW : TransformationMode.PUBLISH;
+		} else {
+		    transformationMode = TransformationMode.valueOf(mode.toUpperCase());
+		}
+        // otherwise, mode trumps the preview flag if there is a mismatch
+		
+		return processRequest(uuid, transformationMode, eomFile, transactionId);
 	}
 
-    private Content processRequest(String uuid, boolean preview, EomFile eomFile, String transactionId) {
+    private Content processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId) {
         try {
-            Date lastModifiedDate = new Date();
-            if (preview) {
-                return eomFileProcessor.processPreview(eomFile, transactionId, lastModifiedDate);
-            }
-            return eomFileProcessor.processPublication(eomFile, transactionId, lastModifiedDate);
+            return eomFileProcessor.process(eomFile, mode, transactionId, new Date());
 
         } catch (MethodeMarkedDeletedException e) {
             throw ClientError.status(404)

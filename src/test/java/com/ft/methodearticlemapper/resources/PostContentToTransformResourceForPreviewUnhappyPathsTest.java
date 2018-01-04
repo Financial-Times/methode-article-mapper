@@ -6,6 +6,7 @@ import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenNoUuidPassed() {
         try {
             EomFile eomFile = Mockito.mock(EomFile.class);
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -73,7 +74,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenInvalidUuidPassed() {
         try {
             EomFile eomFile = ArticlePreviewTransformationTest.articlePreviewMinimalEomFile("invalid_uuid");
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -90,10 +91,10 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow422ExceptionWhenPreviewNotEligibleForPublishing() {
         UUID randomUuid = UUID.randomUUID();
         when(eomFile.getUuid()).thenReturn(randomUuid.toString());
-        when(eomFileProcessor.processPreview(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PREVIEW), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(randomUuid, INVALID_TYPE));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),

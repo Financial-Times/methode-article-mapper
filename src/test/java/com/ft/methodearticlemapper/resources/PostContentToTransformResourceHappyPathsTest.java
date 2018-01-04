@@ -3,6 +3,8 @@ package com.ft.methodearticlemapper.resources;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,8 +44,8 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void previewProcessedOk() {
-        postContentToTransformResource.map(eomFile, true, httpHeaders);
-        verify(eomFileProcessor, times(1)).processPreview(eq(eomFile), eq(TRANSACTION_ID), any());
+        postContentToTransformResource.map(eomFile, true, null, httpHeaders);
+        verify(eomFileProcessor, times(1)).process(eq(eomFile), eq(TransformationMode.PREVIEW), eq(TRANSACTION_ID), any());
     }
 
     /**
@@ -51,8 +53,8 @@ public class PostContentToTransformResourceHappyPathsTest {
      */
     @Test
     public void publicationProcessedOk() {
-        postContentToTransformResource.map(eomFile, false, httpHeaders);
-        verify(eomFileProcessor, times(1)).processPublication(eq(eomFile), eq(TRANSACTION_ID), any());
+        postContentToTransformResource.map(eomFile, false, null, httpHeaders);
+        verify(eomFileProcessor, times(1)).process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any());
     }
 
 }

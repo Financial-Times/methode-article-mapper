@@ -11,6 +11,7 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -71,7 +72,7 @@ public class ArticlePreviewTransformationTest {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
-        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, httpHeaders);
+        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, null, httpHeaders);
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));
@@ -91,7 +92,7 @@ public class ArticlePreviewTransformationTest {
 
         when(eomFile.getType()).thenReturn(INVALID_EOM_FILE_TYPE);
         when(eomFile.getUuid()).thenReturn(randomUuid);
-        eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date());
+        eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, new Date());
     }
 
     /* In article preview we don't care about systemAttributes, usageTickets & lastModified date */

@@ -14,6 +14,7 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -68,7 +69,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenNoUuidPassed() {
         try {
             EomFile eomFile = Mockito.mock(EomFile.class);
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -85,7 +86,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenInvalidUuidPassed() {
         try {
             EomFile eomFile = ArticlePreviewTransformationTest.articlePreviewMinimalEomFile("invalid_uuid");
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -100,9 +101,9 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
      */
     @Test
     public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).thenThrow(new MethodeMarkedDeletedException(uuid));
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).thenThrow(new MethodeMarkedDeletedException(uuid));
         try {
-            postContentToTransformResource.map(eomFile, false, httpHeaders);
+            postContentToTransformResource.map(eomFile, false, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -118,10 +119,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow422ExceptionWhenPublicationNotEligibleForPublishing() {
 
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(uuid, "EOM::DistortedStory"));
         try {
-            postContentToTransformResource.map(eomFile, false, httpHeaders);
+            postContentToTransformResource.map(eomFile, false, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -138,10 +139,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     public void shouldThrow422ExceptionWhenEmbargoDateInTheFuture() {
         Date embargoDate = new Date();
 
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new EmbargoDateInTheFutureException(uuid, embargoDate));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -157,10 +158,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow422ExceptionWhenNotWebChannel() {
 
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new NotWebChannelException(uuid));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -176,10 +177,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow422ExceptionWhenSourceNotFt() {
         final String sourceOtherThanFt = "Pepsi";
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new SourceNotEligibleForPublishException(uuid, sourceOtherThanFt));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -196,10 +197,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     public void shouldThrow422ExceptionWhenWorkflowStatusNotEligibleForPublishing() {
 
         final String workflowStatusNotEligibleForPublishing = "Story/Edit";
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new WorkflowStatusNotEligibleForPublishException(uuid, workflowStatusNotEligibleForPublishing));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -216,10 +217,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     @Test
     public void shouldThrow422ExceptionWhenMethodeFieldMissing() {
         final String missingField = "publishedDate";
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingFieldException(uuid, missingField));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -236,10 +237,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
      */
     @Test
     public void shouldThrow422ExceptionWhenMethodeBodyMissing() {
-        when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                 thenThrow(new MethodeMissingBodyException(uuid));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException e) {
             assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
@@ -255,10 +256,10 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
     */
    @Test
    public void shouldThrow422ExceptionWhenMethodeBodyBlankAfterTransformation() {
-       when(eomFileProcessor.processPublication(eq(eomFile), eq(TRANSACTION_ID), any())).
+       when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
                thenThrow(new UntransformableMethodeContentException(uuid.toString(), "it's blank"));
        try {
-           postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, httpHeaders);
+           postContentToTransformResource.map(eomFile, IS_PREVIEW_FALSE, null, httpHeaders);
            fail("No exception was thrown, but expected one.");
        } catch (WebApplicationClientException e) {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
