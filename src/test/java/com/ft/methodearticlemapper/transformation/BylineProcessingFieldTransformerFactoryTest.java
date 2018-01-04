@@ -128,7 +128,7 @@ public class BylineProcessingFieldTransformerFactoryTest {
     }
 
     private void checkTransformation(String originalByline, String expectedTransformedByline) {
-        String actualTransformedByline = bylineTransformer.transform(originalByline, TRANSACTION_ID);
+        String actualTransformedByline = bylineTransformer.transform(originalByline, TRANSACTION_ID, TransformationMode.PUBLISH);
         assertThat(actualTransformedByline, is(equalTo(expectedTransformedByline)));
     }
 

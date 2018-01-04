@@ -12,10 +12,10 @@ public class BodyProcessingFieldTransformer implements FieldTransformer {
     }
 
     @Override
-    public String transform(String originalBody, String transactionId, Map.Entry<String, Object>... contextData) {
+    public String transform(String originalBody, String transactionId, TransformationMode mode, Map.Entry<String, Object>... contextData) {
         return bodyProcessorChain.process(
             originalBody,
-            new MappedDataBodyProcessingContext(transactionId, contextData));
+            new MappedDataBodyProcessingContext(transactionId, mode, contextData));
     }
 
 }

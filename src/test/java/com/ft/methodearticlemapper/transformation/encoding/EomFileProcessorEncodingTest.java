@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -24,6 +25,7 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.ft.uuidutils.DeriveUUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +52,7 @@ public class EomFileProcessorEncodingTest {
 
         eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
 
-        when(bylineTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BYLINE);
+        when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
     }
     
     @Test
@@ -59,7 +61,7 @@ public class EomFileProcessorEncodingTest {
                 + "to court in an apparent attempt to block the broadcast of a hit miniseries detailing her "
                 + "colourful family and business history.</p>";
         
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg()))
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg()))
             .thenReturn(String.format("<body>%s</body>", bodyText));
         
         final UUID imageUuid = UUID.randomUUID();

@@ -1178,7 +1178,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				bodyTransformer
 						.transform(
 								bodyWithImageSets,
-								TRANSACTION_ID,
+								TRANSACTION_ID, TransformationMode.PUBLISH,
 								Maps.immutableEntry("uuid", articleUuid));
 		final UUID firstImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + FIRST_EMBEDDED_IMAGE_SET_ID);
 		final UUID secondImageSetUuid = GenerateV3UUID.singleDigested(articleUuid + SECOND_EMBEDDED_IMAGE_SET_ID);
@@ -1258,7 +1258,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
     private void checkTransformation(String originalBody, String expectedTransformedBody) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
+        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, TransformationMode.PUBLISH);
 
         System.out.println("TRANSFORMED BODY:\n" + actualTransformedBody);
 
@@ -1266,7 +1266,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     private void checkTransformationToEmpty(String originalBody) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID);
+        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, TransformationMode.PUBLISH);
         assertThat(actualTransformedBody, is(""));
     }
     

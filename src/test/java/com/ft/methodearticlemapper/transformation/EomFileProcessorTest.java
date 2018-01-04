@@ -190,10 +190,10 @@ public class EomFileProcessorTest {
     @Before
     public void setUp() throws Exception {
         bodyTransformer = mock(FieldTransformer.class);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(TRANSFORMED_BODY);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(TRANSFORMED_BODY);
 
         bylineTransformer = mock(FieldTransformer.class);
-        when(bylineTransformer.transform(anyString(), anyString())).thenReturn(TRANSFORMED_BYLINE);
+        when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
 
@@ -273,7 +273,7 @@ public class EomFileProcessorTest {
                 .build();
 
         String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(expectedBody);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
@@ -284,7 +284,7 @@ public class EomFileProcessorTest {
 
         verify(bodyTransformer).transform(
                 anyString(),
-                eq(TRANSACTION_ID),
+                eq(TRANSACTION_ID), eq(TransformationMode.PUBLISH),
                 eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
                 eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
@@ -305,7 +305,7 @@ public class EomFileProcessorTest {
                 .build();
 
         String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(expectedBody);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
@@ -315,7 +315,7 @@ public class EomFileProcessorTest {
 
         verify(bodyTransformer).transform(
                 anyString(),
-                eq(TRANSACTION_ID),
+                eq(TRANSACTION_ID), eq(TransformationMode.PUBLISH),
                 eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
                 eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
@@ -358,7 +358,7 @@ public class EomFileProcessorTest {
 
         verify(bodyTransformer).transform(
                 anyString(),
-                eq(TRANSACTION_ID),
+                eq(TRANSACTION_ID), eq(TransformationMode.PUBLISH),
                 eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
                 eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
@@ -371,7 +371,7 @@ public class EomFileProcessorTest {
                 .build();
 
         String expectedBody = "<body id=\"some-random-value\"><foo/></body>";
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(expectedBody);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
@@ -381,7 +381,7 @@ public class EomFileProcessorTest {
 
         verify(bodyTransformer).transform(
                 anyString(),
-                eq(TRANSACTION_ID),
+                eq(TRANSACTION_ID), eq(TransformationMode.PUBLISH),
                 eq(Maps.immutableEntry("uuid", eomFile.getUuid())),
                 eq(Maps.immutableEntry("apiHost", API_HOST)));
         assertThat(content, equalTo(expectedContent));
@@ -390,42 +390,42 @@ public class EomFileProcessorTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfBodyTagIsMissingFromTransformedBody() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn("<p>some other random text</p>");
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("<p>some other random text</p>");
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
 
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfBodyIsNull() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(null);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(null);
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
 
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfBodyIsEmpty() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn("");
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("");
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
 
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfTransformedBodyIsBlank() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn("<body> \n \n \n </body>");
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("<body> \n \n \n </body>");
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
 
     @Test(expected = UntransformableMethodeContentException.class)
     public void shouldThrowExceptionIfTransformedBodyIsEmpty() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(EMPTY_BODY);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(EMPTY_BODY);
         eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
     }
 
     @Test
     public void thatPreviewEmptyTransformedBodyIsAllowed() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(EMPTY_BODY);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(EMPTY_BODY);
         Content actual = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
@@ -434,7 +434,7 @@ public class EomFileProcessorTest {
     public void thatContentPackageNullBodyIsAllowed() {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(null);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(null);
         Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
@@ -443,7 +443,7 @@ public class EomFileProcessorTest {
     public void thatContentPackageEmptyBodyIsAllowed() {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn("");
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("");
         Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
@@ -452,7 +452,7 @@ public class EomFileProcessorTest {
     public void thatContentPackageBlankTransformedBodyIsAllowed() {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn("<body> \n \n \n </body>");
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("<body> \n \n \n </body>");
         Content actual = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
@@ -503,7 +503,7 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
-        verify(bylineTransformer).transform("<byline>" + byline + "</byline>", TRANSACTION_ID);
+        verify(bylineTransformer).transform("<byline>" + byline + "</byline>", TRANSACTION_ID, TransformationMode.PUBLISH);
         assertThat(content, equalTo(expectedContent));
     }
 
@@ -567,7 +567,7 @@ public class EomFileProcessorTest {
 
     @Test
     public void testMainImageReferenceIsNotPutInBodyWhenMissing() throws Exception {
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).then(returnsFirstArg());
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).then(returnsFirstArg());
         final EomFile eomFile = createStandardEomFile(uuid);
 
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -995,6 +995,8 @@ public class EomFileProcessorTest {
 
     @Test
     public void testAgencyContentProcessPreview() {
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(TRANSFORMED_BODY);
+        
         final EomFile eomFile = createStandardEomFileAgencySource(uuid);
         Content content = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, LAST_MODIFIED);
 
@@ -1018,7 +1020,7 @@ public class EomFileProcessorTest {
             + "<p>random text for now</p>"
             + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
             + "</body>";
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(expectedBody);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
         Content content = eomFileProcessor.processPublication(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -1033,7 +1035,7 @@ public class EomFileProcessorTest {
             + "<p>random text for now</p>"
             + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
             + "</body>";
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).thenReturn(expectedBody);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
         Content content = eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, LAST_MODIFIED);
@@ -1081,7 +1083,7 @@ public class EomFileProcessorTest {
     }
 
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
-        when(bodyTransformer.transform(anyString(), anyString(), anyVararg())).then(returnsFirstArg());
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).then(returnsFirstArg());
         final UUID imageUuid = UUID.randomUUID();
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid,

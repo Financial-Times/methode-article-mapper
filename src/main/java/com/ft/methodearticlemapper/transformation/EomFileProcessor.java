@@ -62,11 +62,6 @@ public class EomFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
 
-    enum TransformationMode {
-        PUBLISH,
-        PREVIEW
-    }
-
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
         String ARTICLE = "Article";
@@ -178,7 +173,7 @@ public class EomFileProcessor {
 
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
-        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId,
+        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId, mode,
             Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
@@ -190,7 +185,7 @@ public class EomFileProcessor {
         final String storyPackage = getStoryPackage(xpath, value, uuid);
 
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
-                bylineTransformer, transactionId); //byline is optional
+                bylineTransformer, transactionId, mode); //byline is optional
 
         final Syndication canBeSyndicated = getSyndication(xpath, attributes);
         final AccessLevel accessLevel = getAccessLevel(xpath, attributes, uuid);
@@ -418,11 +413,12 @@ public class EomFileProcessor {
     private String transformField(final String originalFieldAsString,
         final FieldTransformer transformer,
         final String transactionId,
+        final TransformationMode mode,
         final Entry<String, Object>... contextData) {
 
         String transformedField = "";
         if (!Strings.isNullOrEmpty(originalFieldAsString)) {
-            transformedField = transformer.transform(originalFieldAsString, transactionId, contextData);
+            transformedField = transformer.transform(originalFieldAsString, transactionId, mode, contextData);
         }
         return transformedField;
     }
