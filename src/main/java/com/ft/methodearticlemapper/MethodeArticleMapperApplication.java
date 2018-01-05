@@ -25,6 +25,7 @@ import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
 import com.ft.methodearticlemapper.exception.ConfigurationException;
 import com.ft.methodearticlemapper.health.CanConnectToMessageQueueProducerProxyHealthcheck;
 import com.ft.methodearticlemapper.health.RemoteServiceHealthCheck;
+import com.ft.methodearticlemapper.health.StandaloneHealthCheck;
 import com.ft.methodearticlemapper.messaging.MessageBuilder;
 import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
 import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
@@ -57,7 +58,8 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 public class MethodeArticleMapperApplication extends Application<MethodeArticleMapperConfiguration> {
-
+    private static final String DEWEY_URL = "https://dewey.ft.com/up-mam.html";
+    
     public static void main(final String[] args) throws Exception {
         new MethodeArticleMapperApplication().run(args);
     }
@@ -79,19 +81,33 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         BuildInfoResource buildInfoResource = new BuildInfoResource();
         environment.jersey().register(buildInfoResource);
 
-        DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
-        Client documentStoreApiClient = configureResilientClient(environment, documentStoreApiConfiguration.getEndpointConfiguration(), documentStoreApiConfiguration.getConnectionConfig());
+        List<AdvancedHealthCheck> healthchecks = new ArrayList<>();
+        
+        Client documentStoreApiClient = null;
+        URI documentStoreUri = null;
+        if (configuration.isDocumentStoreApiEnabled()) {
+            DocumentStoreApiConfiguration documentStoreApiConfiguration = configuration.getDocumentStoreApiConfiguration();
+            EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
+            documentStoreApiClient = configureResilientClient(environment, documentStoreApiEndpointConfiguration, documentStoreApiConfiguration.getConnectionConfig());
+            
+            UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
+            documentStoreUri = documentStoreApiBuilder.build();
 
-        EndpointConfiguration documentStoreApiEndpointConfiguration = documentStoreApiConfiguration.getEndpointConfiguration();
-        UriBuilder documentStoreApiBuilder = UriBuilder.fromPath(documentStoreApiEndpointConfiguration.getPath()).scheme("http").host(documentStoreApiEndpointConfiguration.getHost()).port(documentStoreApiEndpointConfiguration.getPort());
-        URI documentStoreUri = documentStoreApiBuilder.build();
-
-        ConcordanceApiConfiguration concordanceApiConfiguration = configuration.getConcordanceApiConfiguration();
-        Client concordanceApiClient = configureResilientClient(environment, concordanceApiConfiguration.getEndpointConfiguration(), concordanceApiConfiguration.getConnectionConfiguration());
-        EndpointConfiguration concordanceApiEndpointConfiguration = concordanceApiConfiguration.getEndpointConfiguration();
-        UriBuilder concordanceApiBuilder = UriBuilder.fromPath(concordanceApiEndpointConfiguration.getPath()).scheme("http").host(concordanceApiEndpointConfiguration.getHost()).port(concordanceApiEndpointConfiguration.getPort());
-        URI concordanceUri = concordanceApiBuilder.build();
-
+            healthchecks.add(buildDocumentStoreAPIHealthCheck(documentStoreApiClient, documentStoreApiEndpointConfiguration));
+        }
+        
+        Client concordanceApiClient = null;
+        URI concordanceUri = null;
+        if (configuration.isConcordanceApiEnabled()) {
+            ConcordanceApiConfiguration concordanceApiConfiguration = configuration.getConcordanceApiConfiguration();
+            EndpointConfiguration concordanceApiEndpointConfiguration = concordanceApiConfiguration.getEndpointConfiguration();
+            concordanceApiClient = configureResilientClient(environment, concordanceApiEndpointConfiguration, concordanceApiConfiguration.getConnectionConfiguration());
+            UriBuilder concordanceApiBuilder = UriBuilder.fromPath(concordanceApiEndpointConfiguration.getPath()).scheme("http").host(concordanceApiEndpointConfiguration.getHost()).port(concordanceApiEndpointConfiguration.getPort());
+            concordanceUri = concordanceApiBuilder.build();
+            
+            healthchecks.add(buildConcordanceAPIHealthCheck(concordanceApiClient, concordanceApiEndpointConfiguration));
+        }
+        
         EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
                 documentStoreUri,
@@ -100,32 +116,46 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 concordanceUri
         );
 
-        ConsumerConfiguration consumerConfig = configuration.getConsumerConfiguration();
-        MessageProducingArticleMapper msgProducingListMapper = new MessageProducingArticleMapper(
-                getMessageBuilder(configuration, environment),
-                configureMessageProducer(configuration.getProducerConfiguration(), environment),
-                eomFileProcessor
-        );
-        MessageListener listener = new NativeCmsPublicationEventsListener(
-                environment.getObjectMapper(),
-                msgProducingListMapper,
-                consumerConfig.getSystemCode()
-        );
-        registerListener(environment, listener, consumerConfig, getConsumerClient(environment, consumerConfig));
+        if (configuration.isMessagingEndpointEnabled()) {
+            ProducerConfiguration producerConfig = configuration.getProducerConfiguration();
+            Client producerClient = getMessagingClient(environment, producerConfig.getJerseyClientConfiguration(), "producer-client");
+            QueueProxyProducer.BuildNeeded queueProxyBuilder = QueueProxyProducer.builder()
+                    .withJerseyClient(producerClient)
+                    .withQueueProxyConfiguration(producerConfig.getMessageQueueProducerConfiguration());
 
-        registerHealthChecks(
-                environment,
-                buildClientHealthChecks(
-                        concordanceApiClient, concordanceApiConfiguration.getEndpointConfiguration(),
-                        documentStoreApiClient, documentStoreApiConfiguration.getEndpointConfiguration()
-                )
-        );
+            MessageProducer producer = queueProxyBuilder.build();
+            healthchecks.add(buildProducerHealthCheck(environment, producerConfig, queueProxyBuilder));
+            
+            MessageProducingArticleMapper msgProducingListMapper = new MessageProducingArticleMapper(
+                    getMessageBuilder(configuration, environment),
+                    producer, eomFileProcessor);
+            
+            ConsumerConfiguration consumerConfig = configuration.getConsumerConfiguration();
+            MessageListener listener = new NativeCmsPublicationEventsListener(
+                    environment.getObjectMapper(),
+                    msgProducingListMapper,
+                    consumerConfig.getSystemCode()
+                    );
+            
+            healthchecks.add(
+                    registerListener(environment, listener, consumerConfig,
+                            getMessagingClient(environment, consumerConfig.getJerseyClientConfiguration(), "consumer-client")
+                            )
+                    );
+        }
 
         environment.jersey().register(
                 new PostContentToTransformResource(
                         eomFileProcessor
                 )
         );
+        
+        if (healthchecks.isEmpty()) {
+            // nothing to check, but prevent alarming startup messages
+            healthchecks.add(new StandaloneHealthCheck(DEWEY_URL));
+        }
+        
+        registerHealthChecks(environment, healthchecks);
 
         environment.jersey().register(RuntimeExceptionMapper.class);
         Errors.customise(new MethodeArticleTransformerErrorEntityFactory());
@@ -170,12 +200,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         }
     }
 
-    private List<AdvancedHealthCheck> buildClientHealthChecks(
-            Client concordanceApiClient, EndpointConfiguration concordanceApiConfiguration,
-            Client documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
-
-        List<AdvancedHealthCheck> healthchecks = new ArrayList<>();
-        healthchecks.add(new RemoteServiceHealthCheck(
+    private AdvancedHealthCheck buildConcordanceAPIHealthCheck(Client concordanceApiClient, EndpointConfiguration concordanceApiConfiguration) {
+        return new RemoteServiceHealthCheck(
                 "Public Concordance API",
                 concordanceApiClient,
                 concordanceApiConfiguration.getHost(),
@@ -184,9 +210,11 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 "public-concordances-api",
                 1,
                 "Articles will not be annotated with company tearsheet information.",
-                "https://dewey.ft.com/up-mam.html")
-        );
-        healthchecks.add(new RemoteServiceHealthCheck(
+                DEWEY_URL);
+    }
+    
+    private AdvancedHealthCheck buildDocumentStoreAPIHealthCheck(Client documentStoreApiClient, EndpointConfiguration documentStoreApiEndpointConfiguration) {
+        return new RemoteServiceHealthCheck(
                 "Document Store API",
                 documentStoreApiClient,
                 documentStoreApiEndpointConfiguration.getHost(),
@@ -195,9 +223,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 "document-store-api",
                 1,
                 "Clients will be unable to query the content service using alternative identifiers.",
-                "https://dewey.ft.com/up-mam.html")
-        );
-        return healthchecks;
+                DEWEY_URL);
     }
 
     private MessageBuilder getMessageBuilder(MethodeArticleMapperConfiguration configuration, Environment environment) {
@@ -208,41 +234,18 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         );
     }
 
-    private Client getConsumerClient(Environment environment, ConsumerConfiguration config) {
-        JerseyClientConfiguration jerseyConfig = config.getJerseyClientConfiguration();
+    private Client getMessagingClient(Environment environment, JerseyClientConfiguration jerseyConfig, String name) {
         jerseyConfig.setGzipEnabled(false);
         jerseyConfig.setGzipEnabledForRequests(false);
 
         return ResilientClientBuilder.in(environment)
                 .using(jerseyConfig)
                 .usingDNS()
-                .named("consumer-client")
+                .named(name)
                 .build();
     }
 
-    protected MessageProducer configureMessageProducer(ProducerConfiguration config, Environment environment) {
-        JerseyClientConfiguration jerseyConfig = config.getJerseyClientConfiguration();
-        jerseyConfig.setGzipEnabled(false);
-        jerseyConfig.setGzipEnabledForRequests(false);
-
-        Client producerClient = ResilientClientBuilder.in(environment)
-                .using(jerseyConfig)
-                .usingDNS()
-                .named("producer-client")
-                .build();
-
-        final QueueProxyProducer.BuildNeeded queueProxyBuilder = QueueProxyProducer.builder()
-                .withJerseyClient(producerClient)
-                .withQueueProxyConfiguration(config.getMessageQueueProducerConfiguration());
-
-        final QueueProxyProducer producer = queueProxyBuilder.build();
-
-        registerProducerHealthCheck(environment, config, queueProxyBuilder);
-
-        return producer;
-    }
-
-    protected void registerListener(Environment environment, MessageListener listener, ConsumerConfiguration config, Client consumerClient) {
+    protected AdvancedHealthCheck registerListener(Environment environment, MessageListener listener, ConsumerConfiguration config, Client consumerClient) {
         final MessageQueueConsumerInitializer messageQueueConsumerInitializer =
                 new MessageQueueConsumerInitializer(
                         config.getMessageQueueConsumerConfiguration(),
@@ -251,24 +254,20 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 );
         environment.lifecycle().manage(messageQueueConsumerInitializer);
 
-        registerConsumerHealthCheck(environment, config, messageQueueConsumerInitializer);
+        return buildConsumerHealthCheck(environment, config, messageQueueConsumerInitializer);
     }
 
-    private void registerProducerHealthCheck(Environment environment, ProducerConfiguration config, QueueProxyProducer.BuildNeeded queueProxyBuilder) {
-        environment.healthChecks().register("KafkaProxyProducer",
-                new CanConnectToMessageQueueProducerProxyHealthcheck(
-                        queueProxyBuilder.buildHealthcheck(),
-                        config.getHealthcheckConfiguration(),
-                        environment.metrics()
-                )
+    private AdvancedHealthCheck buildProducerHealthCheck(Environment environment, ProducerConfiguration config, QueueProxyProducer.BuildNeeded queueProxyBuilder) {
+        return new CanConnectToMessageQueueProducerProxyHealthcheck(
+                queueProxyBuilder.buildHealthcheck(),
+                config.getHealthcheckConfiguration(),
+                environment.metrics()
         );
     }
-
-    private void registerConsumerHealthCheck(Environment environment, ConsumerConfiguration config, MessageQueueConsumerInitializer messageQueueConsumerInitializer) {
-        environment.healthChecks().register("KafkaProxyConsumer",
-                messageQueueConsumerInitializer.buildPassiveConsumerHealthcheck(
-                        config.getHealthcheckConfiguration(), environment.metrics()
-                )
+    
+    private AdvancedHealthCheck buildConsumerHealthCheck(Environment environment, ConsumerConfiguration config, MessageQueueConsumerInitializer messageQueueConsumerInitializer) {
+        return messageQueueConsumerInitializer.buildPassiveConsumerHealthcheck(
+                config.getHealthcheckConfiguration(), environment.metrics()
         );
     }
 
