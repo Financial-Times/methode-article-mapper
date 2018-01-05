@@ -10,6 +10,7 @@ import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
+import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -265,6 +266,21 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
                    containsString("it's blank"));
            assertThat(e.getResponse().getStatus(), equalTo(HttpStatus.SC_UNPROCESSABLE_ENTITY));
+       }
+   }
+
+   @Test
+   public void thatUnsupportedTransformationModeIsRejected() {
+       when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).
+           thenThrow(new UnsupportedTransformationModeException(uuid.toString(), TransformationMode.PUBLISH));
+       
+       try {
+           postContentToTransformResource.map(eomFile, false, TransformationMode.PUBLISH.toString(), httpHeaders);
+           fail("No exception was thrown, but expected one.");
+       } catch (WebApplicationClientException e) {
+           assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
+               containsString("Transformation mode PUBLISH is not available"));
+           assertThat(e.getResponse().getStatus(), equalTo(421));
        }
    }
 }

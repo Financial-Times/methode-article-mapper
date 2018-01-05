@@ -1,5 +1,9 @@
 package com.ft.methodearticlemapper.resources;
 
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+
 import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.api.util.transactionid.TransactionIdUtils;
@@ -9,6 +13,7 @@ import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
+import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
@@ -30,6 +35,9 @@ public class PostContentToTransformResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
 
+    // strictly this is an HTTP/2 response code, so there's no constant for it
+    private static final int SC_MISDIRECTED_REQUEST = 421;
+    
     private final EomFileProcessor eomFileProcessor;
 
     public PostContentToTransformResource(EomFileProcessor eomFileProcessor) {
@@ -50,7 +58,14 @@ public class PostContentToTransformResource {
 		if (mode == null) {
 		    transformationMode = preview ? TransformationMode.PREVIEW : TransformationMode.PUBLISH;
 		} else {
-		    transformationMode = TransformationMode.valueOf(mode.toUpperCase());
+		    try {
+		        transformationMode = TransformationMode.valueOf(mode.toUpperCase());
+		    } catch (IllegalArgumentException e) {
+	            throw ClientError.status(SC_BAD_REQUEST)
+                                 .context(uuid)
+                                 .error(e.getMessage())
+                                 .exception(e);
+		    }
 		}
         // otherwise, mode trumps the preview flag if there is a mismatch
 		
@@ -62,24 +77,29 @@ public class PostContentToTransformResource {
             return eomFileProcessor.process(eomFile, mode, transactionId, new Date());
 
         } catch (MethodeMarkedDeletedException e) {
-            throw ClientError.status(404)
+            throw ClientError.status(SC_NOT_FOUND)
                     .context(uuid)
                     .reason(ErrorMessage.METHODE_FILE_NOT_FOUND)
                     .exception(e);
         } catch (NotWebChannelException e) {
-            throw ClientError.status(422)
+            throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
                     .reason(ErrorMessage.NOT_WEB_CHANNEL)
                     .exception(e);
         } catch (MethodeMissingFieldException e) {
-            throw ClientError.status(422)
+            throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
                     .error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
                     .exception(e);
         } catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
-            throw ClientError.status(422)
+            throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
                     .error(e.getMessage())
                     .exception(e);
         } catch (MethodeContentNotEligibleForPublishException e) {
-            throw ClientError.status(422)
+            throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
+                    .context(uuid)
+                    .error(e.getMessage())
+                    .exception(e);
+        } catch (UnsupportedTransformationModeException e) {
+            throw ClientError.status(SC_MISDIRECTED_REQUEST)
                     .context(uuid)
                     .error(e.getMessage())
                     .exception(e);
@@ -88,14 +108,14 @@ public class PostContentToTransformResource {
 
     private void validateUuid(String uuid) {
         if (uuid == null) {
-            throw ClientError.status(400).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
+            throw ClientError.status(SC_BAD_REQUEST).context(null).reason(ErrorMessage.UUID_REQUIRED).exception();
         }
         try {
             if (!UUID.fromString(uuid).toString().equals(uuid)) {
                 throw new IllegalArgumentException("Invalid UUID: " + uuid);
             }
         } catch (IllegalArgumentException iae) {
-            throw ClientError.status(400)
+            throw ClientError.status(SC_BAD_REQUEST)
                     .reason(ErrorMessage.INVALID_UUID)
                     .exception(iae);
         }

@@ -1,5 +1,6 @@
 package com.ft.methodearticlemapper.resources;
 
+import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
@@ -60,7 +61,7 @@ public class PostContentToTransformResourceTest {
         verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.SUGGEST), eq(TRANSACTION_ID), any());
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected=WebApplicationClientException.class)
     public void thatModeQueryParameterIsValidated() {
         postContentToTransformResource.map(eomFile, false, "foobar", httpHeaders);
     }

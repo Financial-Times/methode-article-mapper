@@ -12,6 +12,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
+import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -50,6 +51,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -84,6 +86,7 @@ public class EomFileProcessor {
     private static final String END_BODY = "</body>";
     private static final String EMPTY_VALIDATED_BODY = "<body></body>";
 
+    private final EnumSet<TransformationMode> supportedModes;
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final BodyProcessor htmlFieldProcessor;
@@ -91,11 +94,13 @@ public class EomFileProcessor {
     private final String apiHost;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
-    public EomFileProcessor(final FieldTransformer bodyTransformer,
+    public EomFileProcessor(final EnumSet<TransformationMode> supportedModes,
+                            final FieldTransformer bodyTransformer,
                             final FieldTransformer bylineTransformer,
                             final BodyProcessor htmlFieldProcessor,
                             final Map<ContentSource, Brand> contentSourceBrandMap,
                             final String apiHost) {
+        this.supportedModes = supportedModes;
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.htmlFieldProcessor = htmlFieldProcessor;
@@ -119,6 +124,9 @@ public class EomFileProcessor {
 
     public Content process(EomFile eomFile, TransformationMode mode, String transactionId, Date lastModifiedDate) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
+        if (!supportedModes.contains(mode)) {
+            throw new UnsupportedTransformationModeException(uuid.toString(), mode);
+        }
         LOGGER.info("processing UUID={} in {} mode", uuid, mode);
         
         PublishEligibilityChecker eligibilityChecker =

@@ -1,14 +1,19 @@
 [![CircleCI](https://circleci.com/gh/Financial-Times/methode-article-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-article-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-article-mapper/badge.svg)](https://coveralls.io/github/Financial-Times/methode-article-mapper)
 
 # Methode Article Mapper
-Methode Article Mapper is a Dropwizard application which consumes Kafka events and maps raw Methode articles to content according to UPP JSON format.
+Methode Article Mapper is a Dropwizard application which receives native Methode content (either from a Kafka topic or HTTP) and maps articles into content according to UPP JSON format.
 
 ## Introduction
-This application depends on the following micro-services:
-
+This application has optional dependencies on the following micro-services:
 * kafka-proxy;
-* document store API;
-* concordance API.
+* document store API (required to check and transform links within an article to other FT content);
+* concordance API (required to transform `<company>` links into FT tear-sheets).
+
+Without the Kafka proxy, the mapper only handles HTTP traffic. Set `messagingEndpointEnabled` to `false` in the configuration YAML or on the command-line to disable Kafka integration.
+
+Without the document store or concordance APIs, the mapper only works in `suggest` mode (see below for mapping modes). Set `documentStoreApiEnabled` or `concordanceApiEnabled`, respectively, to `false` in the configuration YAML or on the command-line to disable these integrations.
+
+* Dropwizard properties may be set on the command-line as JVM system properties with the prefix `dw.`, i.e. use `-Ddw.<properyName>=<value>`.
 
 ## Running
 
@@ -18,15 +23,21 @@ This application depends on the following micro-services:
 
 ### Posting content to be mapped
 
-Transformation can be triggered through a POST message containing a Methode article to http://localhost:11070/content-transform/{uuid}
-The {uuid} value must match the UUID of the posted Methode article.
-In case the required transformation is triggered to provide an article preview, you need to set a `preview` query parameter in the URL with `true` as value: 
-e.g., http://localhost:11070/content-transform/d8bca7c3-e8b8-4dbf-9bd1-4df8d2e0c086?preview=true 
-This `preview` setting will not trigger an exception in case of empty article body.
+Transformation can be triggered through a POST message containing a Methode article to `http://localhost:11070/map`
+* The legacy URL pattern `/content-transform/{uuid}` is also supported (though the UUID is no longer validated)
+
+### Mapping modes
+By default, the mapper applies the required validation and transformations for article publication. Other modes with less stringent validation and/or transformation rules can be selected using the `mode` query-string parameter. The supported values of mode are `publish` (the default), `preview` (for content preview) and `suggest` (for suggestion).
+* Preview mode relaxes rules around workflow status, embargo date, transformable body, and so on.
+    * The legacy query-string parameter `preview` is also supported with `true` as value.
+    * Note that if `preview` and `mode` are both supplied and conflict with each other, the `mode` value is used. 
+* Suggest mode relaxes rules as for preview, and also omits call-outs to the document store and concordance APIs (which do not affect the actual text content of the transformed document).
 
 ### Healthcheck
 
-A GET request to http://localhost:11071/healthcheck or http://localhost:11070/__health
+A GET request to `http://localhost:11071/healthcheck` or `http://localhost:11070/__health`
+
+Disabling any of the Kafka, document store and concordance API integrations also removes dependency checks from this application's health check. If all integrations are disabled, a dummy healthcheck is added to prevent warning messages at application startup.
 
 ## Example of transformation output 
 

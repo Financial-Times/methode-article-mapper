@@ -36,6 +36,7 @@ import com.ft.methodearticlemapper.transformation.BodyProcessingFieldTransformer
 import com.ft.methodearticlemapper.transformation.BylineProcessingFieldTransformerFactory;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.InteractiveGraphicsMatcher;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.ft.platform.dropwizard.DefaultGoodToGoChecker;
@@ -179,7 +180,16 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
             final MethodeArticleMapperConfiguration configuration,
             final Client concordanceApiClient,
             final URI concordanceUri) {
+        
+        EnumSet<TransformationMode> supportedModes;
+        if ((documentStoreApiClient != null) && (concordanceApiClient != null)) {
+            supportedModes = EnumSet.allOf(TransformationMode.class);
+        } else {
+            supportedModes = EnumSet.of(TransformationMode.SUGGEST);
+        }
+        
         return new EomFileProcessor(
+                supportedModes,
                 new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                         documentStoreUri,
                         new VideoMatcher(configuration.getVideoSiteConfig()),
