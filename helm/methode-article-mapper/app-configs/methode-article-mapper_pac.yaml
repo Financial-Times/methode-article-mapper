@@ -3,6 +3,6 @@ replicaCount: 2
 service:
   name: methode-article-mapper
 env:
-  KAFKA_ENABLED: true
-  DOCUMENT_STORE_API_ENABLED: true
-  CONCORDANCE_API_ENABLED: true
+  KAFKA_ENABLED: false
+  DOCUMENT_STORE_API_ENABLED: false
+  CONCORDANCE_API_ENABLED: false

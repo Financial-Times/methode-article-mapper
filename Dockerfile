@@ -21,8 +21,11 @@ EXPOSE 8080 8081
 CMD exec java $JAVA_OPTS \
      -Ddw.server.applicationConnectors[0].port=8080 \
      -Ddw.server.adminConnectors[0].port=8081 \
+     -Ddw.documentStoreApiEnabled=$DOCUMENT_STORE_API_ENABLED \
      -Ddw.documentStoreApi.endpointConfiguration.primaryNodes=$DOCUMENT_STORE_API_URL \
+     -Ddw.concordanceApiEnabled=$CONCORDANCE_API_ENABLED \
      -Ddw.concordanceApi.endpointConfiguration.primaryNodes=$CONCORDANCE_API_URL \
+     -Ddw.messagingEndpointEnabled=$KAFKA_ENABLED \
      -Ddw.consumer.messageConsumer.queueProxyHost=http://$KAFKA_PROXY_URL \
      -Ddw.producer.messageProducer.proxyHostAndPort=$KAFKA_PROXY_URL \
      -Ddw.apiHost=$API_HOST \
