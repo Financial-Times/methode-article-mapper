@@ -4,11 +4,13 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
+import com.ft.platform.dropwizard.AppInfo;
+import com.ft.platform.dropwizard.ConfigWithAppInfo;
 import io.dropwizard.Configuration;
 
 import java.util.List;
 
-public class MethodeArticleMapperConfiguration extends Configuration {
+public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo {
 	
 	private final DocumentStoreApiConfiguration documentStoreApiConfiguration;
 	private final ConcordanceApiConfiguration concordanceApiConfiguration;
@@ -19,6 +21,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
     private final String apiHost;
+    private final AppInfo appInfo;
 
     public MethodeArticleMapperConfiguration(@JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
@@ -28,7 +31,8 @@ public class MethodeArticleMapperConfiguration extends Configuration {
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix,
-                                             @JsonProperty("apiHost") String apiHost) {
+                                             @JsonProperty("apiHost") String apiHost,
+                                             @JsonProperty("appInfo") AppInfo appInfo) {
 
         this.documentStoreApiConfiguration = documentStoreApiConfiguration;
 		this.concordanceApiConfiguration=concordanceApiConfiguration;
@@ -39,6 +43,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
         this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
         this.contentUriPrefix = contentUriPrefix;
         this.apiHost = apiHost;
+        this.appInfo = appInfo;
     }
 
 	@NotNull
@@ -80,5 +85,10 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     @NotNull
     public String getApiHost() {
         return apiHost;
+    }
+
+    @Override
+    public AppInfo getAppInfo() {
+        return appInfo;
     }
 }
