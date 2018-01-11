@@ -6,11 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.platform.dropwizard.AppInfo;
 import com.ft.platform.dropwizard.ConfigWithAppInfo;
+import com.ft.platform.dropwizard.ConfigWithGTG;
+import com.ft.platform.dropwizard.GTGConfig;
+
 import io.dropwizard.Configuration;
 
 import java.util.List;
 
-public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo {
+public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo, ConfigWithGTG {
 	
 	private final DocumentStoreApiConfiguration documentStoreApiConfiguration;
 	private final ConcordanceApiConfiguration concordanceApiConfiguration;
@@ -22,6 +25,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private final String contentUriPrefix;
     private final String apiHost;
     private final AppInfo appInfo;
+    @JsonProperty
+    private final GTGConfig gtgConfig= new GTGConfig();
 
     public MethodeArticleMapperConfiguration(@JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
@@ -91,4 +96,9 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     public AppInfo getAppInfo() {
         return appInfo;
     }
+
+	@Override
+	public GTGConfig getGtg() {
+		return gtgConfig;
+	}
 }
