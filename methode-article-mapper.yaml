@@ -139,3 +139,7 @@ producer:
 contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
 
 apiHost: "api.ft.com"
+
+appInfo:
+    systemCode: "up-mam"
+    description: "Methode Article Mapper is a Dropwizard application which consumes Kafka events and maps raw Methode articles to content according to UPP JSON format."
