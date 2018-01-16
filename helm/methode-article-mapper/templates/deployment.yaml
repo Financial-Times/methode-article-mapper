@@ -36,15 +36,15 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
         - name: KAFKA_ENABLED
-          value: false
+          value: "false"
         - name: KAFKA_PROXY_URL
           value: "kafka-rest-proxy:8080"
         - name: DOCUMENT_STORE_API_ENABLED
-          value: false
+          value: "false"
         - name: DOCUMENT_STORE_API_URL
           value: "document-store-api:8080"
         - name: CONCORDANCE_API_ENABLED
-          value: false
+          value: "false"
         - name: CONCORDANCE_API_URL
           value: "public-concordances-api:8080"
         - name: API_HOST
