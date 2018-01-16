@@ -280,7 +280,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
        } catch (WebApplicationClientException e) {
            assertThat(((ErrorEntity)e.getResponse().getEntity()).getMessage(),
                containsString("Transformation mode PUBLISH is not available"));
-           assertThat(e.getResponse().getStatus(), equalTo(421));
+           assertThat(e.getResponse().getStatus(), equalTo(HttpStatus.SC_NOT_FOUND));
        }
    }
 }

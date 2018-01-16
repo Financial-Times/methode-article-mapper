@@ -35,9 +35,6 @@ public class PostContentToTransformResource {
 
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
 
-    // strictly this is an HTTP/2 response code, so there's no constant for it
-    private static final int SC_MISDIRECTED_REQUEST = 421;
-    
     private final EomFileProcessor eomFileProcessor;
 
     public PostContentToTransformResource(EomFileProcessor eomFileProcessor) {
@@ -99,7 +96,7 @@ public class PostContentToTransformResource {
                     .error(e.getMessage())
                     .exception(e);
         } catch (UnsupportedTransformationModeException e) {
-            throw ClientError.status(SC_MISDIRECTED_REQUEST)
+            throw ClientError.status(SC_NOT_FOUND)
                     .context(uuid)
                     .error(e.getMessage())
                     .exception(e);
