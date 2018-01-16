@@ -1,5 +1,15 @@
 package com.ft.methodearticlemapper;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.UriBuilder;
+
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.ft.api.jaxrs.errors.Errors;
 import com.ft.api.jaxrs.errors.RuntimeExceptionMapper;
@@ -40,18 +50,8 @@ import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.ft.platform.dropwizard.AdvancedHealthCheck;
 import com.ft.platform.dropwizard.AdvancedHealthCheckBundle;
 import com.ft.platform.dropwizard.DefaultGoodToGoChecker;
-import com.ft.platform.dropwizard.GoodToGoBundle;
+import com.ft.platform.dropwizard.GoodToGoConfiguredBundle;
 import com.sun.jersey.api.client.Client;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.UriBuilder;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientConfiguration;
@@ -68,7 +68,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     @Override
     public void initialize(final Bootstrap<MethodeArticleMapperConfiguration> bootstrap) {
         bootstrap.addBundle(new AdvancedHealthCheckBundle());
-        bootstrap.addBundle(new GoodToGoBundle(new DefaultGoodToGoChecker()));
+        bootstrap.addBundle(new GoodToGoConfiguredBundle(new DefaultGoodToGoChecker()));
     }
 
     @Override

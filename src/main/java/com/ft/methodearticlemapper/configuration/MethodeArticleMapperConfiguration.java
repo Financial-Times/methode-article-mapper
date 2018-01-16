@@ -4,11 +4,16 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
+import com.ft.platform.dropwizard.AppInfo;
+import com.ft.platform.dropwizard.ConfigWithAppInfo;
+import com.ft.platform.dropwizard.ConfigWithGTG;
+import com.ft.platform.dropwizard.GTGConfig;
+
 import io.dropwizard.Configuration;
 
 import java.util.List;
 
-public class MethodeArticleMapperConfiguration extends Configuration {
+public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo, ConfigWithGTG {
 	private boolean documentStoreApiEnabled;
 	private DocumentStoreApiConfiguration documentStoreApiConfiguration;
     private boolean concordanceApiEnabled;
@@ -21,6 +26,9 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
     private final String apiHost;
+    private final AppInfo appInfo;
+    @JsonProperty
+    private final GTGConfig gtgConfig= new GTGConfig();
 
     public MethodeArticleMapperConfiguration(@JsonProperty("messagingEndpointEnabled") Boolean messagingEndpointEnabled,
                                              @JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
@@ -33,7 +41,8 @@ public class MethodeArticleMapperConfiguration extends Configuration {
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix,
-                                             @JsonProperty("apiHost") String apiHost) {
+                                             @JsonProperty("apiHost") String apiHost,
+                                             @JsonProperty("appInfo") AppInfo appInfo) {
 
         if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
             this.documentStoreApiEnabled = true;
@@ -57,6 +66,7 @@ public class MethodeArticleMapperConfiguration extends Configuration {
         this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
         this.contentUriPrefix = contentUriPrefix;
         this.apiHost = apiHost;
+        this.appInfo = appInfo;
     }
     
     public boolean isConcordanceApiEnabled() {
@@ -109,4 +119,14 @@ public class MethodeArticleMapperConfiguration extends Configuration {
     public String getApiHost() {
         return apiHost;
     }
+
+    @Override
+    public AppInfo getAppInfo() {
+        return appInfo;
+    }
+
+	@Override
+	public GTGConfig getGtg() {
+		return gtgConfig;
+	}
 }
