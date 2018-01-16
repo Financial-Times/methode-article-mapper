@@ -12,9 +12,5 @@ env:
         key: kafka.proxy.url
   - name: DOCUMENT_STORE_API_ENABLED
     value: true
-  - name: DOCUMENT_STORE_API_URL
-    value: "document-store-api:8080"
   - name: CONCORDANCE_API_ENABLED
     value: true
-  - name: CONCORDANCE_API_URL
-    value: "public-concordances-api:8080"

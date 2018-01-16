@@ -35,6 +35,10 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
+        - name: DOCUMENT_STORE_API_URL
+          value: "document-store-api:8080"
+        - name: CONCORDANCE_API_URL
+          value: "public-concordances-api:8080"
         - name: API_HOST
           valueFrom:
             configMapKeyRef:
