@@ -3,14 +3,11 @@ replicaCount: 2
 service:
   name: methode-article-mapper
 env:
-  - name: KAFKA_ENABLED
-    value: true
-  - name: KAFKA_PROXY_URL
+  KAFKA_ENABLED: true
+  KAFKA_PROXY_URL:
     valueFrom:
       configMapKeyRef:
         name: global-config
         key: kafka.proxy.url
-  - name: DOCUMENT_STORE_API_ENABLED
-    value: true
-  - name: CONCORDANCE_API_ENABLED
-    value: true
+  DOCUMENT_STORE_API_ENABLED: true
+  CONCORDANCE_API_ENABLED: true
