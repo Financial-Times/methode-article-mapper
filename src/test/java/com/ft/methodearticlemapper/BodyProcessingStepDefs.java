@@ -49,6 +49,7 @@ import com.ft.methodearticlemapper.transformation.BodyProcessingFieldTransformer
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
 import com.ft.methodearticlemapper.transformation.InteractiveGraphicsMatcher;
 import com.ft.methodearticlemapper.transformation.MethodeBodyTransformationXMLEventHandlerRegistry;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -227,12 +228,12 @@ public class BodyProcessingStepDefs {
 
     @When("^I transform it into our Content Store format$")
     public void i_transform_it_into_our_content_store_format() throws Throwable {
-        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID);
+        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID, TransformationMode.PUBLISH);
     }
 
     @When("^I transform it$")
     public void I_transform_it() throws Throwable {
-        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID);
+        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID, TransformationMode.PUBLISH);
     }
     @Then("^it is left unmodified$")
     public void it_is_left_unmodified() {
@@ -322,7 +323,7 @@ public class BodyProcessingStepDefs {
         char[] chars = Character.toChars(codePointInt);
         String expected = "<body>" + TEXT  + new String(chars) + "</body>";
         methodeBodyText = "<body>" + TEXT  +  entity + "</body>";
-        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID);
+        transformedBodyText = bodyTransformer.transform(methodeBodyText, TRANSACTION_ID, TransformationMode.PUBLISH);
         assertThat(transformedBodyText, is(expected));
     }
 
@@ -338,7 +339,7 @@ public class BodyProcessingStepDefs {
 
     @When("^it is transformed, (.+) becomes (.+)$")
     public void the_before_becomes_after(String before, String after) throws Throwable {
-        transformedBodyText = bodyTransformer.transform(wrapped(before), TRANSACTION_ID);
+        transformedBodyText = bodyTransformer.transform(wrapped(before), TRANSACTION_ID, TransformationMode.PUBLISH);
 
         Diff diff = new Diff(wrapped(after), transformedBodyText);
         diff.overrideElementQualifier(new ElementNameAndTextQualifier());

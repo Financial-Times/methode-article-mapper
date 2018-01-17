@@ -6,14 +6,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class MappedDataBodyProcessingContext extends DefaultTransactionIdBodyProcessingContext {
-
+public class MappedDataBodyProcessingContext
+    extends DefaultTransactionIdBodyProcessingContext
+    implements ModalBodyProcessingContext {
+  
+  private final TransformationMode mode;
   private final Map<String, Object> dataMap;
 
   public MappedDataBodyProcessingContext(
       final String transactionId,
+      final TransformationMode transformationMode,
       final Entry<String, Object>... contextData) {
+    
     super(transactionId);
+    this.mode = transformationMode;
     this.dataMap =
         Arrays
             .stream(contextData)
@@ -24,5 +30,8 @@ public class MappedDataBodyProcessingContext extends DefaultTransactionIdBodyPro
     final Object data = dataMap.get(contextKey);
     return expectedType.cast(data);
   }
-
+  
+  public TransformationMode getTransformationMode() {
+      return mode;
+  }
 }

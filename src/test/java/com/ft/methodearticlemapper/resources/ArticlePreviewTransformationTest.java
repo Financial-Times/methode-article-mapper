@@ -11,6 +11,7 @@ import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +59,7 @@ public class ArticlePreviewTransformationTest {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
         postContentToTransformResource= new PostContentToTransformResource(eomFileProcessor);
 
         when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
@@ -71,7 +73,7 @@ public class ArticlePreviewTransformationTest {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
-        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, httpHeaders);
+        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, null, httpHeaders);
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));
@@ -91,7 +93,7 @@ public class ArticlePreviewTransformationTest {
 
         when(eomFile.getType()).thenReturn(INVALID_EOM_FILE_TYPE);
         when(eomFile.getUuid()).thenReturn(randomUuid);
-        eomFileProcessor.processPreview(eomFile, TRANSACTION_ID, new Date());
+        eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, new Date());
     }
 
     /* In article preview we don't care about systemAttributes, usageTickets & lastModified date */

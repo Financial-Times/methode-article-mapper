@@ -75,6 +75,7 @@ logging:
 
     - type: console
       
+documentStoreApiEnabled: true
 documentStoreApi:
     endpointConfiguration:
         shortName: "documentStoreApi"
@@ -87,6 +88,7 @@ documentStoreApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
+concordanceApiEnabled: true
 concordanceApi:
     endpointConfiguration:
         shortName: "concordance"
@@ -99,6 +101,7 @@ concordanceApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000  
 
+messagingEndpointEnabled: true
 consumer:
   jerseyClient:
     connectionTimeout: 2 seconds

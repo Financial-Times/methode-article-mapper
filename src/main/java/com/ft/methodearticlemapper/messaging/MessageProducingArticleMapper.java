@@ -5,6 +5,7 @@ import com.ft.messaging.standards.message.v1.Message;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class MessageProducingArticleMapper {
         Message message;
         try {
             message = messageBuilder.buildMessage(
-                    articleMapper.processPublication(methodeContent, transactionId, messageTimestamp)
+                    articleMapper.process(methodeContent, TransformationMode.PUBLISH, transactionId, messageTimestamp)
             );
         } catch (MethodeMarkedDeletedException e) {
             LOGGER.info("Article {} is marked as deleted.", methodeContent.getUuid());

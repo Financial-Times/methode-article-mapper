@@ -6,6 +6,7 @@ import com.ft.messaging.standards.message.v1.Message;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class MessageProducingArticleMapperTest {
         Content mappedArticle = new Content.Builder()
                 .withUuid(UUID.randomUUID())
                 .build();
-        when(mapper.processPublication(any(), eq("tid"), eq(lastModified))).thenReturn(mappedArticle);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), eq("tid"), eq(lastModified))).thenReturn(mappedArticle);
 
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", lastModified);
 
@@ -62,7 +63,7 @@ public class MessageProducingArticleMapperTest {
     public void thatMessageWithContentIsSentToQueue() {
         Content mockedContent = mock(Content.class);
         Message mockedMessage = mock(Message.class);
-        when(mapper.processPublication(any(), anyString(), any())).thenReturn(mockedContent);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenReturn(mockedContent);
         when(messageBuilder.buildMessage(mockedContent)).thenReturn(mockedMessage);
 
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", new Date());
@@ -77,7 +78,7 @@ public class MessageProducingArticleMapperTest {
         String uuid = UUID.randomUUID().toString();
         Message deletedContentMsg = mock(Message.class);
 
-        when(mapper.processPublication(any(), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
         when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date)).thenReturn(deletedContentMsg);
 
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date);

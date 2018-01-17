@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,6 @@ import com.ft.bodyprocessing.richcontent.VideoMatcher;
 import com.ft.bodyprocessing.xml.StAXTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.dom.DOMTransformingBodyProcessor;
 import com.ft.bodyprocessing.xml.dom.XPathHandler;
-import com.ft.jerseyhttpwrapper.ResilientClient;
 import com.ft.methodearticlemapper.transformation.xslt.ModularXsltBodyProcessor;
 import com.ft.methodearticlemapper.transformation.xslt.XsltFile;
 import com.google.common.base.Charsets;
@@ -26,15 +26,16 @@ import com.google.common.io.Resources;
 import com.sun.jersey.api.client.Client;
 
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
-
-	private ResilientClient documentStoreApiClient;
+    private static final EnumSet<TransformationMode> NOT_SUGGEST = EnumSet.complementOf(EnumSet.of(TransformationMode.SUGGEST));
+    
+	private Client documentStoreApiClient;
 	private URI documentStoreUri;
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private final Map<String,XPathHandler> xpathHandlers;
     
 
-	public BodyProcessingFieldTransformerFactory(final ResilientClient documentStoreApiClient,
+	public BodyProcessingFieldTransformerFactory(final Client documentStoreApiClient,
             final URI uri,
             final VideoMatcher videoMatcher,
             final InteractiveGraphicsMatcher interactiveGraphicsMatcher, Client concordanceApiClient, URI concordanceApiUri) {
@@ -56,12 +57,12 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         return asList(        		
         	    stripByAttributesAndValuesBodyProcessor(),        	          
                 new RegexRemoverBodyProcessor("(<p[^/>]*>\\s*</p>)|(<p/>)|(<p\\s[^/>]*/>)"),
-                new DOMTransformingBodyProcessor(xpathHandlers),
+                tearSheetsBodyProcessor(),
                 stAXTransformingBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
-                new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri),
+                methodeLinksBodyProcessor(),
                 new ModularXsltBodyProcessor(xslts()),
                 new Html5SelfClosingTagBodyProcessor()      
         );
@@ -85,7 +86,15 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
             new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher)
         );
     }
-
+    
+    private BodyProcessor methodeLinksBodyProcessor() {
+        return new ModalBodyProcessor(new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri), NOT_SUGGEST);
+    }
+    
+    private BodyProcessor tearSheetsBodyProcessor() {
+        return new ModalBodyProcessor(new DOMTransformingBodyProcessor(xpathHandlers), NOT_SUGGEST);
+    }
+    
     private BodyProcessor stripByAttributesAndValuesBodyProcessor() {
         return new StAXTransformingBodyProcessor(new StripByPredefinedAttributesAndValuesEventHandlerRegistry());
     }

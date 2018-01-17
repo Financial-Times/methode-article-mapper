@@ -14,11 +14,13 @@ import io.dropwizard.Configuration;
 import java.util.List;
 
 public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo, ConfigWithGTG {
-	
-	private final DocumentStoreApiConfiguration documentStoreApiConfiguration;
-	private final ConcordanceApiConfiguration concordanceApiConfiguration;
-    private final ConsumerConfiguration consumerConfiguration;
-    private final ProducerConfiguration producerConfiguration;
+	private boolean documentStoreApiEnabled;
+	private DocumentStoreApiConfiguration documentStoreApiConfiguration;
+    private boolean concordanceApiEnabled;
+	private ConcordanceApiConfiguration concordanceApiConfiguration;
+    private boolean messagingEndpointEnabled;
+    private ConsumerConfiguration consumerConfiguration;
+    private ProducerConfiguration producerConfiguration;
     private final List<BrandConfiguration> brands;
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
@@ -28,9 +30,12 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     @JsonProperty
     private final GTGConfig gtgConfig= new GTGConfig();
 
-    public MethodeArticleMapperConfiguration(@JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
+    public MethodeArticleMapperConfiguration(@JsonProperty("messagingEndpointEnabled") Boolean messagingEndpointEnabled,
+                                             @JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
                                              @JsonProperty("producer") ProducerConfiguration producerConfiguration,
+                                             @JsonProperty("concordanceApiEnabled") Boolean concordanceApiEnabled,
                                              @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
+                                             @JsonProperty("documentStoreApiEnabled") Boolean documentStoreApiEnabled,
                                              @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
                                              @JsonProperty("brands") List<BrandConfiguration> brands,
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
@@ -39,27 +44,48 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("apiHost") String apiHost,
                                              @JsonProperty("appInfo") AppInfo appInfo) {
 
-        this.documentStoreApiConfiguration = documentStoreApiConfiguration;
-		this.concordanceApiConfiguration=concordanceApiConfiguration;
+        if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
+            this.documentStoreApiEnabled = true;
+            this.documentStoreApiConfiguration = documentStoreApiConfiguration;
+        }
+        
+        if ((concordanceApiEnabled == null) || concordanceApiEnabled.booleanValue()) {
+            this.concordanceApiEnabled = true;
+            this.concordanceApiConfiguration=concordanceApiConfiguration;
+        }
+        
         this.brands = brands;
-        this.consumerConfiguration = consumerConfiguration;
-        this.producerConfiguration = producerConfiguration;
+        
+        if ((messagingEndpointEnabled == null) || messagingEndpointEnabled.booleanValue()) {
+            this.messagingEndpointEnabled = true;
+            this.consumerConfiguration = consumerConfiguration;
+            this.producerConfiguration = producerConfiguration;
+        }
+        
         this.videoSiteConfig = videoSiteConfig;
         this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
         this.contentUriPrefix = contentUriPrefix;
         this.apiHost = apiHost;
         this.appInfo = appInfo;
     }
+    
+    public boolean isConcordanceApiEnabled() {
+        return concordanceApiEnabled;
+    }
 
-	@NotNull
 	public ConcordanceApiConfiguration getConcordanceApiConfiguration() {
 		return concordanceApiConfiguration;
 	}
+	
+	public boolean isDocumentStoreApiEnabled() {
+	    return documentStoreApiEnabled;
+	}
+	
+	public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() {
+	    return documentStoreApiConfiguration;
+	}
 
-	@NotNull
-	public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() { return documentStoreApiConfiguration; }
-
-   @NotNull
+    @NotNull
     public List<BrandConfiguration> getBrandsConfiguration() {
         return brands;
     }
@@ -71,13 +97,15 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     public List<String> getInteractiveGraphicsWhitelist() {
         return interactiveGraphicsWhiteList;
     }
+    
+    public boolean isMessagingEndpointEnabled() {
+        return messagingEndpointEnabled;
+    }
 
-    @NotNull
     public ConsumerConfiguration getConsumerConfiguration() {
         return consumerConfiguration;
     }
 
-    @NotNull
     public ProducerConfiguration getProducerConfiguration() {
         return producerConfiguration;
     }

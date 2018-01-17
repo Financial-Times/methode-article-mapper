@@ -35,15 +35,25 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
-        - name: DOCUMENT_STORE_API_URL
-          value: "document-store-api:8080"
-        - name: CONCORDANCE_API_URL
-          value: "public-concordances-api:8080"
+        - name: KAFKA_ENABLED
+          value: "{{ .Values.env.KAFKA_ENABLED}}"
         - name: KAFKA_PROXY_URL
+          {{- if .Values.env.KAFKA_ENABLED }}
           valueFrom:
             configMapKeyRef:
               name: global-config
               key: kafka.proxy.url
+          {{- else }}
+          value: "kafka-rest-proxy:8080"
+          {{- end}}
+        - name: DOCUMENT_STORE_API_ENABLED
+          value: "{{ .Values.env.DOCUMENT_STORE_API_ENABLED }}"
+        - name: DOCUMENT_STORE_API_URL
+          value: "document-store-api:8080"
+        - name: CONCORDANCE_API_ENABLED
+          value: "{{ .Values.env.CONCORDANCE_API_ENABLED }}"
+        - name: CONCORDANCE_API_URL
+          value: "public-concordances-api:8080"
         - name: API_HOST
           valueFrom:
             configMapKeyRef:

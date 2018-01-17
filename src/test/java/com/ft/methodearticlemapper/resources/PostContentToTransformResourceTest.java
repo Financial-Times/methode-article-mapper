@@ -1,14 +1,15 @@
 package com.ft.methodearticlemapper.resources;
 
+import com.ft.api.jaxrs.errors.WebApplicationClientException;
 import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -40,18 +41,42 @@ public class PostContentToTransformResourceTest {
     @Test
     public void thatIfMapPreviewParamIsTruePreviewProcessingIsTriggered() {
         boolean preview = true;
-        postContentToTransformResource.map(eomFile, preview, httpHeaders);
+        postContentToTransformResource.map(eomFile, preview, null, httpHeaders);
 
-        verify(eomFileProcessor).processPreview(eq(eomFile),eq(TRANSACTION_ID), any());
-        verify(eomFileProcessor, never()).processPublication(any(), any(), any());
+        verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.PREVIEW), eq(TRANSACTION_ID), any());
+        verify(eomFileProcessor, never()).process(any(), eq(TransformationMode.PUBLISH), any(), any());
     }
 
     @Test
-    public void thatIfMapPreviewParamIsFalsePublicationProcessingIsTriggered() {
-        boolean notPreview = false;
-        postContentToTransformResource.map(eomFile, notPreview, httpHeaders);
+    public void thatModeQueryParameterIsPassedThrough() {
+        postContentToTransformResource.map(eomFile, false, TransformationMode.SUGGEST.toString().toLowerCase(), httpHeaders);
 
-        verify(eomFileProcessor).processPublication(eq(eomFile),eq(TRANSACTION_ID), any());
-        verify(eomFileProcessor, never()).processPreview(any(), any(), any());
+        verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.SUGGEST), eq(TRANSACTION_ID), any());
+    }
+
+    @Test
+    public void thatModeQueryParameterIsCaseInsensitive() {
+        postContentToTransformResource.map(eomFile, false, TransformationMode.SUGGEST.toString(), httpHeaders);
+
+        verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.SUGGEST), eq(TRANSACTION_ID), any());
+    }
+
+    @Test(expected=WebApplicationClientException.class)
+    public void thatModeQueryParameterIsValidated() {
+        postContentToTransformResource.map(eomFile, false, "foobar", httpHeaders);
+    }
+
+    @Test
+    public void thatModeQueryParameterTrumpsConflictingPreviewFlagFalse() {
+        postContentToTransformResource.map(eomFile, false, TransformationMode.PREVIEW.toString().toLowerCase(), httpHeaders);
+
+        verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.PREVIEW), eq(TRANSACTION_ID), any());
+    }
+
+    @Test
+    public void thatModeQueryParameterTrumpsConflictingPreviewFlagTrue() {
+        postContentToTransformResource.map(eomFile, true, TransformationMode.PUBLISH.toString().toLowerCase(), httpHeaders);
+
+        verify(eomFileProcessor).process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any());
     }
 }

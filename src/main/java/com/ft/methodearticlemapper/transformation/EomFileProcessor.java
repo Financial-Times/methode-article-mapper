@@ -12,6 +12,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
+import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -50,6 +51,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -61,11 +63,6 @@ import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 public class EomFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
-
-    enum TransformationMode {
-        PUBLISH,
-        PREVIEW
-    }
 
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
@@ -89,6 +86,7 @@ public class EomFileProcessor {
     private static final String END_BODY = "</body>";
     private static final String EMPTY_VALIDATED_BODY = "<body></body>";
 
+    private final EnumSet<TransformationMode> supportedModes;
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final BodyProcessor htmlFieldProcessor;
@@ -96,11 +94,13 @@ public class EomFileProcessor {
     private final String apiHost;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
-    public EomFileProcessor(final FieldTransformer bodyTransformer,
+    public EomFileProcessor(final EnumSet<TransformationMode> supportedModes,
+                            final FieldTransformer bodyTransformer,
                             final FieldTransformer bylineTransformer,
                             final BodyProcessor htmlFieldProcessor,
                             final Map<ContentSource, Brand> contentSourceBrandMap,
                             final String apiHost) {
+        this.supportedModes = supportedModes;
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.htmlFieldProcessor = htmlFieldProcessor;
@@ -122,42 +122,28 @@ public class EomFileProcessor {
         }
     }
 
-    public Content processPreview(EomFile eomFile, String transactionId, Date lastModifiedDate) {
+    public Content process(EomFile eomFile, TransformationMode mode, String transactionId, Date lastModifiedDate) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
-
+        if (!supportedModes.contains(mode)) {
+            throw new UnsupportedTransformationModeException(uuid.toString(), mode);
+        }
+        LOGGER.info("processing UUID={} in {} mode", uuid, mode);
+        
         PublishEligibilityChecker eligibilityChecker =
                 PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
 
-
         try {
-            ParsedEomFile parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
+            ParsedEomFile parsedEomFile;
+            if (mode == TransformationMode.PUBLISH) {
+                parsedEomFile = eligibilityChecker.getEligibleContentForPublishing();
+            } else {
+                parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
+            }
 
-            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PREVIEW, transactionId, lastModifiedDate);
+            return transformEomFileToContent(uuid, parsedEomFile, mode, transactionId, lastModifiedDate);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
-    }
-
-    public Content processPublication(EomFile eomFile, String transactionId, Date lastModified) {
-        UUID uuid = UUID.fromString(eomFile.getUuid());
-
-        try {
-            ParsedEomFile parsedEomFile = getEligibleContentForPublishing(eomFile, uuid, transactionId);
-
-            return transformEomFileToContent(uuid, parsedEomFile, TransformationMode.PUBLISH, transactionId, lastModified);
-        } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
-            throw new TransformationException(e);
-        }
-    }
-
-    private ParsedEomFile getEligibleContentForPublishing(EomFile eomFile, UUID uuid, String transactionId)
-            throws SAXException, XPathExpressionException,
-            ParserConfigurationException, TransformerException, IOException {
-
-        PublishEligibilityChecker eligibilityChecker =
-                PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
-
-        return eligibilityChecker.getEligibleContentForPublishing();
     }
 
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
@@ -178,7 +164,7 @@ public class EomFileProcessor {
 
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
-        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId,
+        final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId, mode,
             Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
@@ -190,7 +176,7 @@ public class EomFileProcessor {
         final String storyPackage = getStoryPackage(xpath, value, uuid);
 
         final String transformedByline = transformField(retrieveField(xpath, BYLINE_XPATH, eomFile.getValue()),
-                bylineTransformer, transactionId); //byline is optional
+                bylineTransformer, transactionId, mode); //byline is optional
 
         final Syndication canBeSyndicated = getSyndication(xpath, attributes);
         final AccessLevel accessLevel = getAccessLevel(xpath, attributes, uuid);
@@ -418,11 +404,12 @@ public class EomFileProcessor {
     private String transformField(final String originalFieldAsString,
         final FieldTransformer transformer,
         final String transactionId,
+        final TransformationMode mode,
         final Entry<String, Object>... contextData) {
 
         String transformedField = "";
         if (!Strings.isNullOrEmpty(originalFieldAsString)) {
-            transformedField = transformer.transform(originalFieldAsString, transactionId, contextData);
+            transformedField = transformer.transform(originalFieldAsString, transactionId, mode, contextData);
         }
         return transformedField;
     }

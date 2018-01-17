@@ -50,7 +50,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         eventHandler = new ImageSetXmlEventHandler();
 
         bodyProcessingContext = new MappedDataBodyProcessingContext(
-                TEST_TID,
+                TEST_TID, TransformationMode.PUBLISH,
                 Maps.immutableEntry("uuid", ARTICLE_UUID),
                 Maps.immutableEntry("apiHost", API_HOST));
 
@@ -127,7 +127,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
             imageSetStartElementTag,
             mockXmlEventReader,
             mockEventWriter,
-            new MappedDataBodyProcessingContext(TEST_TID));
+            new MappedDataBodyProcessingContext(TEST_TID, TransformationMode.PUBLISH));
 
         verifyZeroInteractions(mockEventWriter);
     }
