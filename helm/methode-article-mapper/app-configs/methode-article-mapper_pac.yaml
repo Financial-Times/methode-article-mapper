@@ -4,8 +4,8 @@ service:
   name: methode-article-mapper
 env:
   - name: KAFKA_ENABLED
-    value: "false"
+    value: false
   - name: DOCUMENT_STORE_API_ENABLED
-    value: "false"
+    value: false
   - name: CONCORDANCE_API_ENABLED
-    value: "false"
+    value: false
