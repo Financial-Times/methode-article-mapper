@@ -38,7 +38,14 @@ spec:
         - name: KAFKA_ENABLED
           value: "{{ .Values.env.KAFKA_ENABLED}}"
         - name: KAFKA_PROXY_URL
-          value: {{ .Values.env.KAFKA_PROXY_URL | default "kafka-rest-proxy:8080" | quote }}
+          {{- if .Values.env.KAFKA_ENABLED }}
+          valueFrom:
+            configMapKeyRef:
+              name: global-config
+              key: kafka.proxy.url
+          {{- else }}
+          value: "kafka-rest-proxy:8080"
+          {{- end}}
         - name: DOCUMENT_STORE_API_ENABLED
           value: "{{ .Values.env.DOCUMENT_STORE_API_ENABLED }}"
         - name: DOCUMENT_STORE_API_URL
