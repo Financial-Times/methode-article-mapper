@@ -10,9 +10,9 @@ image:
   pullPolicy: IfNotPresent
 resources:
   limits:
-    memory: 1536Mi
+    memory: 640Mi
   requests:
-    memory: 1Gi
+    memory: 384Mi
 env:
   KAFKA_ENABLED: false
   DOCUMENT_STORE_API_ENABLED: false

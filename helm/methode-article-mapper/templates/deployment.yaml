@@ -50,6 +50,8 @@ spec:
           value: "{{ .Values.env.DOCUMENT_STORE_API_ENABLED }}"
         - name: DOCUMENT_STORE_API_URL
           value: "document-store-api:8080"
+        - name: JAVA_OPTS
+          value: "-Xms256m -Xmx512m -XX:+UseG1GC -server"
         - name: CONCORDANCE_API_ENABLED
           value: "{{ .Values.env.CONCORDANCE_API_ENABLED }}"
         - name: CONCORDANCE_API_URL
