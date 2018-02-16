@@ -6,3 +6,7 @@ env:
   KAFKA_ENABLED: true
   DOCUMENT_STORE_API_ENABLED: true
   CONCORDANCE_API_ENABLED: true
+  NATIVE_TX_REF: publishReference
+  LAST_MODIFIED_SOURCE: fromTransaction
+  TX_ID_SOURCE: fromTransaction
+  TX_PROPERTY: publishReference
