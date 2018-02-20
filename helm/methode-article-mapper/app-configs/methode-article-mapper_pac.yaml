@@ -6,7 +6,7 @@ env:
   KAFKA_ENABLED: false
   DOCUMENT_STORE_API_ENABLED: false
   CONCORDANCE_API_ENABLED: false
-  NATIVE_TX_REF: publishReference
+  NATIVE_TX_REF: draftReference=draftReference
   LAST_MODIFIED_SOURCE: fromNative
   TX_ID_SOURCE: fromNative
-  TX_PROPERTY: publishReference
+  TX_PROPERTY: draftReference

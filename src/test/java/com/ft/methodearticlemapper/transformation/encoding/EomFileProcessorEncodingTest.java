@@ -35,6 +35,7 @@ import org.junit.Test;
 public class EomFileProcessorEncodingTest {
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
     private static final String TRANSACTION_ID = "tid_test";
+    private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
     
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
@@ -51,7 +52,7 @@ public class EomFileProcessorEncodingTest {
         contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
 
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
     }

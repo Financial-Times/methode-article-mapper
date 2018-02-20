@@ -203,6 +203,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 new BylineProcessingFieldTransformerFactory().newInstance(),
                 new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()),
+                configuration.getTxIdPropertyName(),
                 configuration.getApiHost());
     }
 

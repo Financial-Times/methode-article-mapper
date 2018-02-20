@@ -29,7 +29,7 @@ CMD exec java $JAVA_OPTS \
      -Ddw.consumer.messageConsumer.queueProxyHost=http://$KAFKA_PROXY_URL \
      -Ddw.producer.messageProducer.proxyHostAndPort=$KAFKA_PROXY_URL \
      -Ddw.apiHost=$API_HOST \
-     -Ddw.additionalNativeContentProperties.publishReference=$NATIVE_TX_REF \
+     -Ddw.additionalNativeContentProperties.$NATIVE_TX_REF \
      -Ddw.lastModifiedSource=$LAST_MODIFIED_SOURCE \
      -Ddw.transactionIdSource=$TX_ID_SOURCE \
      -Ddw.transactionIdProperty=$TX_PROPERTY \

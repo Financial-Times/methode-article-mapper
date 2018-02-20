@@ -41,6 +41,7 @@ public class ArticlePreviewTransformationTest {
     private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
     private static final String[] WORKFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
     private static final String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
+    private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
@@ -56,8 +57,8 @@ public class ArticlePreviewTransformationTest {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
-        postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor, PropertySource.fromTransaction, PropertySource.fromTransaction, "publishReference");
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
+        postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor, PropertySource.fromTransaction, PropertySource.fromTransaction, PUBLISH_REF);
 
         MDC.put("transaction_id", "transaction_id=" + TRANSACTION_ID);
     }
