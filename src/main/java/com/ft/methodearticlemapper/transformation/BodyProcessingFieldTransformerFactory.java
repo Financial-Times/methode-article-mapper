@@ -58,6 +58,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
         	    stripByAttributesAndValuesBodyProcessor(),        	          
                 new RegexRemoverBodyProcessor("(<p[^/>]*>\\s*</p>)|(<p/>)|(<p\\s[^/>]*/>)"),
                 tearSheetsBodyProcessor(),
+                new ImageExtractorBodyProcessor(),
                 stAXTransformingBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),

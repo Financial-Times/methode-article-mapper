@@ -136,10 +136,10 @@
 <p>Prime minister David Cameron welcomed the deal, saying it would create 25,000 jobs and that it marked “the next generation of nuclear power in Britain, which has an important part to play in contributing to our future energy needs and our longer term security of supply’’.</p>
 <p><strong>Images</strong>
 </p>
-<p><content data-embedded="true" id="89db87d4-3b37-11e3-1122-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content>
-</p>
-<p><content data-embedded="true" id="ab39a514-3b37-11e3-1122-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content>
-</p>
+
+<content data-embedded="true" id="89db87d4-3b37-11e3-1122-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content>
+<content data-embedded="true" id="ab39a514-3b37-11e3-1122-97bbf262bf2b" type="http://www.ft.com/ontology/content/ImageSet"></content>
+
 <p>The first image is a GIF, the second a JPEG. Text should wrap around inline images, so the following is some typical body text.</p>
 <p>The UK government has struck a deal with the French utility EDF to build the country’s first new nuclear plant in a generation.</p>
 <p>The agreement was reached after the government guaranteed a price of £92.50 per megawatt hour for electricity produced at Hinkley Point C in Somerset. The “strike price”, fully indexed to consumer price inflation, is roughly double the current price of power.</p>
