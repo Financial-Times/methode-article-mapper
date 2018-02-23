@@ -93,10 +93,10 @@ public class EomFile {
     }
     
     @JsonAnySetter
-    public void setAdditionalProperty(String name, String value) {
+    public void setAdditionalProperty(String name, Object value) {
         String mappedName = ADDITIONAL_PROPERTY_MAPPINGS.get(name);
-        if (mappedName != null) {
-            additionalProperties.put(mappedName, value);
+        if ((mappedName != null) && (value instanceof String)) {
+            additionalProperties.put(mappedName, (String)value);
         }
     }
     
