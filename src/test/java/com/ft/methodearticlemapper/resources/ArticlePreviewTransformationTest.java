@@ -1,11 +1,11 @@
 package com.ft.methodearticlemapper.resources;
 
-import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.common.FileUtils;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Content;
+import com.ft.methodearticlemapper.configuration.PropertySource;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
@@ -16,15 +16,13 @@ import com.ft.methodearticlemapper.transformation.TransformationMode;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.MDC;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.ws.rs.core.HttpHeaders;
 
 import static com.jcabi.matchers.RegexMatchers.matchesPattern;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -43,8 +41,8 @@ public class ArticlePreviewTransformationTest {
     private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
     private static final String[] WORKFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
     private static final String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
+    private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
-    private HttpHeaders httpHeaders= mock(HttpHeaders.class);
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
     private BodyProcessor htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
@@ -59,10 +57,10 @@ public class ArticlePreviewTransformationTest {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, API_HOST);
-        postContentToTransformResource= new PostContentToTransformResource(eomFileProcessor);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
+        postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor, PropertySource.fromTransaction, PropertySource.fromTransaction, PUBLISH_REF);
 
-        when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
+        MDC.put("transaction_id", "transaction_id=" + TRANSACTION_ID);
     }
 
     /**
@@ -73,7 +71,7 @@ public class ArticlePreviewTransformationTest {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
-        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, null, httpHeaders);
+        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, null);
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));

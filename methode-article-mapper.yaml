@@ -46,7 +46,6 @@ interactiveGraphicsWhiteList: [ "http://interactive.ftdata.co.uk/(?!(_other/ben/
     "http://ft.cartodb.com/.*" ]
 
 server:
-
   applicationConnectors:
     - type: http
       port: 11070
@@ -56,26 +55,19 @@ server:
         port: 11071
 
   requestLog:
-
     appenders:
-
       - type: console
-
         # The timezone used to format dates. HINT: USE THE DEFAULT, UTC.
         timeZone: UTC
 
 logging:
-
   level: INFO
-
   loggers:
     io.dropwizard: DEBUG
-
   appenders:
-
     - type: console
       
-documentStoreApiEnabled: true
+documentStoreApiEnabled: false
 documentStoreApi:
     endpointConfiguration:
         shortName: "documentStoreApi"
@@ -88,7 +80,7 @@ documentStoreApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
-concordanceApiEnabled: true
+concordanceApiEnabled: false
 concordanceApi:
     endpointConfiguration:
         shortName: "concordance"
@@ -101,7 +93,7 @@ concordanceApi:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000  
 
-messagingEndpointEnabled: true
+messagingEndpointEnabled: false
 consumer:
   jerseyClient:
     connectionTimeout: 2 seconds
@@ -140,6 +132,14 @@ producer:
     panicGuideUrl: "https://dewey.ft.com/up-mam.html"
 
 contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
+
+additionalNativeContentProperties:
+  lastModified: lastModified
+  publishReference: publishReference
+
+lastModifiedSource: fromTransaction
+transactionIdSource: fromTransaction
+transactionIdProperty: publishReference
 
 apiHost: "api.ft.com"
 

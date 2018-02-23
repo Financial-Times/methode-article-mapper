@@ -41,6 +41,7 @@ import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
 import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.MethodeArticleTransformerErrorEntityFactory;
+import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.resources.PostContentToTransformResource;
 import com.ft.methodearticlemapper.transformation.BodyProcessingFieldTransformerFactory;
 import com.ft.methodearticlemapper.transformation.BylineProcessingFieldTransformerFactory;
@@ -109,6 +110,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
             healthchecks.add(buildConcordanceAPIHealthCheck(concordanceApiClient, concordanceApiEndpointConfiguration));
         }
         
+        EomFile.setAdditionalMappings(configuration.getAdditionalNativeContentProperties());
+        
         EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
                 documentStoreUri,
@@ -147,7 +150,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
 
         environment.jersey().register(
                 new PostContentToTransformResource(
-                        eomFileProcessor
+                        eomFileProcessor, configuration.getLastModifiedSource(), configuration.getTxIdSource(), configuration.getTxIdPropertyName()
                 )
         );
         
@@ -200,6 +203,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 new BylineProcessingFieldTransformerFactory().newInstance(),
                 new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()),
+                configuration.getTxIdPropertyName(),
                 configuration.getApiHost());
     }
 

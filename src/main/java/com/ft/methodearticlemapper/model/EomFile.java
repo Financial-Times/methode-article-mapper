@@ -1,11 +1,14 @@
 package com.ft.methodearticlemapper.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class EomFile {
 
     public static final String WEB_REVISE = "Stories/WebRevise";
@@ -19,6 +22,8 @@ public class EomFile {
     public static final String INITIAL_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
     public static final String STORY_PACKAGE_LINK_XPATH = "/doc/lead/editor-choice/a/@href";
 
+    private static final Map<String,String> ADDITIONAL_PROPERTY_MAPPINGS = new LinkedHashMap<>();
+    
     private final String uuid;
     private final String type;
 
@@ -28,7 +33,13 @@ public class EomFile {
     private final String systemAttributes;
     private final String usageTickets;
     private final URI webUrl;
-
+    
+    private final Map<String,String> additionalProperties = new LinkedHashMap<>();
+    
+    public static void setAdditionalMappings(Map<String,String> additionalProperties) {
+        ADDITIONAL_PROPERTY_MAPPINGS.putAll(additionalProperties);
+    }
+    
     public EomFile(@JsonProperty("uuid") String uuid,
                    @JsonProperty("type") String type,
                    @JsonProperty("value") byte[] bytes,
@@ -80,7 +91,20 @@ public class EomFile {
     public URI getWebUrl() {
         return webUrl;
     }
-
+    
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, String value) {
+        String mappedName = ADDITIONAL_PROPERTY_MAPPINGS.get(name);
+        if (mappedName != null) {
+            additionalProperties.put(mappedName, value);
+        }
+    }
+    
+    @JsonAnyGetter
+    public Map<String,String> getAdditionalProperties() {
+        return Collections.unmodifiableMap(additionalProperties);
+    }
+    
     public static class Builder {
         private String uuid;
         private String type;

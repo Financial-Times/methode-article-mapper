@@ -33,6 +33,11 @@ By default, the mapper applies the required validation and transformations for a
     * Note that if `preview` and `mode` are both supplied and conflict with each other, the `mode` value is used. 
 * Suggest mode relaxes rules as for preview, and also omits call-outs to the document store and concordance APIs (which do not affect the actual text content of the transformed document).
 
+### Mapping of audit fields
+For mapping requests received through HTTP, the default configuration assigns values for `lastModified` and `publishReference` based on the current date/time and the `X-Request-Id` header respectively. These can be overridden by setting the `lastModifiedSource` and `transactionIdSource` configuration properties to `fromNative`, in which case the values are extracted from the native content provided in the request.
+
+For mapping requests received through Kafka, the values are extracted from the incoming Kafka message and cannot be overridden.
+
 ### Healthcheck
 
 A GET request to `http://localhost:11071/healthcheck` or `http://localhost:11070/__health`

@@ -56,6 +56,14 @@ spec:
           value: "{{ .Values.env.CONCORDANCE_API_ENABLED }}"
         - name: CONCORDANCE_API_URL
           value: "public-concordances-api:8080"
+        - name: NATIVE_TX_REF
+          value: "{{ .Values.env.NATIVE_TX_REF }}"
+        - name: LAST_MODIFIED_SOURCE
+          value: "{{ .Values.env.LAST_MODIFIED_SOURCE }}"
+        - name: TX_ID_SOURCE
+          value: "{{ .Values.env.TX_ID_SOURCE }}"
+        - name: TX_PROPERTY
+          value: "{{ .Values.env.TX_PROPERTY }}"
         - name: API_HOST
           valueFrom:
             configMapKeyRef:
