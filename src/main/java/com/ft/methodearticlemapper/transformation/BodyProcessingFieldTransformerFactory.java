@@ -56,6 +56,10 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     private List<BodyProcessor> bodyProcessors() {
         return asList(        		
         	    stripByAttributesAndValuesBodyProcessor(),        	          
+                new RegexRemoverBodyProcessor("(<em>)\\s*(</em>)"),
+                new RegexRemoverBodyProcessor("<strong>\\s*</strong>"),
+                new RegexRemoverBodyProcessor("(<span>)\\s*(</span>)"),
+                new RegexRemoverBodyProcessor("(<b>)\\s*(</b>)"),
                 new RegexRemoverBodyProcessor("(<p[^/>]*>\\s*</p>)|(<p/>)|(<p\\s[^/>]*/>)"),
                 tearSheetsBodyProcessor(),
                 stAXTransformingBodyProcessor(),
@@ -63,6 +67,9 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
                 new RegexReplacerBodyProcessor("</p> +<p>", "</p><p>"),
                 methodeLinksBodyProcessor(),
+                new RegexReplacerBodyProcessor("\\.\\s*\\.\\s*\\.\\s*", "\u2026"),
+                new RegexReplacerBodyProcessor("---", "\u2014"),
+                new RegexReplacerBodyProcessor("--", "\u2013"),
                 new ModularXsltBodyProcessor(xslts()),
                 new Html5SelfClosingTagBodyProcessor()      
         );
