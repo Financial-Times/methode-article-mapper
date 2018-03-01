@@ -1287,7 +1287,9 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<p><strong></strong> lorem ipsum</p>" +
                 "<p><strong> </strong></p>" +
                 "<p><b></b><b></b>doler sit amet</p>" +
-                "<p></p>" +
+                "<p></p>" + 
+                "<em></em>" +
+                "<span> </span>" +
                 "</body>";
 		String transformedContent = "<body>" + 
                 "<p> lorem ipsum</p>" +
