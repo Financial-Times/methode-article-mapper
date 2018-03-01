@@ -6,8 +6,8 @@ import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 
 import com.codahale.metrics.annotation.Timed;
 import com.ft.api.jaxrs.errors.ClientError;
-import com.ft.api.util.transactionid.TransactionIdUtils;
 import com.ft.content.model.Content;
+import com.ft.methodearticlemapper.configuration.PropertySource;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
@@ -18,36 +18,62 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.TransformationMode;
+import com.google.common.base.Strings;
 
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.function.Supplier;
 import java.util.UUID;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 @Path("/")
 public class PostContentToTransformResource {
-
+    private static final Logger LOG = LoggerFactory.getLogger(PostContentToTransformResource.class);
+    
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
-
+    private static final String TX_ID = "transaction_id";
+    
+    private static final Supplier<String> TX_ID_SUPPLIER = () -> {
+        String txId = MDC.get(TX_ID);
+        if (Strings.isNullOrEmpty(txId)) {
+            throw new NullPointerException();
+        }
+        
+        txId = txId.substring(txId.indexOf('=') + 1);
+        
+        return txId;
+    };
+    
     private final EomFileProcessor eomFileProcessor;
-
-    public PostContentToTransformResource(EomFileProcessor eomFileProcessor) {
-
+    private final PropertySource lastModifiedSource;
+    private final PropertySource txIdSource;
+    private final String txIdField;
+    
+    public PostContentToTransformResource(EomFileProcessor eomFileProcessor,
+            PropertySource lastModifiedSource,
+            PropertySource txIdSource, String txIdField) {
         this.eomFileProcessor = eomFileProcessor;
+        this.lastModifiedSource = lastModifiedSource;
+        this.txIdSource = txIdSource;
+        this.txIdField = txIdField;
     }
 
 	@POST
 	@Timed
 	@Path("/map")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode, @Context HttpHeaders httpHeaders) {
-		final String transactionId = TransactionIdUtils.getTransactionIdOrDie(httpHeaders);
+	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode) {
 		final String uuid = eomFile.getUuid();
 		validateUuid(uuid);
 		
@@ -66,12 +92,49 @@ public class PostContentToTransformResource {
 		}
         // otherwise, mode trumps the preview flag if there is a mismatch
 		
-		return processRequest(uuid, transformationMode, eomFile, transactionId);
+		String txId = getTransactionId(eomFile);
+		Date lastModified = getLastModifiedDate(eomFile);
+		return processRequest(uuid, transformationMode, eomFile, txId, lastModified);
 	}
 
-    private Content processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId) {
+	private Date getLastModifiedDate(EomFile eomFile) {
+	    Date lastModified = null;
+	    switch (lastModifiedSource) {
+	        case fromNative:
+	            String s = eomFile.getAdditionalProperties().get("lastModified");
+	            if (!Strings.isNullOrEmpty(s)) {
+	                try {
+	                    lastModified = Date.from(Instant.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(s)));
+	                } catch (DateTimeException e) {
+	                    LOG.warn("Invalid value for lastModified: uuid={} lastModified={}", eomFile.getUuid(), s);
+	                }
+	            }
+	            break;
+	        
+	        default:
+	            lastModified = new Date();
+	    }
+	    
+	    return lastModified;
+	}
+
+    private String getTransactionId(EomFile eomFile) {
+        String txId;
+        switch (txIdSource) {
+            case fromNative:
+                txId = eomFile.getAdditionalProperties().get(txIdField);
+                break;
+            
+            default:
+                txId = TX_ID_SUPPLIER.get();
+        }
+        
+        return txId;
+    }
+	
+    private Content processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId, Date lastModified) {
         try {
-            return eomFileProcessor.process(eomFile, mode, transactionId, new Date());
+            return eomFileProcessor.process(eomFile, mode, transactionId, lastModified);
 
         } catch (MethodeMarkedDeletedException e) {
             throw ClientError.status(SC_NOT_FOUND)

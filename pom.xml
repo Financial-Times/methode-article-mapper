@@ -24,6 +24,7 @@
         <xmlunit.version>1.5</xmlunit.version>
         <wiremock.version>1.40</wiremock.version>
         <uuid-utils.version>1.0.2</uuid-utils.version>
+        <content-model.version>0.5.0</content-model.version>
         <!-- Plugins -->
         <findbugs.version>2.5.2</findbugs.version>
         <checkstyle.version>2.10</checkstyle.version>
@@ -135,7 +136,7 @@
         <dependency>
             <groupId>com.github.Financial-Times</groupId>
             <artifactId>content-model</artifactId>
-            <version>0.4.0</version>
+            <version>${content-model.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>

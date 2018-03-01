@@ -11,7 +11,9 @@ import com.ft.platform.dropwizard.GTGConfig;
 
 import io.dropwizard.Configuration;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo, ConfigWithGTG {
 	private boolean documentStoreApiEnabled;
@@ -25,6 +27,10 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
+    private final Map<String,String> additionalNativeContentProperties;
+    private final PropertySource lastModifiedSource;
+    private final PropertySource txIdSource;
+    private final String txIdPropertyName;
     private final String apiHost;
     private final AppInfo appInfo;
     @JsonProperty
@@ -41,6 +47,10 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix,
+                                             @JsonProperty("additionalNativeContentProperties") Map<String,String> additionalNativeContentProperties,
+                                             @JsonProperty("lastModifiedSource") PropertySource lastModifiedSource,
+                                             @JsonProperty("transactionIdSource") PropertySource txIdSource,
+                                             @JsonProperty("transactionIdProperty") String txIdPropertyName,
                                              @JsonProperty("apiHost") String apiHost,
                                              @JsonProperty("appInfo") AppInfo appInfo) {
 
@@ -65,6 +75,10 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         this.videoSiteConfig = videoSiteConfig;
         this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
         this.contentUriPrefix = contentUriPrefix;
+        this.additionalNativeContentProperties = Collections.unmodifiableMap(additionalNativeContentProperties);
+        this.lastModifiedSource = lastModifiedSource;
+        this.txIdSource = txIdSource;
+        this.txIdPropertyName = txIdPropertyName;
         this.apiHost = apiHost;
         this.appInfo = appInfo;
     }
@@ -115,6 +129,22 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         return contentUriPrefix;
     }
 
+    public Map<String,String> getAdditionalNativeContentProperties() {
+        return additionalNativeContentProperties;
+    }
+    
+    public PropertySource getLastModifiedSource() {
+        return lastModifiedSource;
+    }
+    
+    public PropertySource getTxIdSource() {
+        return txIdSource;
+    }
+    
+    public String getTxIdPropertyName() {
+        return txIdPropertyName;
+    }
+    
     @NotNull
     public String getApiHost() {
         return apiHost;

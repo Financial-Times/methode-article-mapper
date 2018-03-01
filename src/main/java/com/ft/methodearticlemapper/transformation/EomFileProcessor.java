@@ -90,7 +90,7 @@ public class EomFileProcessor {
     private final FieldTransformer bodyTransformer;
     private final FieldTransformer bylineTransformer;
     private final BodyProcessor htmlFieldProcessor;
-
+    private final String refFieldName;
     private final String apiHost;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
@@ -99,12 +99,14 @@ public class EomFileProcessor {
                             final FieldTransformer bylineTransformer,
                             final BodyProcessor htmlFieldProcessor,
                             final Map<ContentSource, Brand> contentSourceBrandMap,
+                            final String refFieldName,
                             final String apiHost) {
         this.supportedModes = supportedModes;
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.htmlFieldProcessor = htmlFieldProcessor;
         this.contentSourceBrandMap = contentSourceBrandMap;
+        this.refFieldName = refFieldName;
         this.apiHost = apiHost;
     }
 
@@ -201,7 +203,7 @@ public class EomFileProcessor {
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, attributes))
                 .withWebUrl(eomFile.getWebUrl())
-                .withPublishReference(transactionId)
+                .withTransactionId(refFieldName, transactionId)
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
                 .withFirstPublishedDate(toDate(firstPublicationDateAsString, DATE_TIME_FORMAT))

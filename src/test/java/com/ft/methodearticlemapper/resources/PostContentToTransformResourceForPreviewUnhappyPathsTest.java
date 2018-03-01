@@ -2,7 +2,7 @@ package com.ft.methodearticlemapper.resources;
 
 import com.ft.api.jaxrs.errors.ErrorEntity;
 import com.ft.api.jaxrs.errors.WebApplicationClientException;
-import com.ft.api.util.transactionid.TransactionIdUtils;
+import com.ft.methodearticlemapper.configuration.PropertySource;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
@@ -12,11 +12,9 @@ import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.MDC;
 
-import java.util.Arrays;
 import java.util.UUID;
-
-import javax.ws.rs.core.HttpHeaders;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,15 +36,14 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     private static final String INVALID_TYPE = "NOT_COMPOUND_STORY";
 
     private EomFileProcessor eomFileProcessor = mock(EomFileProcessor.class);
-    private HttpHeaders httpHeaders = mock(HttpHeaders.class);
     private EomFile eomFile = mock(EomFile.class);
 
     /*Class under test*/
-    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor);;
+    private PostContentToTransformResource postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor, PropertySource.fromTransaction, PropertySource.fromTransaction, "publishReference");
 
     @Before
     public void preconditions() {
-        when(httpHeaders.getRequestHeader(TransactionIdUtils.TRANSACTION_ID_HEADER)).thenReturn(Arrays.asList(TRANSACTION_ID));
+        MDC.put("transaction_id", "transaction_id=" + TRANSACTION_ID);
     }
 
     /**
@@ -57,7 +54,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenNoUuidPassed() {
         try {
             EomFile eomFile = Mockito.mock(EomFile.class);
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null/*, httpHeaders*/);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -74,7 +71,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
     public void shouldThrow400ExceptionWhenInvalidUuidPassed() {
         try {
             EomFile eomFile = ArticlePreviewTransformationTest.articlePreviewMinimalEomFile("invalid_uuid");
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null/*, httpHeaders*/);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
@@ -94,7 +91,7 @@ public class PostContentToTransformResourceForPreviewUnhappyPathsTest {
         when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PREVIEW), eq(TRANSACTION_ID), any())).
                 thenThrow(new UnsupportedEomTypeException(randomUuid, INVALID_TYPE));
         try {
-            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null, httpHeaders);
+            postContentToTransformResource.map(eomFile, IS_PREVIEW_TRUE, null);
             fail("No exception was thrown, but expected one.");
         } catch (WebApplicationClientException wace) {
             assertThat(((ErrorEntity)wace.getResponse().getEntity()).getMessage(),
