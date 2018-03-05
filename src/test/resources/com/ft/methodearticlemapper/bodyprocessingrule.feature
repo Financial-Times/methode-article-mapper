@@ -197,5 +197,5 @@ Scenario Outline: Empty Paragraphs
     Then the body should be like <after>
 
   Examples:
-    | before                                                                                                                                                                                   | after                  |
-    | <p>Embedded image.<img height="445" alt="Saloua Raouda Choucair's ‘Composition'" width="600" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" align="left"/></p> | <p>Embedded image.<img alt="Saloua Raouda Choucair's ‘Composition'" height="445" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" width="600"/></p> |
+    | before                                                                                                                                                                                                             | after                                                                                                                                                                                                 |
+    | <body><p>Embedded image.<img height="445" alt="Saloua Raouda Choucair's ‘Composition'" width="600" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" align="left"/></p></body> | <body><img alt="Saloua Raouda Choucair's ‘Composition'" height="445" src="http://im.ft-static.com/content/images/7784185e-a888-11e2-8e5d-00144feabdc0.img" width="600"/><p>Embedded image.</p></body> |
