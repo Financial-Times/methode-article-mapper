@@ -70,6 +70,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexReplacerBodyProcessor("\\.\\s*\\.\\s*\\.\\s*", "\u2026"),
                 new RegexReplacerBodyProcessor("---", "\u2014"),
                 new RegexReplacerBodyProcessor("--", "\u2013"),
+                new RegexReplacerBodyProcessor("</p>(\\s*<br\\s*/>\\s*)*<p>", "</p><p>"),
                 new ModularXsltBodyProcessor(xslts()),
                 new Html5SelfClosingTagBodyProcessor()      
         );

@@ -1299,6 +1299,25 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void shouldRemoveLineBreakBetweenParagraphs() {
+        String originalContent = "<body>" +
+                "<p>lorem ipsum</p>" +
+                "<br />" +
+                "<br/>" +
+                " <br/> " + 
+                "<p>doler sit amet</p>" +
+                "<p>doler sit amet</p>" +
+                "</body>";
+        String transformedContent = "<body>" +
+                "<p>lorem ipsum</p>" +
+                "<p>doler sit amet</p>" +
+                "<p>doler sit amet</p>" +
+                "</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+
+    @Test
     public void shouldReplaceThreeDots() {
         String originalContent = "<body>Here is a text with three dots...</body>";
         String transformedContent="<body>Here is a text with three dots\u2026</body>";
