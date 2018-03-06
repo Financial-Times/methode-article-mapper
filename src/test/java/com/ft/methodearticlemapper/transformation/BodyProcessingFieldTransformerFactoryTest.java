@@ -1,6 +1,7 @@
 package com.ft.methodearticlemapper.transformation;
 
 import static com.ft.methodetesting.xml.XmlMatcher.identicalXmlTo;
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
@@ -17,10 +18,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 
+import com.ft.uuidutils.DeriveUUID;
 import com.ft.uuidutils.GenerateV3UUID;
 import com.google.common.collect.Maps;
 import org.junit.Before;
@@ -120,7 +123,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				+ KITCHEN_SINK_ASSET3_UUID + "\", \"type\": \"Article\"}, {\"uuid\":\""
 				+ KITCHEN_SINK_ASSET4_UUID + "\", \"type\": \"Article\"}, {\"uuid\":\""
 				+ KITCHEN_SINK_ASSET5_UUID + "\", \"type\": \"Article\"}]");
-    	
+
         String originalBody = readFromFile("body/kitchen_sink_article_body.xml");
 
         String expectedTransformedBody = readFromFile("body/expected_transformed_kitchen_sink_article_body.xml");
@@ -134,7 +137,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         expectedException.expect(hasProperty("message", equalTo("Body is null")));
     	checkTransformation(null, "");
     }
-    
+
     @Test
     public void paraWithOnlyNewlineShouldBeRemoved() {
     	checkTransformationToEmpty("<p>\n</p>");
@@ -878,16 +881,16 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         checkTransformation(pullQuoteFromMethode, processedPullQuote);
     }
-    
+
     @Test
     public void slideshowShouldBeConvertedToPointToSlideshowOnWebsite() {
         String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
-                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" + 
+                "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
-        
+
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
         		"<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
-        
+
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
 
@@ -905,7 +908,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
     @Test
     public void shouldNotBarfOnTwoSlideshows() {
-    	
+
         String slideshowFromMethode = "<body><p>Embedded Slideshow</p>" +
                 "<p><a type=\"slideshow\" dtxInsert=\"slideshow\" href=\"/FT/Content/Companies/Stories/Live/PlainSlideshow.gallery.xml?uuid=49336a18-051c-11e3-98a0-002128161462\">" +
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 1</DIHeadlineCopy></a></p>" +
@@ -920,7 +923,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(slideshowFromMethode, processedSlideshow);
 
     }
-    
+
     @Test
     public void timelineShouldBeRetained() {
         String timelineFromMethode = "<body><p>Intro text</p>" +
@@ -933,7 +936,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
         		"<timeline-title>1997</timeline-title>\n" +
         		"<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>\n" +
         		"</timeline></body>";
-        
+
         String processedTimeline = "<body><p>Intro text</p>" +
                 "<ft-timeline><timeline-header>The battle for Simandou</timeline-header>\n" +
                 "<timeline-credits>AFP, Bloomberg, Shawn Curry, Company handouts</timeline-credits>\n" +
@@ -944,7 +947,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<timeline-title>1997</timeline-title>\n" +
                 "<timeline-body><p>Rio Tinto is granted rights to explore the Simandou deposit</p>\n</timeline-body>\n</timeline-item>" +
                 "</ft-timeline></body>";
-        
+
         checkTransformation(timelineFromMethode, processedTimeline);
     }
 
@@ -1258,6 +1261,40 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
     @Test
+    public void thatImagesAreExtractedFromParagraphs() {
+        String articleUuid = "edf0d3db-6497-406a-9d40-79176b0ffadb";
+        String imageSetId = "U32503569610592JkB";
+        String generatedUuid = GenerateV3UUID.singleDigested(articleUuid + imageSetId).toString();
+        String webInlinePictureUuid = "9b646f00-2045-11e8-a895-1ba1f72c2c11";
+        String inlineImageUuid = DeriveUUID.with(IMAGE_SET).from(UUID.fromString(webInlinePictureUuid)).toString();
+
+        String originalContent = "<body>" +
+                "<p><image-set id=\"" + imageSetId + "\"><image-small/><image-medium/><image-large/></image-set></p>" +
+                "<p><web-inline-picture fileref=\"/FT/Graphics/Online/Charts/2018/03/Italy_elections_provisional_results-column_chart-ft-web-thememed-700x500-1520234395_20180305071956.png?uuid=" + webInlinePictureUuid + "\" id=\"U32511615782384khF\"/></p>" +
+                "<p><img src=\"img1\"/></p>" +
+                "<p><img src=\"img2\"/>Lorem ipsum</p>" +
+                "<p><a href=\"\"><img src=\"img3\"/>" +
+                "<img src=\"img4\"/></a></p>" +
+                "<p><a href=\"http://www.url.com\">Lorem ipsum<img src=\"img5\"/></a></p>" +
+                "</body>";
+
+        String transformedContent = "<body>" +
+                "<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://test.api.ft.com/content/" + generatedUuid + "\"></ft-content>" +
+                "<content data-embedded=\"true\" id=\"" + inlineImageUuid + "\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
+                "<img src=\"img1\"/>" +
+                "<img src=\"img2\"/>" +
+                "<p>Lorem ipsum</p>" +
+                "<img src=\"img3\"/>" +
+                "<img src=\"img4\"/>" +
+                "<img src=\"img5\"/>" +
+                "<p><a href=\"http://www.url.com\">Lorem ipsum</a></p>" +
+                "</body>";
+
+        checkTransformation(originalContent, transformedContent, Maps.immutableEntry("uuid", articleUuid),
+                Maps.immutableEntry("apiHost", "test.api.ft.com"));
+    }
+
+    @Test
     public void thatSuggestModeSkipsDocumentStoreAPICalls() {
         String input = "<body>"
                 + "A story with <a href=\"/FT/Content/Companies/Stories/Live/ProdStory1.xml?uuid=9b9fed88-d986-11e2-bce1-002128161462\">a link that does not need to be checked for suggest mode</a>."
@@ -1281,12 +1318,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
         verifyZeroInteractions(concordanceClient);
     }
 
-    private void checkTransformation(String originalBody, String expectedTransformedBody) {
-        checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH);
+    private void checkTransformation(String originalBody, String expectedTransformedBody, Map.Entry<String, Object>... contextData) {
+        checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH, contextData);
     }
-    
-    private void checkTransformation(String originalBody, String expectedTransformedBody, TransformationMode mode) {
-        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, mode);
+
+    private void checkTransformation(String originalBody, String expectedTransformedBody, TransformationMode mode, Map.Entry<String, Object>... contextData) {
+        String actualTransformedBody = bodyTransformer.transform(originalBody, TRANSACTION_ID, mode, contextData);
 
         System.out.println("TRANSFORMED BODY:\n" + actualTransformedBody);
 
