@@ -1,7 +1,6 @@
 package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
-import org.hamcrest.text.IsEqualIgnoringWhiteSpace;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -186,7 +185,7 @@ public class ImageExtractorBodyProcessorTest {
 
         String result = imageExtractorBodyProcessor.process(body, bodyProcessingContext);
 
-        assertThat(result, IsEqualIgnoringWhiteSpace.equalToIgnoringWhiteSpace(expected));
+        assertThat(result, is(identicalXmlTo(expected)));
     }
 
     @Test
@@ -200,8 +199,9 @@ public class ImageExtractorBodyProcessorTest {
 
         String result = imageExtractorBodyProcessor.process(body, bodyProcessingContext);
 
-        assertThat(result, IsEqualIgnoringWhiteSpace.equalToIgnoringWhiteSpace(expected));
+        assertThat(result, is(identicalXmlTo(expected)));
     }
+
     @Test
     public void testProcess_ExtractAllImageTypes() {
         String body = "<body><p>Lorem ipsum</p>" +
