@@ -174,6 +174,35 @@ public class ImageExtractorBodyProcessorTest {
     }
 
     @Test
+    public void testProcess_ExtractMultipleImgTagsInsideATagWithoutRemovingATag() {
+        String body = "<body>" +
+                "<p><a href=\"\"><img src=\"source\"/><img src=\"source\"/>Lorem ipsum</a></p>" +
+                "</body>";
+        String expected = "<body>" +
+                "<img src=\"source\"/><img src=\"source\"/>" +
+                "<p><a href=\"\">Lorem ipsum</a></p>" +
+                "</body>";
+
+        String result = imageExtractorBodyProcessor.process(body, bodyProcessingContext);
+
+        assertThat(result, is(identicalXmlTo(expected)));
+    }
+
+    @Test
+    public void testProcess_ExtractMultipleImgTagsInsideATagWithATagRemoval() {
+        String body = "<body>" +
+                "<p><a href=\"\"><img src=\"source\"/><img src=\"source\"/></a></p>" +
+                "</body>";
+        String expected = "<body>" +
+                "<img src=\"source\"/><img src=\"source\"/><p/>" +
+                "</body>";
+
+        String result = imageExtractorBodyProcessor.process(body, bodyProcessingContext);
+
+        assertThat(result, is(identicalXmlTo(expected)));
+    }
+
+    @Test
     public void testProcess_ExtractAllImageTypes() {
         String body = "<body><p>Lorem ipsum</p>" +
                 "<p>" +
