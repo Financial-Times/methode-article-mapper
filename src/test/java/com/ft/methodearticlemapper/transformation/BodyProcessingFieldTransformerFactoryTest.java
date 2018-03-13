@@ -411,13 +411,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -445,12 +445,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</table>\n" +
 				"</promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
+		String processedPromoBox = "<body><promo-box>" +
 				"<promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"17ee1f24-ff46-11e2-055d-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <strong>Monday</strong>, with Labour claiming the coalition was alerted in 2010 to strikeout malpractice at the bank and took no action.</p>\n" +
 				"<p><a href=\"http://www.ft.com/cms/s/2f9b640c-b056-11e4-a2cc-00144feab7de.html\">Continue reading</a></p></promo-intro>" +
-				"</promo-box><p>This is the end of the sentence.</p></body>";
+				"</promo-box><p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -466,13 +466,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our <strong>annual</strong> list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -503,12 +503,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
+		String processedPromoBox = "<body><promo-box>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -524,12 +524,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box>" +
+		String processedPromoBox = "<body><promo-box>" +
 				"<promo-headline><p>Headline</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"432b5632-9e79-11e0-0a0f-978e959e1689\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -545,12 +545,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -565,12 +565,12 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"</td></tr><tr><td><promo-link><p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"/></p></promo-link>" +
 				"</td></tr></table></promo-box>This is the end of the sentence.</p></body>";
 
-		String processedPromoBox = "<body><p>This is the beginning of a sentence.</p><promo-box><promo-title><p>" +
+		String processedPromoBox = "<body><promo-box><promo-title><p>" +
 				"<a href=\"http://www.ft.com/reports/ft-500-2011\" title=\"www.ft.com\">FT 500</a></p></promo-title>" +
 				"<promo-headline><p>Headline</p></promo-headline>" +
 				"<promo-intro><p>The risers and fallers in our annual list of the world’s biggest companies</p></promo-intro><promo-link>" +
 				"<p><a href=\"http://www.ft.com/cms/s/0/0bdf4bb6-6676-11e4-8bf6-00144feabdc0.html\"></a></p></promo-link></promo-box>" +
-                "<p>This is the end of the sentence.</p></body>";
+                "<p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
 	}
@@ -1293,6 +1293,34 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(originalContent, transformedContent, Maps.immutableEntry("uuid", articleUuid),
                 Maps.immutableEntry("apiHost", "test.api.ft.com"));
     }
+
+	@Test
+	public void thatPromoBoxesAreExtractedFromParagraphs() {
+		String originalContent="<body>" +
+				"<p><b>" +
+				"<promo-box align=\"left\">&lt;" +
+				"<table width=\"170px\" align=\"left\" cellpadding=\"6px\">" +
+				"<tr><td><promo-title><p>In depth</p></promo-title></td></tr>" +
+				"<tr><td><promo-headline><p><a href=\"http://www.ft.com/intl/indepth/climatechange\" title=\"Climate change in depth - FT.com\">Climate change</a></p></promo-headline></td></tr>" +
+				"<tr><td><promo-image fileref=\"/FT/Graphics/Online/Secondary_%26_Triplet_167x96/2011/10/SEC_POWE.jpg?uuid=5e542eaa-f042-11e0-96d2-00144feab49a\" tmx=\"167 96 167 96\"/></td></tr>" +
+				"<tr><td><promo-intro><p>The latest news and analysis on the world’s changing climate and the political moves afoot to tackle the problem</p></promo-intro></td></tr>" +
+				"</table>&gt;" +
+				"</promo-box>" +
+				"Who wins and who loses?</b></p>" +
+				"</body>";
+
+		String transformedContent = "<body>" +
+				"<promo-box>" +
+				"<promo-title><p>In depth</p></promo-title>" +
+				"<promo-headline><p><a href=\"http://www.ft.com/intl/indepth/climatechange\" title=\"Climate change in depth - FT.com\">Climate change</a></p></promo-headline>" +
+				"<promo-image><content type=\"http://www.ft.com/ontology/content/ImageSet\" id=\"5e542eaa-f042-11e0-08b4-978e959e1fd3\" data-embedded=\"true\"></content></promo-image>" +
+				"<promo-intro><p>The latest news and analysis on the world’s changing climate and the political moves afoot to tackle the problem</p></promo-intro>" +
+				"</promo-box>" +
+				"<p><strong>Who wins and who loses?</strong></p>" +
+				"</body>";
+
+		checkTransformation(originalContent, transformedContent);
+	}
 
     @Test
     public void thatSuggestModeSkipsDocumentStoreAPICalls() {
