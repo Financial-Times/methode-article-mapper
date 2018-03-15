@@ -222,7 +222,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 concordanceApiConfiguration.getPort(),
                 "/__gtg",
                 "public-concordances-api",
-                1,
+                2,
                 "Articles will not be annotated with company tearsheet information.",
                 DEWEY_URL);
     }
@@ -235,7 +235,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 documentStoreApiEndpointConfiguration.getPort(),
                 "/__health",
                 "document-store-api",
-                1,
+                2,
                 "Clients will be unable to query the content service using alternative identifiers.",
                 DEWEY_URL);
     }
