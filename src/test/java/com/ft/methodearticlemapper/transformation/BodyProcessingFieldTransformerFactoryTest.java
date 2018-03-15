@@ -1346,6 +1346,74 @@ public class BodyProcessingFieldTransformerFactoryTest {
         verifyZeroInteractions(concordanceClient);
     }
 
+    @Test
+    public void shouldRemoveEmptyElementsInsideParagraph() {
+        String originalContent = "<body>" +
+                "<p><strong></strong> lorem ipsum</p>" +
+                "<p><strong> </strong></p>" +
+                "<p><b></b><b></b>doler sit amet</p>" +
+                "<p></p>" + 
+                "<em></em>" +
+                "<span> </span>" +
+                "</body>";
+		String transformedContent = "<body>" + 
+                "<p> lorem ipsum</p>" +
+                "<p>doler sit amet</p>" + 
+                "</body>";
+		checkTransformation(originalContent, transformedContent);
+    }
+
+    @Test
+    public void shouldRemoveLineBreakBetweenParagraphs() {
+        String originalContent = "<body>" +
+                "<p>lorem ipsum</p>" +
+                "<br />" +
+                "<br/>" +
+                " <br/> " + 
+                "<p>doler sit amet</p>" +
+                "<p>doler sit amet</p>" +
+                "</body>";
+        String transformedContent = "<body>" +
+                "<p>lorem ipsum</p>" +
+                "<p>doler sit amet</p>" +
+                "<p>doler sit amet</p>" +
+                "</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+
+    @Test
+    public void shouldReplaceThreeDots() {
+        String originalContent = "<body>Here is a text with three dots...</body>";
+        String transformedContent="<body>Here is a text with three dots\u2026</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+
+    @Test
+    public void shouldReplaceThreeInterSpacedDots() {
+        String originalContent = "<body>Here is a text with three dots. . .</body>";
+        String transformedContent="<body>Here is a text with three dots\u2026</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+    
+    @Test
+    public void shouldReplaceTwoConsecutiveHyphens(){
+        String originalContent = "<body>Here is a text with two consecutive -- hyphens</body>";
+        String transformedContent="<body>Here is a text with two consecutive \u2013 hyphens</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+
+    @Test
+    public void shouldReplaceThreeConsecutiveHyphens(){
+        String originalContent = "<body>Here is a text with three consecutive --- hyphens</body>";
+        String transformedContent="<body>Here is a text with three consecutive \u2014 hyphens</body>";
+
+        checkTransformation(originalContent, transformedContent);
+    }
+
     private void checkTransformation(String originalBody, String expectedTransformedBody, Map.Entry<String, Object>... contextData) {
         checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH, contextData);
     }
