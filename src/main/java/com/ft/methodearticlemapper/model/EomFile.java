@@ -21,6 +21,7 @@ public class EomFile {
     public static final String LAST_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomLastPublication";
     public static final String INITIAL_PUBLICATION_DATE_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomInitialPublication";
     public static final String STORY_PACKAGE_LINK_XPATH = "/doc/lead/editor-choice/a/@href";
+    public static final String WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH = "/props/workFolder";
 
     private static final Map<String,String> ADDITIONAL_PROPERTY_MAPPINGS = new LinkedHashMap<>();
     

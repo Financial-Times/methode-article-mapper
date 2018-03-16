@@ -39,6 +39,7 @@ public class ArticlePreviewTransformationTest {
     private static final String VALID_EOM_FILE_TYPE = "EOM::CompoundStory";
     private static final String VALUE_PROPERTY = FileUtils.readFile("preview/article_preview_value.xml");
     private static final String ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_attributes.xml");
+    private static final String SYSTEM_ATTRIBUTES_PROPERTY = FileUtils.readFile("preview/article_preview_system_attributes.xml");
     private static final String[] WORKFLOW_STATUS = new String[] {"Stories/Write", "Stories/Edit"};
     private static final String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
     private static final String PUBLISH_REF = "publishReference";
@@ -101,6 +102,6 @@ public class ArticlePreviewTransformationTest {
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
                 WORKFLOW_STATUS[0],
-                null, null, null);
+                SYSTEM_ATTRIBUTES_PROPERTY, null, null);
     }
 }
