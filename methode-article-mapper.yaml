@@ -67,26 +67,26 @@ logging:
   appenders:
     - type: console
       
-documentStoreApiEnabled: true
+documentStoreApiEnabled: false
 documentStoreApi:
     endpointConfiguration:
         shortName: "documentStoreApi"
         path: "/content"
         jerseyClient:
             timeout: 2000ms    
-        primaryNodes: ["localhost:9090:9090", "localhost:9090:9090"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
     connectionConfig:
         numberOfConnectionAttempts: 3
         timeoutMultiplier: 1000
 
-concordanceApiEnabled: true
+concordanceApiEnabled: false
 concordanceApi:
     endpointConfiguration:
         shortName: "concordance"
         jerseyClient:
             timeout: 5000ms
-        primaryNodes: ["localhost:9191:9191", "localhost:9191:9191"]
+        primaryNodes: ["localhost:8080:8080", "localhost:8080:8080"]
         secondaryNodes: null
         path: "/concordances"
     connectionConfiguration:
