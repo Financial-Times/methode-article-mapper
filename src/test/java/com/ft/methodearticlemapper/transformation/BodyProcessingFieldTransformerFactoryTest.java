@@ -1414,6 +1414,22 @@ public class BodyProcessingFieldTransformerFactoryTest {
         checkTransformation(originalContent, transformedContent);
     }
 
+	@Test
+	public void shouldRemoveMarketDataTag(){
+		String originalContent = "<body><p>Here we are talking about some company and we're going to refer to their stock price</p><marketdata figicode=\"somefigicode\" startdata=\"some date\" live-until=\"publish date plus 1 week\"/><p>blah blah blah</p></body>";
+		String transformedContent = "<body><p>Here we are talking about some company and we're going to refer to their stock price</p><p>blah blah blah</p></body>";
+
+		checkTransformation(originalContent, transformedContent);
+	}
+
+	@Test
+	public void shouldRemovePodcastPromoTag(){
+		String originalContent = "<body><p>Here follows some audio podcast</p><podcast-promo id=\"16ec6a72-d5db-4322-96c6-314b051eb978\"><h2>This is the podcast title</h2><p>This is the podcast description</p></podcast-promo><p>blah blah blah</p></body>";
+		String transformedContent = "<body><p>Here follows some audio podcast</p><p>blah blah blah</p></body>";
+
+		checkTransformation(originalContent, transformedContent);
+	}
+
     private void checkTransformation(String originalBody, String expectedTransformedBody, Map.Entry<String, Object>... contextData) {
         checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH, contextData);
     }
