@@ -1,9 +1,9 @@
 <props>
     <productInfo>
-        <name>{{channel}}</name>
+        <name>FTcom</name>
         <issueDate>20131219</issueDate>
     </productInfo>
-    <workFolder>{{workFolder}}</workFolder>
+    <workFolder>/FT/Companies</workFolder>
     <templateName>/SysConfig/Templates/FT/Base-Story.xml</templateName>
     <summary>text text text text text text text text text text text text text text text
         text text text text te...

@@ -9,17 +9,20 @@ import java.util.UUID;
 public class ParsedEomFile {
     private final UUID uuid;
     private final Document attributesDocument;
+    private final Document systemAttributes;
     private final Document value;
     private final String body;
     private final URI webUrl;
     private ContentSource contentSource;
 
-    public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument, URI webUrl,
+    public ParsedEomFile(UUID uuid, Document value, String body, Document attributesDocument,
+                         Document systemAttributes, URI webUrl,
                          ContentSource contentSource) {
         this.uuid = uuid;
         this.value = value;
         this.body = body;
         this.attributesDocument = attributesDocument;
+        this.systemAttributes = systemAttributes;
         this.webUrl = webUrl;
         this.contentSource = contentSource;
     }
@@ -38,6 +41,10 @@ public class ParsedEomFile {
 
     public Document getAttributes() {
         return attributesDocument;
+    }
+
+    public Document getSystemAttributes() {
+        return systemAttributes;
     }
 
     public URI getWebUrl() {

@@ -188,6 +188,8 @@ public class EomFileProcessor {
         final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource(), type);
         final AlternativeStandfirsts alternativeStandfirsts = buildAlternativeStandfirsts(xpath, value);
 
+        final String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
+
         return Content.builder()
                 .withUuid(uuid)
                 .withTitle(headline)
@@ -213,6 +215,7 @@ public class EomFileProcessor {
                 .withContentPackage(contentPackage)
                 .withCanBeDistributed(canBeDistributed)
                 .withAlternativeStandfirsts(alternativeStandfirsts)
+                .withEditorialDesk(workFolder)
                 .build();
     }
 

@@ -66,6 +66,7 @@ public abstract class PublishEligibilityChecker {
     protected final UUID uuid;
     protected final String transactionId;
     protected String rawBody;
+    protected Document eomFileDocument;
     protected Document attributesDocument;
     protected Document systemAttributesDocument;
 
@@ -129,15 +130,8 @@ public abstract class PublishEligibilityChecker {
             throws ParserConfigurationException, SAXException, IOException,
             XPathExpressionException, TransformerException {
 
-        final Document eomFileDocument;
-
         try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-
-            attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-            systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
-            eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-            rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+            parseEomFile();
         } finally {
             checkEomType();
             checkWorkflowStatus();
@@ -150,32 +144,40 @@ public abstract class PublishEligibilityChecker {
         checkChannel();
         checkPublicationDate();
         checkInitialPublicationDate();
+        checkWorkFolder();
         checkBody();
 
-        return new ParsedEomFile(uuid, eomFileDocument, rawBody, attributesDocument, eomFile.getWebUrl(),
-                contentSource);
+        return new ParsedEomFile(uuid, eomFileDocument, rawBody,
+            attributesDocument, systemAttributesDocument, eomFile.getWebUrl(), contentSource);
     }
 
     public final ParsedEomFile getEligibleContentForPreview()
             throws ParserConfigurationException, SAXException, IOException,
             XPathExpressionException, TransformerException {
 
-        final Document eomFileDocument;
-
         try {
-            final DocumentBuilder documentBuilder = getDocumentBuilder();
-
-            attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
-            eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
-            rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
+            parseEomFile();
         } finally {
             checkEomType();
         }
 
+        checkWorkFolder();
+
         ContentSource contentSource = processSourceForPreview();
 
         return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-                attributesDocument, eomFile.getWebUrl(), contentSource);
+            attributesDocument, systemAttributesDocument ,eomFile.getWebUrl(), contentSource);
+    }
+
+    private final void parseEomFile()
+        throws ParserConfigurationException, SAXException, IOException,
+        XPathExpressionException, TransformerException {
+
+        final DocumentBuilder documentBuilder = getDocumentBuilder();
+        attributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getAttributes())));
+        systemAttributesDocument = documentBuilder.parse(new InputSource(new StringReader(eomFile.getSystemAttributes())));
+        eomFileDocument = documentBuilder.parse(new ByteArrayInputStream(eomFile.getValue()));
+        rawBody = retrieveField(xpath, BODY_TAG_XPATH, eomFileDocument);
     }
 
     public abstract void checkEomType();
@@ -236,6 +238,13 @@ public abstract class PublishEligibilityChecker {
         String dateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributesDocument);
         if (Strings.isNullOrEmpty(dateAsString)) {
             LOG.info("Value missing for initial publication date, content: " + uuid);
+        }
+    }
+
+    protected final void checkWorkFolder() throws XPathExpressionException {
+        String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, systemAttributesDocument);
+        if (Strings.isNullOrEmpty(workFolder)){
+            throw new MethodeMissingFieldException(uuid, "workFolder");
         }
     }
 
