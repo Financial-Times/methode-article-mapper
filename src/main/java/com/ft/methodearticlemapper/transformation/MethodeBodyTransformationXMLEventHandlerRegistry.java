@@ -71,7 +71,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "web-background-news-header", "web-background-news-text",
                 "web-picture", "web-pull-quote-source", "web-pull-quote-text",
                 "web-skybox-picture", "web-subhead", "web-thumbnail", "xref", "xrefs",
-                "recommended"
+                "recommended", "marketdata", "podcast-promo"
         );
 
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("h3", "class", "ft-subhead"), "subhead");
