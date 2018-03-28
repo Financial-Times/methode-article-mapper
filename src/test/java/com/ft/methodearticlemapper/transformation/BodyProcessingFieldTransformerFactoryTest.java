@@ -1206,9 +1206,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void shouldKeepAsideTag(){
-		String originalContent = "<body><p>Here some text</p><aside>Aside keep<h2>This is the title</h2><p>This is the description</p><p>blah blah blah</p></aside></body>";
-		String transformedContent ="<body><p>Here some text</p><aside>Aside keep<h2>This is the title</h2><p>This is the description</p><p>blah blah blah</p></aside></body>";
-
+		String originalContent = "<aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside>";
+		String transformedContent ="<aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside>";
 		checkTransformation(originalContent, transformedContent);
 	}
 
@@ -1437,8 +1436,6 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 		checkTransformation(originalContent, transformedContent);
 	}
-
-
 
     private void checkTransformation(String originalBody, String expectedTransformedBody, Map.Entry<String, Object>... contextData) {
         checkTransformation(originalBody, expectedTransformedBody, TransformationMode.PUBLISH, contextData);
