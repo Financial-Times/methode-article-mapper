@@ -70,6 +70,7 @@ import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -955,6 +956,14 @@ public class EomFileProcessorTest {
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getWebUrl(), is(equalTo(webUrl)));
+    }
+
+    @Test
+    public void thatCanonicalWebUrlIsNull() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getCanonicalWebUrl(), is(nullValue()));
     }
 
     @Test
