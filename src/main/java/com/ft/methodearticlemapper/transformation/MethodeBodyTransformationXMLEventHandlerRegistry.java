@@ -56,7 +56,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
                 "frame", "frameset", "head", "input", "keygen", "label", "legend",
                 "link", "map", "menu", "meta", "nav", "noframes", "noscript", "object",
                 "optgroup", "option", "output", "param", "progress", "rp", "rt", "ruby",
-                "s", "select", "source", "strike", "style", "tbody",
+                "select", "source", "strike", "style", "tbody",
                 "td", "textarea", "tfoot", "th", "thead", "tr", "track", "video", "wbr", "cite"
         );
         // strip methode tags whose bodies we don't want
@@ -83,9 +83,9 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),
-                "strong", "em", "sub", "sup", "br",
+                "strong", "em", "sub", "sup", "br", "aside", "s",
                 "h1", "h2", "h3", "h4", "h5", "h6",
-                "ol", "ul", "li", "p", "aside"
+                "ol", "ul", "li", "p"
         );
 
         // Handle slideshows, i.e. where have <a type="slideshow">
