@@ -1212,6 +1212,13 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	}
 
 	@Test
+	public void shouldKeepSTag(){
+		String originalContent = "<p><s>My article is the best</s></p>";
+		String transformedContent = "<p><s>My article is the best</s></p>";
+		checkTransformation(originalContent, transformedContent);
+	}
+
+	@Test
 	public void shouldRemoveCiteTagOutsideBlockquote() {
 		String originalContent = "<body><blockquote><p>Quoted text</p></blockquote><cite>Cite text</cite></body>";
 		String transformedContent = "<body><blockquote><p>Quoted text</p></blockquote></body>";
