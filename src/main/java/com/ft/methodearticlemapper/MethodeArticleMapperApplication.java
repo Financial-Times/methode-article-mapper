@@ -204,7 +204,9 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()),
                 configuration.getTxIdPropertyName(),
-                configuration.getApiHost());
+                configuration.getApiHost(),
+                configuration.getWebUrlTemplate(),
+                configuration.getCanonicalWebUrlTemplate());
     }
 
     private void registerHealthChecks(Environment environment, List<AdvancedHealthCheck> advancedHealthChecks) {

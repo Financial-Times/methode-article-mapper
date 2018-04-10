@@ -32,6 +32,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private final PropertySource txIdSource;
     private final String txIdPropertyName;
     private final String apiHost;
+    private final String webUrlTemplate;
+    private final String canonicalWebUrlTemplate;
     private final AppInfo appInfo;
     @JsonProperty
     private final GTGConfig gtgConfig= new GTGConfig();
@@ -52,6 +54,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("transactionIdSource") PropertySource txIdSource,
                                              @JsonProperty("transactionIdProperty") String txIdPropertyName,
                                              @JsonProperty("apiHost") String apiHost,
+                                             @JsonProperty("webUrlTemplate") String webUrlTemplate,
+                                             @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
                                              @JsonProperty("appInfo") AppInfo appInfo) {
 
         if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
@@ -80,6 +84,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         this.txIdSource = txIdSource;
         this.txIdPropertyName = txIdPropertyName;
         this.apiHost = apiHost;
+        this.webUrlTemplate = webUrlTemplate;
+        this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
         this.appInfo = appInfo;
     }
     
@@ -148,6 +154,16 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     @NotNull
     public String getApiHost() {
         return apiHost;
+    }
+
+    @NotNull
+    public String getCanonicalWebUrlTemplate() {
+        return canonicalWebUrlTemplate;
+    }
+
+    @NotNull
+    public String getWebUrlTemplate() {
+        return webUrlTemplate;
     }
 
     @Override

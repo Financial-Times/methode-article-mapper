@@ -44,6 +44,8 @@ public class ArticlePreviewTransformationTest {
     private static final String INVALID_EOM_FILE_TYPE = "NOT_COMPOUND_STORY";
     private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
+    private static final String WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
+    private static final String CANONICAL_WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
     private BodyProcessor htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
@@ -54,12 +56,15 @@ public class ArticlePreviewTransformationTest {
     private PostContentToTransformResource postContentToTransformResource;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
-        postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor, PropertySource.fromTransaction, PropertySource.fromTransaction, PUBLISH_REF);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
+        postContentToTransformResource = new PostContentToTransformResource(eomFileProcessor,
+                PropertySource.fromTransaction, PropertySource.fromTransaction, PUBLISH_REF);
 
         MDC.put("transaction_id", "transaction_id=" + TRANSACTION_ID);
     }
@@ -102,6 +107,6 @@ public class ArticlePreviewTransformationTest {
                 VALUE_PROPERTY.getBytes(),
                 ATTRIBUTES_PROPERTY,
                 WORKFLOW_STATUS[0],
-                SYSTEM_ATTRIBUTES_PROPERTY, null, null);
+                SYSTEM_ATTRIBUTES_PROPERTY, null);
     }
 }

@@ -37,6 +37,8 @@ public class EomFileProcessorEncodingTest {
     private static final String TRANSACTION_ID = "tid_test";
     private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
+    private static final String WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
+    private static final String CANONICAL_WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
     
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
@@ -47,12 +49,14 @@ public class EomFileProcessorEncodingTest {
     private EomFileProcessor eomFileProcessor;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
     }

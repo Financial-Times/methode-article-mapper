@@ -142,6 +142,8 @@ transactionIdSource: fromTransaction
 transactionIdProperty: publishReference
 
 apiHost: "api.ft.com"
+canonicalWebUrlTemplate: "https://www.ft.com/content/%s"
+webUrlTemplate: "https://www.ft.com/content/%s"
 
 appInfo:
     systemCode: "up-mam"

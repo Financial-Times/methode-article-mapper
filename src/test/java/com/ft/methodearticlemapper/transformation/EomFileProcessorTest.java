@@ -91,6 +91,8 @@ public class EomFileProcessorTest {
     private static final String DRAFT_REF = "draftReference";
     private static final String PUBLISH_REF = "publishReference";
     private static final String API_HOST = "test.api.ft.com";
+    private static final String WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
+    private static final String CANONICAL_WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
 
     private static final String lastPublicationDateAsString = "20130813145815";
     private static final String initialPublicationDateAsString = "20120813145815";
@@ -195,7 +197,7 @@ public class EomFileProcessorTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         bodyTransformer = mock(FieldTransformer.class);
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(TRANSFORMED_BODY);
 
@@ -211,7 +213,9 @@ public class EomFileProcessorTest {
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
 
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
     }
 
     @Test(expected = MethodeMarkedDeletedException.class)
@@ -286,6 +290,8 @@ public class EomFileProcessorTest {
                 .withValuesFrom(standardExpectedContent)
                 .withTransactionId(PUBLISH_REF, TRANSACTION_ID)
                 .withFirstPublishedDate(toDate(initialPublicationDateAsStringPreWfsEnforce, DATE_TIME_FORMAT))
+                .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
+                .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -318,6 +324,8 @@ public class EomFileProcessorTest {
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
                 .withTransactionId(PUBLISH_REF, TRANSACTION_ID)
+                .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
+                .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -370,6 +378,8 @@ public class EomFileProcessorTest {
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
                 .withTransactionId(PUBLISH_REF, TRANSACTION_ID)
+                .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
+                .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(TRANSFORMED_BODY).build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -394,6 +404,8 @@ public class EomFileProcessorTest {
         final Content expectedContent = Content.builder()
                 .withValuesFrom(standardExpectedContent)
                 .withTransactionId(PUBLISH_REF, TRANSACTION_ID)
+                .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
+                .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -949,20 +961,19 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void thatWebUrlIsPresent() {
-        URI webUrl = URI.create("http://www.ft.com/a-fancy-url");
-        final EomFile eomFile = createStandardEomFileWithWebUrl(uuid, webUrl);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getWebUrl(), is(equalTo(webUrl)));
-    }
-
-    @Test
-    public void thatCanonicalWebUrlIsNull() {
+    public void thatWebUrlIsSet() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getCanonicalWebUrl(), is(nullValue()));
+        assertThat(content.getWebUrl(), is(equalTo(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))));
+    }
+
+    @Test
+    public void thatCanonicalWebUrlIsSet() {
+        final EomFile eomFile = createStandardEomFile(uuid);
+
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getCanonicalWebUrl(), is(equalTo(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))));
     }
 
     @Test
@@ -1141,7 +1152,9 @@ public class EomFileProcessorTest {
 
     @Test(expected=UnsupportedTransformationModeException.class)
     public void thatUnsupportedModeIsRejected() {
-        eomFileProcessor = new EomFileProcessor(EnumSet.of(TransformationMode.SUGGEST), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.of(TransformationMode.SUGGEST), bodyTransformer,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
         
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
@@ -1153,7 +1166,9 @@ public class EomFileProcessorTest {
     @Test
     public void thatDraftReferenceIsAddedToTransformedBody() {
         EomFile.setAdditionalMappings(Collections.singletonMap(DRAFT_REF, DRAFT_REF));
-        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer, bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, DRAFT_REF, API_HOST);
+        eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, DRAFT_REF, API_HOST,
+                WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         final String reference = "test_draft";
 
@@ -1206,91 +1221,91 @@ public class EomFileProcessorTest {
      */
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", objectLocation, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", objectLocation, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, WORK_FOLDER_COMPANIES, "FT", workflowStatus, lastPublicationDateAsString,
-                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileNonFtOrAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "REU2", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-                FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithoutWorkFolder(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "", "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-            FALSE, "", "", "", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+            FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
             null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), webUrl, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithSubscriptionLevel(UUID uuid, String subscriptionLevel) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), null, "", OBJECT_LOCATION, subscriptionLevel,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, subscriptionLevel,
                 null, null, null, null);
     }
 
     private EomFile createStandardEomFileWithContentPackage(UUID uuid, Boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 hasContentPackage, contentPackageDesc, contentPackageHref, null);
     }
 
     private EomFile createStandardEomFileWithImageSet(String imageSetID) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-            initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), null, "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+            initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
             null, null, null, imageSetID);
     }
 
@@ -1298,7 +1313,8 @@ public class EomFileProcessorTest {
                                           String channel, String workFolder,String sourceCode, String workflowStatus,
                                           String lastPublicationDateAsString, String initialPublicationDateAsString,
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
-                                          String eomType, URI webUrl, String contributorRights, String objectLocation, String subscriptionLevel,
+                                          String eomType, String contributorRights,
+                                          String objectLocation, String subscriptionLevel,
                                           Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref,
                                           String imageSetID) {
 
@@ -1339,7 +1355,6 @@ public class EomFileProcessorTest {
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes(channel, workFolder))
                 .withWorkflowStatus(workflowStatus)
-                .withWebUrl(webUrl)
                 .build();
     }
 
@@ -1422,6 +1437,8 @@ public class EomFileProcessorTest {
                         : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
                 .withAlternativeStandfirsts(new AlternativeStandfirsts(null))
                 .withEditorialDesk(WORK_FOLDER_COMPANIES)
+                .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
+                .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .build();
     }
 }
