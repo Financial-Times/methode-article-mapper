@@ -83,9 +83,9 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("strong"), "b");
         registerStartAndEndElementEventHandler(new SimpleTransformTagXmlEventHandler("em"), "i");
         registerStartAndEndElementEventHandler(new RetainWithoutAttributesXMLEventHandler(),
-                "strong", "em", "sub", "sup", "br",
+                "strong", "em", "sub", "sup", "br", "aside", "s",
                 "h1", "h2", "h3", "h4", "h5", "h6",
-                "ol", "ul", "li", "p", "aside","s"
+                "ol", "ul", "li", "p"
         );
 
         // Handle slideshows, i.e. where have <a type="slideshow">
