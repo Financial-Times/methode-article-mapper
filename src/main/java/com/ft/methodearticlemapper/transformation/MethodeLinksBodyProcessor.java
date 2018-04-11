@@ -11,6 +11,7 @@ import com.ft.methodearticlemapper.exception.DocumentStoreApiInvalidRequestExcep
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnavailableException;
 import com.ft.methodearticlemapper.exception.DocumentStoreApiUnmarshallingException;
 import com.ft.methodearticlemapper.model.Content;
+import com.google.common.base.Strings;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -20,6 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
 import javax.ws.rs.core.MediaType;
@@ -239,6 +241,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         for (Node aTag : aTags.keySet()) {
             Optional<Content> matchingContent = getMatchingContent(content, aTags.get(aTag));
             if (matchingContent.isPresent()) {
+                fixFormattingOfLinkText(aTag);
                 replaceLinkToContentPresentInDocumentStore(aTag, matchingContent.get());
             } else if (isConvertibleToAssetOnFtCom(aTag)) {
                 transformLinkToAssetOnFtCom(aTag, aTags.get(aTag));
@@ -248,6 +251,112 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     private Optional<Content> getMatchingContent(List<Content> content, String uuid) {
         return content.stream().filter(c -> c.getUuid().equals(uuid)).findFirst();
+    }
+
+    private void fixFormattingOfLinkText(Node node) {
+        Node pNode = node.getParentNode();
+        if (pNode != null) {
+            Node nodeBeforeATag = getNodeBeforeATag(pNode);
+            
+            // Adding space if needed, right before the <a> tag
+            if (nodeBeforeATag != null) {
+                String beforeATagText = nodeBeforeATag.getTextContent();
+                if (!Strings.isNullOrEmpty(beforeATagText)) {
+                    String newTextBefore = fixImproperWhitespaceBeforeATag(beforeATagText);
+                    nodeBeforeATag.setTextContent(newTextBefore);
+                } 
+            }
+            
+            // Extracting punctuation outside the <a> tag
+            String linkText = node.getTextContent().trim();
+            String punctuation = getPunctuationFromLinkText(linkText);
+            Node nodeAfterATag = getNodeAfterATag(pNode);
+
+            if (punctuation != null) {
+                String newLinkText = linkText.replaceAll("[" + punctuation + "]+$", "");
+                node.setTextContent(newLinkText);
+                appendPunctuationToNode(punctuation, nodeAfterATag, pNode);
+            } else if (nodeAfterATag != null) {
+                String newTextAfter = fixImproperWhitespaceAfterATag(nodeAfterATag.getTextContent());
+                nodeAfterATag.setTextContent(newTextAfter);
+            }
+        }
+    }
+
+    private String getPunctuationFromLinkText(String text) {
+        Pattern pattern = Pattern.compile("\\p{Punct}+$");
+        Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+                return matcher.group();
+        }
+
+        return null;
+    }
+
+    private Node getNodeBeforeATag(Node node) {
+        NodeList list = node.getChildNodes();
+        Node nBefore = null;
+        
+        for (int i = 0; i < list.getLength(); ++i) {
+            Node child = list.item(i);
+            if ("a".equals(child.getNodeName())) {
+                return nBefore;
+            }
+            if (child.getNodeType() == Node.TEXT_NODE) {
+                nBefore = child;
+            } 
+        }
+        return nBefore;
+    }
+
+    private Node getNodeAfterATag(Node node) {
+        NodeList list = node.getChildNodes();
+        Node nAfter = null;
+        
+        for (int i = 0; i < list.getLength(); ++i) {
+            Node child = list.item(i);
+            if (child.getNodeType() == Node.TEXT_NODE) {
+                nAfter = child;
+            } 
+        }
+
+        return nAfter;
+    }
+
+    private String appendPunctuationBeforeContentText(String text, String punctuation) {
+        if (Character.isWhitespace(text.charAt(0))) {
+            return punctuation + text;
+        }
+        
+        return " " + punctuation + text;
+    }
+
+    private String fixImproperWhitespaceBeforeATag (String text) {
+        if (!text.matches(".*[ \\s]+$")) {
+            return text + " ";
+        }
+        
+        return text;
+    }
+
+    private String fixImproperWhitespaceAfterATag(String text) {
+        String replaced = text.replaceAll("^[ \\s]+", "");
+        if (replaced.matches("^\\p{Punct}+.*")) {
+            return replaced;
+        }
+        return " " + replaced;
+    }
+
+    private void appendPunctuationToNode(String punctuation, Node currentNode, Node parentNode) {
+        if (currentNode == null) {
+            Text newChild = parentNode.getOwnerDocument().createTextNode(punctuation);
+            parentNode.appendChild(newChild);
+        } else {
+            String afterATagText = currentNode.getTextContent();
+            String newText = appendPunctuationBeforeContentText(afterATagText, punctuation);
+            currentNode.setTextContent(newText);
+        }
     }
 
     private void replaceLinkToContentPresentInDocumentStore(Node node, Content content) {
@@ -262,7 +371,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
         Optional<String> nodeValue = getTitleAttributeIfExists(node);
         nodeValue.ifPresent(s -> newElement.setAttribute("title", s));
-        newElement.setTextContent(node.getTextContent());
+        newElement.setTextContent(node.getTextContent().trim());
         node.getParentNode().replaceChild(newElement, node);
     }
 
