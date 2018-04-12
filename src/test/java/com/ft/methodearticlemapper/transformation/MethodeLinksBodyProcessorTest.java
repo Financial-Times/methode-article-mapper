@@ -406,5 +406,4 @@ public class MethodeLinksBodyProcessorTest {
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
-
 }

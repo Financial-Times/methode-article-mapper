@@ -58,17 +58,20 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     static final String BASE_CONTENT_TYPE = "http://www.ft.com/ontology/content/";
     static final String DEFAULT_CONTENT_TYPE = "http://www.ft.com/ontology/content/Content";
-
+    
     private static final String CONTENT_TAG = "content";
     private static final String ANCHOR_PREFIX = "#";
     private static final String TYPE = "type";
-
+    
     private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
     private static final String FT_COM_URL_REGEX = "^https*:\\/\\/www.ft.com\\/.*";
     private static final Pattern FT_COM_URL_REGEX_PATTERN = Pattern.compile(FT_COM_URL_REGEX);
+    private static final String STRING_ENDS_WITH_WHITESPACE_REGEX = ".*[ \\s]+$";
+    private static final String STRING_STARTS_WITH_WHITESPACE_REGEX = "^[ \\s]+";
+    private static final String STRING_STARTS_WITH_PUNCTUATION_REGEX = "^\\p{Punct}+.*";
 
     private Client documentStoreApiClient;
     private URI uri;
@@ -288,7 +291,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         Matcher matcher = pattern.matcher(text);
 
         if (matcher.find()) {
-                return matcher.group();
+            return matcher.group();
         }
 
         return null;
@@ -333,7 +336,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     private String fixImproperWhitespaceBeforeATag (String text) {
-        if (!text.matches(".*[ \\s]+$")) {
+        if (!text.matches(STRING_ENDS_WITH_WHITESPACE_REGEX)) {
             return text + " ";
         }
         
@@ -345,8 +348,8 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             return text;
         }
         
-        String replaced = text.replaceAll("^[ \\s]+", "");
-        if (replaced.matches("^\\p{Punct}+.*")) {
+        String replaced = text.replaceAll(STRING_STARTS_WITH_WHITESPACE_REGEX, "");
+        if (replaced.matches(STRING_STARTS_WITH_PUNCTUATION_REGEX)) {
             return replaced;
         }
         return " " + replaced;
