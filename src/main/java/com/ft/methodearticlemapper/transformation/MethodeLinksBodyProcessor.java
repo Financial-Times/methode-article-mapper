@@ -260,7 +260,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             
             // Adding space if needed, right before the <a> tag
             if (nodeBeforeATag != null) {
-                String beforeATagText = nodeBeforeATag.getTextContent();
+                String beforeATagText = nodeBeforeATag.getTextContent();              
                 if (!Strings.isNullOrEmpty(beforeATagText)) {
                     String newTextBefore = fixImproperWhitespaceBeforeATag(beforeATagText);
                     nodeBeforeATag.setTextContent(newTextBefore);
@@ -341,6 +341,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     private String fixImproperWhitespaceAfterATag(String text) {
+        if (Strings.isNullOrEmpty(text.trim())) {
+            return text;
+        }
+        
         String replaced = text.replaceAll("^[ \\s]+", "");
         if (replaced.matches("^\\p{Punct}+.*")) {
             return replaced;
