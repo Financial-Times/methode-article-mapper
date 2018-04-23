@@ -18,3 +18,5 @@ env:
   KAFKA_ENABLED: false
   DOCUMENT_STORE_API_ENABLED: false
   CONCORDANCE_API_ENABLED: false
+ingress:
+  enabled: "false"
