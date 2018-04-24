@@ -10,3 +10,5 @@ env:
   LAST_MODIFIED_SOURCE: fromNative
   TX_ID_SOURCE: fromNative
   TX_PROPERTY: draftReference
+ingress:
+  enabled: "true"

@@ -125,7 +125,6 @@ Feature: Body processing
     | rp                         |
     | rt                         |
     | ruby                       |
-    | s                          |
     | select                     |
     | source                     |
     | strike                     |

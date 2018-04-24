@@ -1206,8 +1206,15 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
 	@Test
 	public void shouldKeepAsideTag(){
-		String originalContent = "<aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside>";
-		String transformedContent ="<aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside>";
+		String originalContent = "<body><aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside></body>";
+		String transformedContent ="<body><aside><h4>Epcot Center</h4><p>The Epcot Center is a theme park in Disney World, Florida.</p></aside></body>";
+		checkTransformation(originalContent, transformedContent);
+	}
+
+	@Test
+	public void shouldKeepSTag(){
+		String originalContent = "<body><p><s>My article is the best</s></p></body>";
+		String transformedContent = "<body><p><s>My article is the best</s></p></body>";
 		checkTransformation(originalContent, transformedContent);
 	}
 
