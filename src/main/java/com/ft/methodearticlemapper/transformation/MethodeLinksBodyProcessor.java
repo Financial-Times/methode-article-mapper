@@ -69,9 +69,11 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
     private static final String FT_COM_URL_REGEX = "^https*:\\/\\/www.ft.com\\/.*";
     private static final Pattern FT_COM_URL_REGEX_PATTERN = Pattern.compile(FT_COM_URL_REGEX);
-    private static final String STRING_ENDS_WITH_WHITESPACE_REGEX = ".*[ \\s]+$";
-    private static final String STRING_STARTS_WITH_WHITESPACE_REGEX = "^[ \\s]+";
+    private static final String STRING_ENDS_WITH_WHITESPACE_REGEX = ".*\\s+$";
+    private static final String STRING_STARTS_WITH_WHITESPACE_REGEX = "^\\s+";
     private static final String STRING_STARTS_WITH_PUNCTUATION_REGEX = "^\\p{Punct}+.*";
+    private static final String STRING_ENDS_WITH_PUNCTUATION_REGEX = "\\p{Punct}+$";
+    private static final Pattern STRING_ENDS_WITH_PUNCTUATION_REGEX_PATTERN = Pattern.compile(STRING_ENDS_WITH_PUNCTUATION_REGEX);
 
     private Client documentStoreApiClient;
     private URI uri;
@@ -256,10 +258,10 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return content.stream().filter(c -> c.getUuid().equals(uuid)).findFirst();
     }
 
-    private void fixFormattingOfLinkText(Node node) {
-        Node pNode = node.getParentNode();
-        if (pNode != null) {
-            Node nodeBeforeATag = getNodeBeforeATag(pNode);
+    private void fixFormattingOfLinkText(Node aTagNode) {
+        Node parentNode = aTagNode.getParentNode();
+        if (parentNode != null) {
+            Node nodeBeforeATag = getNodeBeforeATag(aTagNode, parentNode);
             
             // Adding space if needed, right before the <a> tag
             if (nodeBeforeATag != null) {
@@ -271,14 +273,14 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             }
             
             // Extracting punctuation outside the <a> tag
-            String linkText = node.getTextContent().trim();
+            String linkText = aTagNode.getTextContent().trim();
             String punctuation = getPunctuationFromLinkText(linkText);
-            Node nodeAfterATag = getNodeAfterATag(pNode);
+            Node nodeAfterATag = getNodeAfterATag(parentNode);
 
             if (punctuation != null) {
-                String newLinkText = linkText.replaceAll("[" + punctuation + "]+$", "");
-                node.setTextContent(newLinkText);
-                appendPunctuationToNode(punctuation, nodeAfterATag, pNode);
+                String newLinkText = linkText.substring(0, linkText.length() - punctuation.length());
+                aTagNode.setTextContent(newLinkText);
+                appendPunctuationToNode(punctuation, nodeAfterATag, parentNode);
             } else if (nodeAfterATag != null) {
                 String newTextAfter = fixImproperWhitespaceAfterATag(nodeAfterATag.getTextContent());
                 nodeAfterATag.setTextContent(newTextAfter);
@@ -287,8 +289,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     private String getPunctuationFromLinkText(String text) {
-        Pattern pattern = Pattern.compile("\\p{Punct}+$");
-        Matcher matcher = pattern.matcher(text);
+        Matcher matcher = STRING_ENDS_WITH_PUNCTUATION_REGEX_PATTERN.matcher(text);
 
         if (matcher.find()) {
             return matcher.group();
@@ -297,15 +298,16 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return null;
     }
 
-    private Node getNodeBeforeATag(Node node) {
-        NodeList list = node.getChildNodes();
+    private Node getNodeBeforeATag(Node aTagNode, Node parentNode) {
+        NodeList childNodes = parentNode.getChildNodes();
         Node nBefore = null;
         
-        for (int i = 0; i < list.getLength(); ++i) {
-            Node child = list.item(i);
-            if ("a".equals(child.getNodeName())) {
+        for (int i = 0; i < childNodes.getLength(); ++i) {
+            Node child = childNodes.item(i);
+            if (aTagNode.isEqualNode(child)) {
                 return nBefore;
             }
+
             if (child.getNodeType() == Node.TEXT_NODE) {
                 nBefore = child;
             } 
@@ -313,12 +315,12 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         return nBefore;
     }
 
-    private Node getNodeAfterATag(Node node) {
-        NodeList list = node.getChildNodes();
+    private Node getNodeAfterATag(Node parentNode) {
+        NodeList childNodes = parentNode.getChildNodes();
         Node nAfter = null;
         
-        for (int i = 0; i < list.getLength(); ++i) {
-            Node child = list.item(i);
+        for (int i = 0; i < childNodes.getLength(); ++i) {
+            Node child = childNodes.item(i);
             if (child.getNodeType() == Node.TEXT_NODE) {
                 nAfter = child;
             } 
@@ -332,7 +334,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             return punctuation + text;
         }
         
-        return " " + punctuation + text;
+        return punctuation + " " + text;
     }
 
     private String fixImproperWhitespaceBeforeATag (String text) {

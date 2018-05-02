@@ -382,6 +382,19 @@ public class MethodeLinksBodyProcessorTest {
 	}
 
 	@Test
+	public void thatPunctuationIsExtractedOutsideATagWithSpaceAdded() {
+		when(clientResponse.getStatus()).thenReturn(200);
+		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
+
+		String body = "<body><p><a href=\"" + uuid + "\">link text!?</a>Lorem ipsum doler sit amet…</p></body>";
+		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+		
+		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content>!? Lorem ipsum doler sit amet…</p></body>";
+
+		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
+	}
+
+	@Test
 	public void thatPunctuationIsExtractedOutsideATagEmptyParagraphAfter() {
 		when(clientResponse.getStatus()).thenReturn(200);
 		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
