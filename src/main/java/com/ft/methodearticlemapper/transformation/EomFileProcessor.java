@@ -46,6 +46,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -92,6 +93,8 @@ public class EomFileProcessor {
     private final BodyProcessor htmlFieldProcessor;
     private final String refFieldName;
     private final String apiHost;
+    private final String webUrlTemplate;
+    private final String canonicalWebUrlTemplate;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
 
     public EomFileProcessor(final EnumSet<TransformationMode> supportedModes,
@@ -100,7 +103,9 @@ public class EomFileProcessor {
                             final BodyProcessor htmlFieldProcessor,
                             final Map<ContentSource, Brand> contentSourceBrandMap,
                             final String refFieldName,
-                            final String apiHost) {
+                            final String apiHost,
+                            final String webUrlTemplate,
+                            final String canonicalWebUrlTemplate) {
         this.supportedModes = supportedModes;
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
@@ -108,6 +113,8 @@ public class EomFileProcessor {
         this.contentSourceBrandMap = contentSourceBrandMap;
         this.refFieldName = refFieldName;
         this.apiHost = apiHost;
+        this.webUrlTemplate = webUrlTemplate;
+        this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
     }
 
     private static Date toDate(String dateString, String format) {
@@ -189,6 +196,8 @@ public class EomFileProcessor {
         final AlternativeStandfirsts alternativeStandfirsts = buildAlternativeStandfirsts(xpath, value);
 
         final String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
+        final URI webUrl = URI.create(String.format(this.webUrlTemplate, uuid));
+        final URI canonicalWebUrl = URI.create(String.format(this.canonicalWebUrlTemplate, uuid));
 
         return Content.builder()
                 .withUuid(uuid)
@@ -204,7 +213,6 @@ public class EomFileProcessor {
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, attributes))
-                .withWebUrl(eomFile.getWebUrl())
                 .withTransactionId(refFieldName, transactionId)
                 .withLastModified(lastModified)
                 .withCanBeSyndicated(canBeSyndicated)
@@ -216,6 +224,8 @@ public class EomFileProcessor {
                 .withCanBeDistributed(canBeDistributed)
                 .withAlternativeStandfirsts(alternativeStandfirsts)
                 .withEditorialDesk(workFolder)
+                .withWebUrl(webUrl)
+                .withCanonicalWebUrl(canonicalWebUrl)
                 .build();
     }
 

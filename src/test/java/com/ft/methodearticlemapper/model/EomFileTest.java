@@ -1,7 +1,6 @@
 package com.ft.methodearticlemapper.model;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +53,6 @@ public class EomFileTest {
         assertThat(actual.getSystemAttributes(), equalTo(SYS_ATTRS));
         assertThat(actual.getWorkflowStatus(), equalTo(WEB_READY));
         assertThat(actual.getUsageTickets(), equalTo(TICKETS));
-        assertThat(actual.getWebUrl(), nullValue());
         assertThat(actual.getAdditionalProperties(), equalTo(Collections.emptyMap()));
     }
     
@@ -86,8 +84,7 @@ public class EomFileTest {
         assertThat(actual.getSystemAttributes(), equalTo(SYS_ATTRS));
         assertThat(actual.getWorkflowStatus(), equalTo(WEB_READY));
         assertThat(actual.getUsageTickets(), equalTo(TICKETS));
-        assertThat(actual.getWebUrl(), nullValue());
-        
+
         Map<String,String> expectedAdditionalProperties = new HashMap<>();
         expectedAdditionalProperties.put("lastModified", lastModified);
         expectedAdditionalProperties.put("publishReference", publishReference);
@@ -123,8 +120,7 @@ public class EomFileTest {
         assertThat(actual.getSystemAttributes(), equalTo(SYS_ATTRS));
         assertThat(actual.getWorkflowStatus(), equalTo(WEB_READY));
         assertThat(actual.getUsageTickets(), equalTo(TICKETS));
-        assertThat(actual.getWebUrl(), nullValue());
-        
+
         Map<String,String> expectedAdditionalProperties = new HashMap<>();
         expectedAdditionalProperties.put("lastModified", lastModified);
         expectedAdditionalProperties.put("publishReference", publishReference);
@@ -160,8 +156,7 @@ public class EomFileTest {
         assertThat(actual.getSystemAttributes(), equalTo(SYS_ATTRS));
         assertThat(actual.getWorkflowStatus(), equalTo(WEB_READY));
         assertThat(actual.getUsageTickets(), equalTo(TICKETS));
-        assertThat(actual.getWebUrl(), nullValue());
-        
+
         Map<String,String> expectedAdditionalProperties = new HashMap<>();
         expectedAdditionalProperties.put("lastModified", lastModified);
         expectedAdditionalProperties.put("publishReference", publishReference);

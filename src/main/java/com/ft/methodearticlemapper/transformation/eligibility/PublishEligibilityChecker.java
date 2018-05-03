@@ -148,7 +148,7 @@ public abstract class PublishEligibilityChecker {
         checkBody();
 
         return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-            attributesDocument, systemAttributesDocument, eomFile.getWebUrl(), contentSource);
+            attributesDocument, systemAttributesDocument, contentSource);
     }
 
     public final ParsedEomFile getEligibleContentForPreview()
@@ -166,7 +166,7 @@ public abstract class PublishEligibilityChecker {
         ContentSource contentSource = processSourceForPreview();
 
         return new ParsedEomFile(uuid, eomFileDocument, rawBody,
-            attributesDocument, systemAttributesDocument ,eomFile.getWebUrl(), contentSource);
+            attributesDocument, systemAttributesDocument, contentSource);
     }
 
     private final void parseEomFile()
