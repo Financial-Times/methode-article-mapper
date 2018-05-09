@@ -1,13 +1,5 @@
 package com.ft.methodearticlemapper.transformation;
 
-import static java.util.Arrays.asList;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-
 import com.ft.bodyprocessing.BodyProcessingException;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.BodyProcessorChain;
@@ -25,6 +17,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.sun.jersey.api.client.Client;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Arrays.asList;
+
 public class BodyProcessingFieldTransformerFactory implements FieldTransformerFactory {
     private static final EnumSet<TransformationMode> NOT_SUGGEST = EnumSet.complementOf(EnumSet.of(TransformationMode.SUGGEST));
     
@@ -33,19 +33,22 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private final Map<String,XPathHandler> xpathHandlers;
-    
+    private String ftContentUrlTemplate;
 
-	public BodyProcessingFieldTransformerFactory(final Client documentStoreApiClient,
-            final URI uri,
-            final VideoMatcher videoMatcher,
-            final InteractiveGraphicsMatcher interactiveGraphicsMatcher, Client concordanceApiClient, URI concordanceApiUri) {
-		this.documentStoreApiClient = documentStoreApiClient;
+    public BodyProcessingFieldTransformerFactory(final Client documentStoreApiClient,
+                                                 final URI uri,
+                                                 final VideoMatcher videoMatcher,
+                                                 final InteractiveGraphicsMatcher interactiveGraphicsMatcher,
+                                                 Client concordanceApiClient,
+                                                 URI concordanceApiUri,
+                                                 String ftContentUrlTemplate) {
+        this.documentStoreApiClient = documentStoreApiClient;
         this.documentStoreUri = uri;
         this.videoMatcher = videoMatcher;
         this.interactiveGraphicsMatcher = interactiveGraphicsMatcher;
-        xpathHandlers = ImmutableMap.of( "//company", new TearSheetLinksTransformer(concordanceApiClient, concordanceApiUri));
-        
-	}
+        xpathHandlers = ImmutableMap.of("//company", new TearSheetLinksTransformer(concordanceApiClient, concordanceApiUri));
+        this.ftContentUrlTemplate = ftContentUrlTemplate;
+    }
 
     @Override
     public FieldTransformer newInstance() {
@@ -93,12 +96,13 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     private BodyProcessor stAXTransformingBodyProcessor() {
         return new StAXTransformingBodyProcessor(
-            new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher)
+            new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher, ftContentUrlTemplate)
         );
     }
     
     private BodyProcessor methodeLinksBodyProcessor() {
-        return new ModalBodyProcessor(new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri), NOT_SUGGEST);
+        return new ModalBodyProcessor(
+                new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri, ftContentUrlTemplate), NOT_SUGGEST);
     }
     
     private BodyProcessor tearSheetsBodyProcessor() {

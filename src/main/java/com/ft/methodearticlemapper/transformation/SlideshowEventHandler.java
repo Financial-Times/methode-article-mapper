@@ -22,7 +22,6 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 	private static final String A_TAG_NAME = "a";
     private static final String HREF_ATTRIBUTE_NAME = "href";
     
-    private static final String SLIDESHOW_URL_TEMPLATE = "http://www.ft.com/cms/s/%s.html#slide0";
 	public static final String DATA_ASSET_TYPE = "data-asset-type";
 	public static final String SLIDESHOW = "slideshow";
 	public static final String TITLE = "title";
@@ -31,17 +30,23 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 
 	private XMLEventHandler fallbackEventHandler;
     private XmlParser<SlideshowData> slideshowXMLParser;
-    private final StartElementMatcher matcher;  
+    private final StartElementMatcher matcher;
+    private String slideShowUrlTemplate;
 
-    protected SlideshowEventHandler(XmlParser<SlideshowData> slideshowXMLParser, XMLEventHandler fallbackEventHandler, final StartElementMatcher matcher) {
+    protected SlideshowEventHandler(XmlParser<SlideshowData> slideshowXMLParser,
+                                    XMLEventHandler fallbackEventHandler,
+                                    final StartElementMatcher matcher,
+                                    String slideShowUrlTemplate) {
         
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(slideshowXMLParser != null, "slideshowXMLParser cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
-        
+        checkArgument(slideShowUrlTemplate != null, "slideShowUrlTemplate cannot be null");
+
         this.fallbackEventHandler = fallbackEventHandler;
         this.slideshowXMLParser = slideshowXMLParser;
         this.matcher = matcher;
+        this.slideShowUrlTemplate = slideShowUrlTemplate;
     }
 
     @Override
@@ -77,7 +82,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
     private Map<String, String> getValidAttributes(SlideshowData dataBean) {
         Map<String, String> validAttributes = new HashMap<>();
 
-        String slideshowUrl = String.format(SLIDESHOW_URL_TEMPLATE, dataBean.getUuid()) + queryParamsIfPresent(dataBean);
+        String slideshowUrl = String.format(slideShowUrlTemplate, dataBean.getUuid());
         validAttributes.put(HREF_ATTRIBUTE_NAME, slideshowUrl);
 		validAttributes.put(DATA_ASSET_TYPE, SLIDESHOW);
 		validAttributes.put(DATA_EMBEDDED, YEP); // If we know it's a slideshow, it's embedded. Otherwise it's just a link.
@@ -85,18 +90,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 			validAttributes.put(TITLE, dataBean.getTitle());
 		}
 
-		// Hack to mark slideshow links for following processing (will be dropped before output)
-        validAttributes.put("type", "slideshow");
-
         return ImmutableMap.copyOf(validAttributes);
-    }
-
-    private String queryParamsIfPresent(SlideshowData dataBean) {
-        if (dataBean.getQueryParams().size() == 0) {
-            return "";
-        } else {
-            return "?" + StringUtils.join(dataBean.getQueryParams(), "&");
-        }
     }
 
 }

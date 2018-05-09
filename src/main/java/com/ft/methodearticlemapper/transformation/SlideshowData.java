@@ -5,8 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 public class SlideshowData {
-private String uuid;
-    private List<String> queryParams;
+    private String uuid;
 	private String title;
 
     public String getUuid() {
@@ -23,14 +22,6 @@ private String uuid;
 
     protected boolean containsValidData(String data) {
         return !StringUtils.isBlank(data);
-    }
-
-    public void setQueryParams(List<String> queryParams) {
-        this.queryParams = queryParams;
-    }
-
-    public List<String> getQueryParams() {
-        return queryParams;
     }
 
 	public String getTitle() {

@@ -12,9 +12,6 @@ import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements XmlParser<SlideshowData> {
 
 	private static final String DEFAULT_ELEMENT_NAME = "a";
@@ -50,7 +47,6 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
                         // ensure there's a key AND a value for the UUID before populating the bean with the UUID data
                         if(keyValue.length == 2){
                             dataBean.setUuid(keyValue[1]);
-                            dataBean.setQueryParams(exceptForUuid(attributes));
                         }
                     }
                 }
@@ -61,17 +57,6 @@ public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements 
 		if(titleElement != null){
 			dataBean.setTitle(titleElement.getValue());
 		}
-    }
-
-    private List<String> exceptForUuid(String[] attributes) {
-        List<String> attributesExceptForUuid = new ArrayList<>();
-        for(String attribute: attributes){
-            String[] keyValue = StringUtils.splitPreserveAllTokens(attribute, "=");
-            if(!UUID_KEY.equalsIgnoreCase(keyValue[0])){
-                attributesExceptForUuid.add(attribute);
-            }
-        }
-        return attributesExceptForUuid;
     }
 
     @Override

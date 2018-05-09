@@ -198,7 +198,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                         new VideoMatcher(configuration.getVideoSiteConfig()),
                         new InteractiveGraphicsMatcher(configuration.getInteractiveGraphicsWhitelist()),
                         concordanceApiClient,
-                        concordanceUri
+                        concordanceUri,
+                        configuration.getCanonicalWebUrlTemplate()
                 ).newInstance(),
                 new BylineProcessingFieldTransformerFactory().newInstance(),
                 new Html5SelfClosingTagBodyProcessor(),

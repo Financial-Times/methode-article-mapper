@@ -63,6 +63,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	private static final String FIRST_EMBEDDED_IMAGE_SET_ID = "U11603507121721xBE";
 	private static final String SECOND_EMBEDDED_IMAGE_SET_ID = "U11703507121721xBE";
 	private static final String TRANSACTION_ID = "tid_test";
+	private static final String FT_CONTENT_URL_TEMPLATE = "https://www.ft.com/content/%s";
 
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -96,7 +97,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 		URI concordanceUri = new URI("www.concordanceapi.com");
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
-                documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClient, concordanceUri ).newInstance();
+                documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClient, concordanceUri,
+				FT_CONTENT_URL_TEMPLATE).newInstance();
 		when(documentStoreApiClient.resource((URI) any())).thenReturn(webResourceNotFound);
 		when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
 		when(builderNotFound.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
@@ -449,7 +451,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<promo-headline><p>Labour attacks ministerial role of former HSBC chairman</p></promo-headline><promo-image>" +
 				"<content data-embedded=\"true\" id=\"17ee1f24-ff46-11e2-055d-97bbf262bf2b\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content></promo-image>" +
 				"<promo-intro><p>The revelations about HSBC’s Swiss operations reverberated around Westminster on bold <strong>Monday</strong>, with Labour claiming the coalition was alerted in 2010 to strikeout malpractice at the bank and took no action.</p>\n" +
-				"<p><a href=\"http://www.ft.com/cms/s/2f9b640c-b056-11e4-a2cc-00144feab7de.html\">Continue reading</a></p></promo-intro>" +
+				"<p><a href=\"https://www.ft.com/content/2f9b640c-b056-11e4-a2cc-00144feab7de\">Continue reading</a></p></promo-intro>" +
 				"</promo-box><p>This is the beginning of a sentence.This is the end of the sentence.</p></body>";
 
 		checkTransformation(promoBoxFromMethode, processedPromoBox);
@@ -889,7 +891,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-        		"<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+        		"<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"https://www.ft.com/content/49336a18-051c-11e3-98a0-002128161462\"></a></p></body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -901,7 +903,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy/></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p></body>";
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"https://www.ft.com/content/49336a18-051c-11e3-98a0-002128161462\"></a></p></body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
     }
@@ -916,8 +918,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "<DIHeadlineCopy>One typical, bog-standard slideshow headline update 2</DIHeadlineCopy></a></p></body>";
 
         String processedSlideshow = "<body><p>Embedded Slideshow</p>" +
-                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-002128161462.html#slide0\"></a></p>" +
-                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"http://www.ft.com/cms/s/49336a18-051c-11e3-98a0-001234567890.html#slide0\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"https://www.ft.com/content/49336a18-051c-11e3-98a0-002128161462\"></a></p>" +
+                "<p><a data-asset-type=\"slideshow\" data-embedded=\"true\" href=\"https://www.ft.com/content/49336a18-051c-11e3-98a0-001234567890\"></a></p>" +
                 "</body>";
 
         checkTransformation(slideshowFromMethode, processedSlideshow);
