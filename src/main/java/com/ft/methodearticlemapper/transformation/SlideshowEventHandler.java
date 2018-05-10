@@ -31,22 +31,22 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
 	private XMLEventHandler fallbackEventHandler;
     private XmlParser<SlideshowData> slideshowXMLParser;
     private final StartElementMatcher matcher;
-    private String slideShowUrlTemplate;
+    private String slideshowUrlTemplate;
 
     protected SlideshowEventHandler(XmlParser<SlideshowData> slideshowXMLParser,
                                     XMLEventHandler fallbackEventHandler,
                                     final StartElementMatcher matcher,
-                                    String slideShowUrlTemplate) {
+                                    String slideshowUrlTemplate) {
         
         checkArgument(fallbackEventHandler != null, "fallbackEventHandler cannot be null");
         checkArgument(slideshowXMLParser != null, "slideshowXMLParser cannot be null");
         checkArgument(matcher != null, "matcher cannot be null");
-        checkArgument(slideShowUrlTemplate != null, "slideShowUrlTemplate cannot be null");
+        checkArgument(slideshowUrlTemplate != null, "slideshowUrlTemplate cannot be null");
 
         this.fallbackEventHandler = fallbackEventHandler;
         this.slideshowXMLParser = slideshowXMLParser;
         this.matcher = matcher;
-        this.slideShowUrlTemplate = slideShowUrlTemplate;
+        this.slideshowUrlTemplate = slideshowUrlTemplate;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class SlideshowEventHandler extends BaseXMLEventHandler {
     private Map<String, String> getValidAttributes(SlideshowData dataBean) {
         Map<String, String> validAttributes = new HashMap<>();
 
-        String slideshowUrl = String.format(slideShowUrlTemplate, dataBean.getUuid());
+        String slideshowUrl = String.format(slideshowUrlTemplate, dataBean.getUuid());
         validAttributes.put(HREF_ATTRIBUTE_NAME, slideshowUrl);
 		validAttributes.put(DATA_ASSET_TYPE, SLIDESHOW);
 		validAttributes.put(DATA_EMBEDDED, YEP); // If we know it's a slideshow, it's embedded. Otherwise it's just a link.

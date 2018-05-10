@@ -79,12 +79,12 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     private Client documentStoreApiClient;
     private URI uri;
-    private String ftContentUrlTemplate;
+    private String canonicalUrlTemplate;
 
-	public MethodeLinksBodyProcessor(Client documentStoreApiClient, URI uri, String ftContentUrlTemplate) {
+	public MethodeLinksBodyProcessor(Client documentStoreApiClient, URI uri, String canonicalUrlTemplate) {
 		this.documentStoreApiClient = documentStoreApiClient;
         this.uri = uri;
-        this.ftContentUrlTemplate = ftContentUrlTemplate;
+        this.canonicalUrlTemplate = canonicalUrlTemplate;
 	}
 
     @Override
@@ -384,7 +384,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     private void transformLinkToAssetOnFtCom(Node aTag, String uuid) {
-        String newHref = String.format(ftContentUrlTemplate, uuid);
+        String newHref = String.format(canonicalUrlTemplate, uuid);
         getAttribute(aTag, "href").setNodeValue(newHref);
 
 		// We might have added a type attribute to identify the type of content this links to.

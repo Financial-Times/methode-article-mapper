@@ -63,7 +63,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 	private static final String FIRST_EMBEDDED_IMAGE_SET_ID = "U11603507121721xBE";
 	private static final String SECOND_EMBEDDED_IMAGE_SET_ID = "U11703507121721xBE";
 	private static final String TRANSACTION_ID = "tid_test";
-	private static final String FT_CONTENT_URL_TEMPLATE = "https://www.ft.com/content/%s";
+	private static final String CANONICAL_URL_TEMPLATE = "https://www.ft.com/content/%s";
 
 	@Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -98,7 +98,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 
         bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient,
                 documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceClient, concordanceUri,
-				FT_CONTENT_URL_TEMPLATE).newInstance();
+				CANONICAL_URL_TEMPLATE).newInstance();
 		when(documentStoreApiClient.resource((URI) any())).thenReturn(webResourceNotFound);
 		when(webResourceNotFound.accept(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);
 		when(builderNotFound.type(MediaType.APPLICATION_JSON_TYPE)).thenReturn(builderNotFound);

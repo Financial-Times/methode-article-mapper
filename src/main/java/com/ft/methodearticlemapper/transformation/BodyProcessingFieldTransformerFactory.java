@@ -33,7 +33,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
     private VideoMatcher videoMatcher;
     private InteractiveGraphicsMatcher interactiveGraphicsMatcher;
     private final Map<String,XPathHandler> xpathHandlers;
-    private String ftContentUrlTemplate;
+    private String canonicalUrlTemplate;
 
     public BodyProcessingFieldTransformerFactory(final Client documentStoreApiClient,
                                                  final URI uri,
@@ -41,13 +41,13 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                                                  final InteractiveGraphicsMatcher interactiveGraphicsMatcher,
                                                  Client concordanceApiClient,
                                                  URI concordanceApiUri,
-                                                 String ftContentUrlTemplate) {
+                                                 String canonicalUrlTemplate) {
         this.documentStoreApiClient = documentStoreApiClient;
         this.documentStoreUri = uri;
         this.videoMatcher = videoMatcher;
         this.interactiveGraphicsMatcher = interactiveGraphicsMatcher;
         xpathHandlers = ImmutableMap.of("//company", new TearSheetLinksTransformer(concordanceApiClient, concordanceApiUri));
-        this.ftContentUrlTemplate = ftContentUrlTemplate;
+        this.canonicalUrlTemplate = canonicalUrlTemplate;
     }
 
     @Override
@@ -96,13 +96,13 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
 
     private BodyProcessor stAXTransformingBodyProcessor() {
         return new StAXTransformingBodyProcessor(
-            new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher, ftContentUrlTemplate)
+            new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher, canonicalUrlTemplate)
         );
     }
     
     private BodyProcessor methodeLinksBodyProcessor() {
         return new ModalBodyProcessor(
-                new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri, ftContentUrlTemplate), NOT_SUGGEST);
+                new MethodeLinksBodyProcessor(documentStoreApiClient, documentStoreUri, canonicalUrlTemplate), NOT_SUGGEST);
     }
     
     private BodyProcessor tearSheetsBodyProcessor() {
