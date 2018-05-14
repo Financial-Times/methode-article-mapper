@@ -2,11 +2,9 @@ package com.ft.methodearticlemapper.transformation;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.List;
-
 public class SlideshowData {
     private String uuid;
-	private String title;
+    private String title;
 
     public String getUuid() {
         return uuid;
@@ -24,11 +22,11 @@ public class SlideshowData {
         return !StringUtils.isBlank(data);
     }
 
-	public String getTitle() {
-		return title;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }
