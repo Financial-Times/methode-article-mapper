@@ -21,6 +21,7 @@ import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,9 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 public class EomFileProcessor {
 
@@ -196,6 +200,15 @@ public class EomFileProcessor {
         final AlternativeStandfirsts alternativeStandfirsts = buildAlternativeStandfirsts(xpath, value);
 
         final String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
+        String editorialDesk = workFolder.trim();
+        if(isNotBlank(workFolder)){
+            String subFolder = xpath.evaluate(EomFile.SUB_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
+            if(isNotBlank(subFolder)){
+                String unescapedSubFolder = StringEscapeUtils.unescapeHtml(subFolder);
+                editorialDesk = new StringBuilder(workFolder.trim()).append("/").append(unescapedSubFolder.trim()).toString();
+            }
+        }
+
         final URI webUrl = URI.create(String.format(this.webUrlTemplate, uuid));
         final URI canonicalWebUrl = URI.create(String.format(this.canonicalWebUrlTemplate, uuid));
 
@@ -223,7 +236,7 @@ public class EomFileProcessor {
                 .withContentPackage(contentPackage)
                 .withCanBeDistributed(canBeDistributed)
                 .withAlternativeStandfirsts(alternativeStandfirsts)
-                .withEditorialDesk(workFolder)
+                .withEditorialDesk(editorialDesk)
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
                 .build();
