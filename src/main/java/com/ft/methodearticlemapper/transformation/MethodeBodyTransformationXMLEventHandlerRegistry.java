@@ -11,7 +11,7 @@ import com.ft.bodyprocessing.xml.eventhandlers.*;
 public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
     public MethodeBodyTransformationXMLEventHandlerRegistry(final VideoMatcher videoMatcher,
-            final InteractiveGraphicsMatcher interactiveGraphicsMatcher) {
+            final InteractiveGraphicsMatcher interactiveGraphicsMatcher, String canonicalUrlTemplate) {
         //default is to skip events but leave content - anything not configured below will be handled via this
         registerDefaultEventHandler(new StripXMLEventHandler());
         registerCharactersEventHandler(new RetainXMLEventHandler());
@@ -90,7 +90,7 @@ public class MethodeBodyTransformationXMLEventHandlerRegistry extends XMLEventHa
 
         // Handle slideshows, i.e. where have <a type="slideshow">
         // For these elements if the attribute is missing use the fallback handler
-        registerStartAndEndElementEventHandler(new SlideshowEventHandler(new SlideshowXMLParser(), new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type", "slideshow")), "a");
+        registerStartAndEndElementEventHandler(new SlideshowEventHandler(new SlideshowXMLParser(), new LinkTagXMLEventHandler("title", "alt"), caselessMatcher("type", "slideshow"), canonicalUrlTemplate), "a");
         registerEndElementEventHandler(new LinkTagXMLEventHandler(), "a");
 
     }

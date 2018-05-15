@@ -2,12 +2,9 @@ package com.ft.methodearticlemapper.transformation;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.List;
-
 public class SlideshowData {
-private String uuid;
-    private List<String> queryParams;
-	private String title;
+    private String uuid;
+    private String title;
 
     public String getUuid() {
         return uuid;
@@ -25,19 +22,11 @@ private String uuid;
         return !StringUtils.isBlank(data);
     }
 
-    public void setQueryParams(List<String> queryParams) {
-        this.queryParams = queryParams;
+    public String getTitle() {
+        return title;
     }
 
-    public List<String> getQueryParams() {
-        return queryParams;
+    public void setTitle(String title) {
+        this.title = title;
     }
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
 }

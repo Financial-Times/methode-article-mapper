@@ -98,6 +98,7 @@ public class BodyProcessingStepDefs {
     private static final ConvertParameters CONVERT_PARAMETERS = new ConvertParameters(CONVERT_FROM_PARAMETER, CONVERTED_TO_PARAMETER, CONVERSION_TEMPLATE);
     private static final List<ConvertParameters> CONVERT_PARAMETERS_LIST = ImmutableList.of(CONVERT_PARAMETERS);
 
+    private static final String CANONICAL_URL_TEMPLATE = "https://www.ft.com/content/%s";
     private final static String TME_AUTHORITY="http://api.ft.com/system/FT-TME";
     private static final String TME_ID_CONCORDED = "TnN0ZWluX09OX0ZvcnR1bmVDb21wYW55X0M=-T04=";
     private static final String TME_ID_NOT_CONCORDED = "notconcorded";
@@ -145,7 +146,7 @@ public class BodyProcessingStepDefs {
         headers = mock(InBoundHeaders.class);
         workers = mock(MessageBodyWorkers.class);
         entity = new ByteArrayInputStream("Test".getBytes(StandardCharsets.UTF_8));
-        registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher);
+        registry = new MethodeBodyTransformationXMLEventHandlerRegistry(videoMatcher, interactiveGraphicsMatcher, CANONICAL_URL_TEMPLATE);
         concordance = new Concordance(concept, identifier);
         concordancesResponse = new Concordances(Collections.singletonList(concordance));
         concordancesEmpty = new Concordances(new ArrayList<>());
@@ -197,7 +198,8 @@ public class BodyProcessingStepDefs {
         when(clientResponse.getStatus()).thenReturn(200);
         when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + CONTENT_STORE_UUID + "\", \"type\": \"Article\"}]");
 
-        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri, videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri).newInstance();
+        bodyTransformer = new BodyProcessingFieldTransformerFactory(documentStoreApiClient, documentStoreUri,
+                videoMatcher, interactiveGraphicsMatcher, concordanceApiClient, concordanceUri, CANONICAL_URL_TEMPLATE).newInstance();
     }
 
 

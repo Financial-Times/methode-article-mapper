@@ -79,10 +79,12 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
 
     private Client documentStoreApiClient;
     private URI uri;
+    private String canonicalUrlTemplate;
 
-	public MethodeLinksBodyProcessor(Client documentStoreApiClient, URI uri) {
+	public MethodeLinksBodyProcessor(Client documentStoreApiClient, URI uri, String canonicalUrlTemplate) {
 		this.documentStoreApiClient = documentStoreApiClient;
         this.uri = uri;
+        this.canonicalUrlTemplate = canonicalUrlTemplate;
 	}
 
     @Override
@@ -138,45 +140,45 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
      */
 	private boolean isRemovable(final Node aTag) {
         final String href = getHref(aTag);
-        
+
         if (href.isEmpty() || href.startsWith(ANCHOR_PREFIX)) {
             return true;
         }
-        
+
         NodeList children = aTag.getChildNodes();
         int len = children.getLength();
-        
+
         StringBuilder textContent = new StringBuilder();
         for (int i = 0; i < len; i++) {
             Node n = children.item(i);
-            
+
             switch (n.getNodeType()) {
                 case Node.TEXT_NODE:
                 case Node.CDATA_SECTION_NODE:
                     textContent.append(n.getTextContent());
                     break;
-                    
+
                 case Node.COMMENT_NODE:
                     break;
-                    
+
                 default: // any other node type
                     return false;
             }
         }
-        
+
         if (!textContent.toString().trim().isEmpty()) {
             return false;
         }
-        
+
         NamedNodeMap attributes = aTag.getAttributes();
         len = attributes.getLength();
-        
+
         for (int i = 0; i < len; i++) {
             if (attributes.item(i).getNodeName().startsWith("data-")) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -264,21 +266,21 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         Node parentNode = aTagNode.getParentNode();
         if (parentNode != null) {
             Node nodeBeforeATag = aTagNode.getPreviousSibling();
-            
+
             // Adding space if needed, right before the <a> tag
             if (isTextNode(nodeBeforeATag)) {
-                String beforeATagText = nodeBeforeATag.getTextContent();              
+                String beforeATagText = nodeBeforeATag.getTextContent();
                 if (!Strings.isNullOrEmpty(beforeATagText)) {
                     String newTextBefore = fixImproperWhitespaceBeforeATag(beforeATagText);
                     nodeBeforeATag.setTextContent(newTextBefore);
-                } 
+                }
             }
-            
+
             // Extracting punctuation outside the <a> tag
             String linkText = aTagNode.getTextContent().trim();
             String punctuation = getPunctuationFromLinkText(linkText);
             Node nodeAfterATag = aTagNode.getNextSibling();
-            
+
             if (punctuation != null) {
                 String newLinkText = linkText.substring(0, linkText.length() - punctuation.length());
                 aTagNode.setTextContent(newLinkText);
@@ -289,7 +291,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             }
         }
     }
-    
+
     private boolean isTextNode(Node node) {
         return node != null && node.getNodeType() == Node.TEXT_NODE;
     }
@@ -308,7 +310,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         if (Character.isWhitespace(text.charAt(0))) {
             return punctuation + text;
         }
-        
+
         return punctuation + " " + text;
     }
 
@@ -317,7 +319,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         if (matcher.matches()) {
             return text;
         }
-        
+
         return text + " ";
     }
 
@@ -325,7 +327,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
         if (Strings.isNullOrEmpty(text.trim())) {
             return text;
         }
-        
+
         String replaced = text.replaceAll(STRING_STARTS_WITH_WHITESPACE_REGEX, "");
         Matcher matcher = STRING_STARTS_WITH_PUNCTUATION_REGEX_PATTERN.matcher(replaced);
         if (matcher.matches()) {
@@ -376,46 +378,19 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             return true;
         } else if (href.startsWith("/")) { // i.e. it's a relative path in Methode with a UUID param
             matcher = UUID_PARAM_REGEX_PATTERN.matcher(href);
-            if (matcher.matches()) {
-                return true;
-            }
+            return matcher.matches();
         }
         return false;
     }
 
     private void transformLinkToAssetOnFtCom(Node aTag, String uuid) {
-        String oldHref = getHref(aTag);
-        String newHref;
-
-        Matcher matcher = FT_COM_URL_REGEX_PATTERN.matcher(oldHref);
-        if (matcher.matches()) {
-            URI ftAssetUri = URI.create(oldHref);
-            String path = ftAssetUri.getPath();
-
-            if (path.startsWith("/intl")) {
-                newHref = ftAssetUri.resolve(path.substring(5)).toString();
-            } else {
-                if (isSlideshowUrl(aTag)) {
-                    newHref = oldHref;
-                } else {
-                    // do this to get rid of query params and fragment identifiers from the url
-                    newHref = ftAssetUri.resolve(path).toString();
-                }
-            }
-        } else {
-            newHref = "http://www.ft.com/cms/s/" + uuid + ".html";
-        }
-
+        String newHref = String.format(canonicalUrlTemplate, uuid);
         getAttribute(aTag, "href").setNodeValue(newHref);
 
 		// We might have added a type attribute to identify the type of content this links to.
 		// If so, it should be removed, because it is not HTML5 compliant.
 		removeTypeAttributeIfPresent(aTag);
 	}
-
-    private boolean isSlideshowUrl(Node aTag) {
-        return getAttribute(aTag, TYPE) != null && getAttribute(aTag, TYPE).getNodeValue().equals("slideshow");
-    }
 
     private void removeTypeAttributeIfPresent(Node aTag) {
         if (getAttribute(aTag, TYPE) != null) {
@@ -454,7 +429,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
      */
     private void removeATag(Element aTag) {
     	Node parentNode = aTag.getParentNode();
-    	
+
     	if (!aTag.getTextContent().trim().isEmpty()) {
     	    NodeList children = aTag.getChildNodes();
             Node n = children.item(0);
