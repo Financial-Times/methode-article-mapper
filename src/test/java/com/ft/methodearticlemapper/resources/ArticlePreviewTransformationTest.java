@@ -77,7 +77,7 @@ public class ArticlePreviewTransformationTest {
         UUID expectedUuid = UUID.randomUUID();
         EomFile testEomFile = articlePreviewMinimalEomFile(expectedUuid.toString());
 
-        Content actualContent = postContentToTransformResource.map(testEomFile, IS_PREVIEW, null);
+        Content actualContent = (Content) postContentToTransformResource.map(testEomFile, IS_PREVIEW, null);
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));

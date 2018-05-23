@@ -298,7 +298,7 @@ public class EomFileProcessorTest {
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bodyTransformer).transform(
                 anyString(),
@@ -332,7 +332,7 @@ public class EomFileProcessorTest {
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bodyTransformer).transform(
                 anyString(),
@@ -371,7 +371,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createStandardEomFileWithoutSubFolder(uuid))
                 .build();
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getEditorialDesk(), equalTo(WORK_FOLDER_COMPANIES));
     }
@@ -379,7 +379,7 @@ public class EomFileProcessorTest {
 
     @Test
     public void shouldNotBarfOnExternalDtd() {
-        Content content = eomFileProcessor.process(standardEomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(standardEomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         Content expectedContent = createStandardExpectedFtContent();
         assertThat(content, equalTo(expectedContent));
     }
@@ -397,7 +397,7 @@ public class EomFileProcessorTest {
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bodyTransformer).transform(
                 anyString(),
@@ -423,7 +423,7 @@ public class EomFileProcessorTest {
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withXmlBody(expectedBody).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bodyTransformer).transform(
                 anyString(),
@@ -472,7 +472,7 @@ public class EomFileProcessorTest {
     public void thatPreviewEmptyTransformedBodyIsAllowed() {
         final EomFile eomFile = createEomStoryFile(uuid);
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(EMPTY_BODY);
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, new Date());
+        Content actual = (Content) eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
 
@@ -481,7 +481,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(null);
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
+        Content actual = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
 
@@ -490,7 +490,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("");
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
+        Content actual = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
 
@@ -499,7 +499,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("<body> \n \n \n </body>");
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
+        Content actual = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
         assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
     }
 
@@ -525,7 +525,7 @@ public class EomFileProcessorTest {
                 .withPublishReference(reference)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
 
         assertThat(content, equalTo(expectedContent));
     }
@@ -544,7 +544,7 @@ public class EomFileProcessorTest {
                 .withTransactionId(PUBLISH_REF, reference)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
 
         assertThat(content, equalTo(expectedContent));
     }
@@ -567,7 +567,7 @@ public class EomFileProcessorTest {
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withByline(TRANSFORMED_BYLINE).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bylineTransformer).transform("<byline>" + byline + "</byline>", TRANSACTION_ID, TransformationMode.PUBLISH);
         assertThat(content, equalTo(expectedContent));
@@ -593,7 +593,7 @@ public class EomFileProcessorTest {
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getMainImage(), equalTo(expectedMainImageUuid.toString()));
     }
 
@@ -601,7 +601,7 @@ public class EomFileProcessorTest {
     public void testMainImageIsNullIfMissing() throws Exception {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getMainImage(), nullValue());
     }
 
@@ -636,7 +636,7 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).then(returnsFirstArg());
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         String expectedBody = "<body>" +
                 "                <p>random text for now</p>" +
@@ -649,7 +649,7 @@ public class EomFileProcessorTest {
     public void testStoryPackage() {
         final UUID storyPackageUuid = UUID.randomUUID();
         final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid.toString());
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getStoryPackage(), notNullValue());
         assertThat(content.getStoryPackage(), equalTo(storyPackageUuid.toString()));
@@ -697,7 +697,7 @@ public class EomFileProcessorTest {
     public void testCommentsArePresent() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getComments(), notNullValue());
         assertThat(content.getComments().isEnabled(), is(true));
@@ -707,7 +707,7 @@ public class EomFileProcessorTest {
     public void testStandoutFieldsArePresent() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandout().isEditorsChoice(), is(true));
         assertThat(content.getStandout().isExclusive(), is(true));
         assertThat(content.getStandout().isScoop(), is(true));
@@ -731,7 +731,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithContributorRights(
                 uuid, ContributorRights.ALL_NO_PAYMENT.getValue());
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getCanBeSyndicated(), is(Syndication.YES));
     }
 
@@ -746,7 +746,7 @@ public class EomFileProcessorTest {
             final EomFile eomFileContractContributorRights = createStandardEomFileWithContributorRights(
                     uuid, contributorRight);
 
-            Content content = eomFileProcessor.process(eomFileContractContributorRights, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+            Content content = (Content) eomFileProcessor.process(eomFileContractContributorRights, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
             assertThat(content.getCanBeSyndicated(), is(Syndication.WITH_CONTRIBUTOR_PAYMENT));
         }
     }
@@ -756,7 +756,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithContributorRights(
                 uuid, ContributorRights.NO_RIGHTS.getValue());
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getCanBeSyndicated(), is(Syndication.NO));
     }
 
@@ -774,7 +774,7 @@ public class EomFileProcessorTest {
             final EomFile eomFileContractContributorRights = createStandardEomFileWithContributorRights(
                     uuid, contributorRight);
 
-            Content content = eomFileProcessor.process(eomFileContractContributorRights, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+            Content content = (Content) eomFileProcessor.process(eomFileContractContributorRights, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
             assertThat("contributorRight=" + contributorRight, content.getCanBeSyndicated(), is(Syndication.VERIFY));
         }
     }
@@ -804,7 +804,7 @@ public class EomFileProcessorTest {
                 .withWorkflowStatus(EomFile.WEB_READY)
                 .build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getCanBeSyndicated(), is(Syndication.VERIFY));
     }
 
@@ -813,7 +813,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "");
         expectedException.expect(UntransformableMethodeContentException.class);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertNull(content.getAccessLevel());
     }
 
@@ -822,14 +822,14 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "5");
         expectedException.expect(UntransformableMethodeContentException.class);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertNull(content.getAccessLevel());
     }
 
     @Test
     public void testArticleHasSubscribedAccessLevel() {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()));
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAccessLevel(), is(AccessLevel.SUBSCRIBED));
     }
 
@@ -837,7 +837,7 @@ public class EomFileProcessorTest {
     public void testArticleHasFreeAccessLevel() {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(SHOWCASE.getSubscriptionLevel()));
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAccessLevel(), is(AccessLevel.FREE));
     }
 
@@ -845,7 +845,7 @@ public class EomFileProcessorTest {
     public void testArticleHasPremiumAccessLevel() {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, Integer.toString(PREMIUM.getSubscriptionLevel()));
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAccessLevel(), is(AccessLevel.PREMIUM));
     }
 
@@ -857,7 +857,7 @@ public class EomFileProcessorTest {
     @Test
     public void thatStoryTypeIsAValidType() {
         final EomFile eomFile = createEomStoryFile(uuid);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, notNullValue());
     }
 
@@ -873,7 +873,7 @@ public class EomFileProcessorTest {
           .withValue(buildEomFileValue(templateValues))
           .build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(equalToIgnoringWhiteSpace(expectedStandfirst)));
     }
 
@@ -887,7 +887,7 @@ public class EomFileProcessorTest {
           .withValue(buildEomFileValue(templateValues))
           .build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(nullValue()));
     }
 
@@ -895,7 +895,7 @@ public class EomFileProcessorTest {
     public void thatStandfirstIsOptional() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(nullValue()));
     }
 
@@ -913,7 +913,7 @@ public class EomFileProcessorTest {
           .withValue(buildEomFileValue(templateValues))
           .build();
 
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        final Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
 
         final AlternativeTitles actual = content.getAlternativeTitles();
@@ -926,7 +926,7 @@ public class EomFileProcessorTest {
     public void thatAlternativeTitlesAreOptional() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        final Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
 
         final AlternativeTitles actual = content.getAlternativeTitles();
@@ -946,7 +946,7 @@ public class EomFileProcessorTest {
           .withValue(buildEomFileValue(templateValues))
           .build();
 
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        final Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
 
         final AlternativeTitles actual = content.getAlternativeTitles();
@@ -966,7 +966,7 @@ public class EomFileProcessorTest {
           .withValue(buildEomFileValue(templateValues))
           .build();
 
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        final Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
 
         final AlternativeTitles actual = content.getAlternativeTitles();
@@ -979,7 +979,7 @@ public class EomFileProcessorTest {
     public void thatWebUrlIsSet() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getWebUrl(), is(equalTo(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))));
     }
 
@@ -987,7 +987,7 @@ public class EomFileProcessorTest {
     public void thatCanonicalWebUrlIsSet() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getCanonicalWebUrl(), is(equalTo(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))));
     }
 
@@ -1059,7 +1059,7 @@ public class EomFileProcessorTest {
     @Test
     public void testAgencyContentProcessPublication() {
         final EomFile eomFile = createStandardEomFileAgencySource(uuid);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         final Content expectedContent = createStandardExpectedAgencyContent();
 
@@ -1071,7 +1071,7 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(TRANSFORMED_BODY);
         
         final EomFile eomFile = createStandardEomFileAgencySource(uuid);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, LAST_MODIFIED);
 
         final Content expectedContent = createStandardExpectedAgencyContent();
 
@@ -1081,7 +1081,7 @@ public class EomFileProcessorTest {
     @Test
     public void testTypeArticleIsDefaultSetIfNoContentPackage() {
         final EomFile eomFile = createStandardEomFile(uuid);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(EomFileProcessor.Type.ARTICLE, equalTo(content.getType()));
     }
@@ -1096,7 +1096,7 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
@@ -1111,7 +1111,7 @@ public class EomFileProcessorTest {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
@@ -1128,7 +1128,7 @@ public class EomFileProcessorTest {
                 .withValue(buildEomFileValue(templateValues))
                 .build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(equalToIgnoringWhiteSpace(expectedPromotionalStandfirst)));
     }
 
@@ -1138,7 +1138,7 @@ public class EomFileProcessorTest {
                 .withValuesFrom(createStandardEomFile(uuid))
                 .build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(nullValue()));
     }
 
@@ -1155,7 +1155,7 @@ public class EomFileProcessorTest {
                 .withTransactionId(PUBLISH_REF, TRANSACTION_ID)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.SUGGEST, TRANSACTION_ID, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.SUGGEST, TRANSACTION_ID, LAST_MODIFIED);
 
         verify(bodyTransformer).transform(
                 anyString(),
@@ -1196,7 +1196,7 @@ public class EomFileProcessorTest {
                 .withTransactionId(DRAFT_REF, reference)
                 .withXmlBody(TRANSFORMED_BODY).build();
 
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
+        Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, reference, LAST_MODIFIED);
 
         assertThat(content, equalTo(expectedContent));
     }
@@ -1206,7 +1206,7 @@ public class EomFileProcessorTest {
                                     final String expectedDescription,
                                     final String expectedListId) {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        final Content content = (Content) eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         assertThat(content.getType(), is(EomFileProcessor.Type.CONTENT_PACKAGE));
         assertThat(content.getDescription(), is(expectedDescription));
@@ -1220,7 +1220,7 @@ public class EomFileProcessorTest {
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid,
             articleImageMetadataFlag);
-        Content content = eomFileProcessor
+        Content content = (Content) eomFileProcessor
             .process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);

@@ -8,14 +8,14 @@ import com.ft.messagequeueproducer.model.KeyedMessage;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.SystemId;
 import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
+import com.ft.methodearticlemapper.model.DynamicContent;
 
+import javax.ws.rs.core.UriBuilder;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.Date;
 import java.util.UUID;
-
-import javax.ws.rs.core.UriBuilder;
 
 import static com.ft.api.util.transactionid.TransactionIdUtils.TRANSACTION_ID_HEADER;
 import static java.time.ZoneOffset.UTC;
@@ -36,14 +36,25 @@ public class MessageBuilder {
         this.objectMapper = objectMapper;
     }
 
-    Message buildMessage(Content content) {
+    Message buildMessage(Object content) {
+        if (content instanceof DynamicContent) {
+            DynamicContent processedContent = (DynamicContent) content;
+            MessageBody msgBody = new MessageBody(
+                    content,
+                    contentUriBuilder.build(processedContent.getUuid()).toString(),
+                    RFC3339_FMT.format(OffsetDateTime.ofInstant(processedContent.getLastModified().toInstant(), UTC))
+            );
+            return buildMessage(processedContent.getUuid(), processedContent.getPublishReference(), msgBody);
+        }
+
+        Content processedContent = (Content) content;
         MessageBody msgBody = new MessageBody(
                 content,
-                contentUriBuilder.build(content.getUuid()).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC))
+                contentUriBuilder.build(processedContent.getUuid()).toString(),
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(processedContent.getLastModified().toInstant(), UTC))
         );
+        return buildMessage(processedContent.getUuid(), processedContent.getPublishReference(), msgBody);
 
-        return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
     }
 
     Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified) {
@@ -77,7 +88,7 @@ public class MessageBuilder {
 
     public static class MessageBody {
         @JsonProperty("payload")
-        public final Content payload;
+        public final Object payload;
         @JsonProperty("contentUri")
         public final String contentUri;
         @JsonProperty("lastModified")
@@ -85,11 +96,11 @@ public class MessageBuilder {
 
         MessageBody(
                 @JsonProperty("payload")
-                Content payload,
+                        Object payload,
                 @JsonProperty("contentUri")
-                String contentUri,
+                        String contentUri,
                 @JsonProperty("lastModified")
-                String lastModified) {
+                        String lastModified) {
             this.contentUri = contentUri;
             this.payload = payload;
             this.lastModified = lastModified;

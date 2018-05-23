@@ -73,7 +73,7 @@ public class PostContentToTransformResource {
 	@Timed
 	@Path("/map")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
-	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode) {
+	public final Object map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode) {
 		final String uuid = eomFile.getUuid();
 		validateUuid(uuid);
 		
@@ -132,7 +132,7 @@ public class PostContentToTransformResource {
         return txId;
     }
 	
-    private Content processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId, Date lastModified) {
+    private Object processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId, Date lastModified) {
         try {
             return eomFileProcessor.process(eomFile, mode, transactionId, lastModified);
 
