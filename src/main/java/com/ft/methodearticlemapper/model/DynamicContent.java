@@ -2,20 +2,22 @@ package com.ft.methodearticlemapper.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DynamicContent {
     private String id;
     private String title;
     private String bodyXML;
-    private String blocks;
+    private List<Block> blocks;
 
     private String uuid;
     private Date lastModified;
     private String publishReference;
 
     public DynamicContent(@JsonProperty("id") String id, @JsonProperty("title") String title,
-                          @JsonProperty("bodyXML") String bodyXML, @JsonProperty("blocks") String blocks,
+                          @JsonProperty("bodyXML") String bodyXML, @JsonProperty("blocks") List<Block> blocks,
                           @JsonProperty("uuid") String uuid, @JsonProperty("lastModified") Date lastModified,
                           @JsonProperty("publishReference") String publishReference) {
         this.id = id;
@@ -52,11 +54,11 @@ public class DynamicContent {
         this.bodyXML = bodyXML;
     }
 
-    public String getBlocks() {
+    public List<Block> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(String blocks) {
+    public void setBlocks(List<Block> blocks) {
         this.blocks = blocks;
     }
 

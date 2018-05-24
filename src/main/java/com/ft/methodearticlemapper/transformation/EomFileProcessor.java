@@ -15,6 +15,7 @@ import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
 import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
+import com.ft.methodearticlemapper.model.Block;
 import com.ft.methodearticlemapper.model.DynamicContent;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -52,9 +54,11 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
@@ -169,13 +173,14 @@ public class EomFileProcessor {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final Document value = eomFile.getValue();
-        final String blocks = Strings.nullToEmpty(xpath.evaluate(BLOCKS_XPATH, value)).trim();
-        final String body = Strings.nullToEmpty(xpath.evaluate(BODY_XPATH,value)).trim();
+        final List<Block> blocks = getBlocks(xpath, value);
+
+        final String body = Strings.nullToEmpty(xpath.evaluate(BODY_XPATH, value)).trim();
         final String transformedBody = transformField(body, bodyTransformer, transactionId, mode,
                 Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
 
-        final String id = ""; // TODO: this needs work
-        final String title = ""; // TODO: this needs work
+        final String id = "http://www.ft.com/thing/" + uuid.toString();
+        final String title = "this-needs-work"; // TODO: this needs work
 
         return new DynamicContent(id, title, transformedBody, blocks, uuid.toString(), lastModified, transactionId);
     }
@@ -535,5 +540,18 @@ public class EomFileProcessor {
             builder = builder.withPromotionalStandfirst(promotionalStandfirst);
         }
         return builder.build();
+    }
+
+    private List<Block> getBlocks(XPath xpath, Document value) throws XPathExpressionException {
+        final Node blocks = (Node) xpath.evaluate(BLOCKS_XPATH, value, XPathConstants.NODE);
+        final List<Block> blockList = new ArrayList<>();
+        NodeList blocksChildren = blocks.getChildNodes();
+        for (int i = 0; i < blocksChildren.getLength(); i++) {
+            Node blockNode = blocksChildren.item(i);
+            final Node key = (Node) xpath.evaluate("block-name", blockNode, XPathConstants.NODE);
+            final Node valueXML = (Node) xpath.evaluate("block-value", blockNode, XPathConstants.NODE);
+            blockList.add(new Block(key.getNodeValue(), valueXML.getNodeValue()));
+        }
+        return blockList;
     }
 }
