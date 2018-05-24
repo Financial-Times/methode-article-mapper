@@ -90,7 +90,7 @@ public class EomFileProcessor {
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
     private static final String BLOCKS_XPATH = "/doc/blocks";
-    private static final String BODY_XPATH = "/doc/body";
+    private static final String BODY_XPATH = "/doc/story/text/body";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -178,13 +178,11 @@ public class EomFileProcessor {
         final List<Block> blocks = getBlocks(xpath, value);
 
         final String body = Strings.nullToEmpty(xpath.evaluate(BODY_XPATH, value)).trim();
-        final String transformedBody = transformField(body, bodyTransformer, transactionId, mode,
-                Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
 
+        final String title = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final String id = "http://www.ft.com/thing/" + uuid.toString();
-        final String title = "this-needs-work"; // TODO: this needs work
 
-        return new DynamicContent(id, title, transformedBody, blocks, uuid.toString(), lastModified, transactionId);
+        return new DynamicContent(id, title, body, blocks, uuid.toString(), lastModified, transactionId);
     }
 
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
@@ -551,8 +549,8 @@ public class EomFileProcessor {
         for (int i = 0; i < blocksChildren.getLength(); i++) {
             Node blockNode = blocksChildren.item(i);
             final Node key = (Node) xpath.evaluate("block-name", blockNode, XPathConstants.NODE);
-            final Node valueXML = (Node) xpath.evaluate("block-value", blockNode, XPathConstants.NODE);
-            blockList.add(new Block(key.getNodeValue(), valueXML.getNodeValue(), TYPE));
+            final Node valueXML = (Node) xpath.evaluate("block-html-value", blockNode, XPathConstants.NODE);
+            blockList.add(new Block(key.getTextContent(), valueXML.getTextContent(), TYPE));
         }
         return blockList;
     }
