@@ -95,7 +95,7 @@ public class EomFileProcessor {
     private static final String END_BODY = "</body>";
     private static final String EMPTY_VALIDATED_BODY = "<body></body>";
 
-    private static final String TYPE = "html-block";
+    private static final String BLOCK_TYPE = "html-block";
 
     private final EnumSet<TransformationMode> supportedModes;
     private final FieldTransformer bodyTransformer;
@@ -146,7 +146,7 @@ public class EomFileProcessor {
         if (!supportedModes.contains(mode)) {
             throw new UnsupportedTransformationModeException(uuid.toString(), mode);
         }
-        LOGGER.info("processing content with UUID={} in {} mode", uuid, mode);
+        LOGGER.info("processing UUID={} in {} mode", uuid, mode);
 
         PublishEligibilityChecker eligibilityChecker =
                 PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
@@ -541,7 +541,7 @@ public class EomFileProcessor {
             Node blockNode = blocksChildren.item(i);
             final Node key = (Node) xpath.evaluate("block-name", blockNode, XPathConstants.NODE);
             final Node valueXML = (Node) xpath.evaluate("block-html-value", blockNode, XPathConstants.NODE);
-            blockList.add(new Block(key.getTextContent(), valueXML.getTextContent(), TYPE));
+            blockList.add(new Block(key.getTextContent(), valueXML.getTextContent(), BLOCK_TYPE));
         }
         return blockList;
     }
