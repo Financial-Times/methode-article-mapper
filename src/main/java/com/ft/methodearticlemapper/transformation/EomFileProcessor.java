@@ -4,6 +4,7 @@ import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
+import com.ft.content.model.Block;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -15,8 +16,6 @@ import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
 import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
-import com.ft.methodearticlemapper.model.Block;
-import com.ft.methodearticlemapper.model.DynamicContent;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
 import com.ft.uuidutils.DeriveUUID;
@@ -75,6 +74,7 @@ public class EomFileProcessor {
     interface Type {
         String CONTENT_PACKAGE = "ContentPackage";
         String ARTICLE = "Article";
+        String DYNAMIC_CONTENT = "DynamicContent";
     }
 
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
@@ -90,7 +90,6 @@ public class EomFileProcessor {
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
     private static final String BLOCKS_XPATH = "/doc/blocks";
-    private static final String BODY_XPATH = "/doc/story/text/body";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -142,7 +141,7 @@ public class EomFileProcessor {
         }
     }
 
-    public Object process(EomFile eomFile, TransformationMode mode, String transactionId, Date lastModifiedDate) {
+    public Content process(EomFile eomFile, TransformationMode mode, String transactionId, Date lastModifiedDate) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
         if (!supportedModes.contains(mode)) {
             throw new UnsupportedTransformationModeException(uuid.toString(), mode);
@@ -160,29 +159,10 @@ public class EomFileProcessor {
                 parsedEomFile = eligibilityChecker.getEligibleContentForPreview();
             }
 
-            if (parsedEomFile.getContentSource().equals(ContentSource.DynamicContent)) {
-                return transformEomFileToDynamicContent(uuid, parsedEomFile, mode, transactionId, lastModifiedDate);
-            }
-
             return transformEomFileToContent(uuid, parsedEomFile, mode, transactionId, lastModifiedDate);
         } catch (ParserConfigurationException | SAXException | XPathExpressionException | TransformerException | IOException e) {
             throw new TransformationException(e);
         }
-    }
-
-    private DynamicContent transformEomFileToDynamicContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
-            throws XPathExpressionException {
-
-        final XPath xpath = XPathFactory.newInstance().newXPath();
-        final Document value = eomFile.getValue();
-        final List<Block> blocks = getBlocks(xpath, value);
-
-        final String body = Strings.nullToEmpty(xpath.evaluate(BODY_XPATH, value)).trim();
-
-        final String title = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
-        final String id = "http://www.ft.com/thing/" + uuid.toString();
-
-        return new DynamicContent(id, title, body, blocks, uuid.toString(), lastModified, transactionId);
     }
 
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
@@ -194,7 +174,7 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
-        final String type = determineType(xpath, attributes);
+        final String type = determineType(xpath, attributes, eomFile);
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
@@ -237,6 +217,7 @@ public class EomFileProcessor {
 
         final URI webUrl = URI.create(String.format(this.webUrlTemplate, uuid));
         final URI canonicalWebUrl = URI.create(String.format(this.canonicalWebUrlTemplate, uuid));
+        final List<Block> blocks = getBlocks(xpath, value, type);
 
         return Content.builder()
                 .withUuid(uuid)
@@ -265,6 +246,7 @@ public class EomFileProcessor {
                 .withEditorialDesk(editorialDesk)
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
+                .withBlocks(blocks)
                 .build();
     }
 
@@ -351,11 +333,16 @@ public class EomFileProcessor {
     }
 
     private String determineType(final XPath xpath,
-                                 final Document attributesDocument)
+                                 final Document attributesDocument,
+                                 ParsedEomFile eomFile)
             throws XPathExpressionException, TransformerException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
+        }
+
+        if (eomFile.getContentSource().equals(ContentSource.DynamicContent)) {
+            return Type.DYNAMIC_CONTENT;
         }
 
         return Type.ARTICLE;
@@ -542,7 +529,11 @@ public class EomFileProcessor {
         return builder.build();
     }
 
-    private List<Block> getBlocks(XPath xpath, Document value) throws XPathExpressionException {
+    private List<Block> getBlocks(XPath xpath, Document value, String type) throws XPathExpressionException {
+        if (!Type.DYNAMIC_CONTENT.equals(type)) {
+            return null;
+        }
+
         final Node blocks = (Node) xpath.evaluate(BLOCKS_XPATH, value, XPathConstants.NODE);
         final List<Block> blockList = new ArrayList<>();
         NodeList blocksChildren = blocks.getChildNodes();
