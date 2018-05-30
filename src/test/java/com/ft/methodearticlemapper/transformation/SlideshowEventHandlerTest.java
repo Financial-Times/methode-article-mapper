@@ -2,7 +2,6 @@ package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
-import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandler;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,14 +24,11 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
     private SlideshowEventHandler eventHandler;
 
     private static final String START_ELEMENT_TAG = "a";
-    private static final String INCORRECT_TAG_NAME = "g";
     private static final String HREF_ATTRIBUTE_NAME = "href";
     private static final String SLIDESHOW_URL_TEMPLATE = "https://www.ft.com/content/%s";
 	private static final String TITLE_STRING = "Type title";
 
-    @Mock private XMLEventHandler mockFallbackEventHandler;
     @Mock private XmlParser<SlideshowData> mockXmlParser;
-    @Mock private StartElementMatcher mockElementMatcher;
     @Mock private XMLEventReader mockXMLEventReader;
     @Mock private BodyWriter mockBodyWriter;
     @Mock private BodyProcessingContext mockBodyProcessingContext;
@@ -41,23 +36,15 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
 
     @Before
     public void setup(){
-        eventHandler = new SlideshowEventHandler(mockXmlParser, mockFallbackEventHandler, mockElementMatcher, SLIDESHOW_URL_TEMPLATE);
+        eventHandler = new SlideshowEventHandler(mockXmlParser, SLIDESHOW_URL_TEMPLATE);
     }
 
     @Test
-     public void shouldUseFallbackHandlerIfMatcherDoesNotMatchStartElement() throws Exception{
-        StartElement startElement = getStartElement(INCORRECT_TAG_NAME);
-        eventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
-        verify(mockFallbackEventHandler).handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
-    }
-
-    @Test
-    public void shouldNotWriteIfNotAllValidDataIsPresent() throws Exception{
+    public void shouldNotWriteIfNotAllValidDataIsPresent() throws Exception {
         Map<String, String> attributes = new HashMap<>();
         attributes.put(HREF_ATTRIBUTE_NAME, SLIDESHOW_URL_TEMPLATE);
         StartElement startElement = getStartElement(START_ELEMENT_TAG);
 
-        when(mockElementMatcher.matches(startElement)).thenReturn(true);
         when(mockXmlParser.parseElementData(startElement, mockXMLEventReader, mockBodyProcessingContext)).thenReturn(mockSlideshowData);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(false);
 
@@ -75,7 +62,6 @@ public class SlideshowEventHandlerTest extends BaseXMLEventHandlerTest {
         attributes.put(HREF_ATTRIBUTE_NAME, String.format(SLIDESHOW_URL_TEMPLATE, "f6062cbc-155a-11e5-9509-00144feabdc0"));
         StartElement startElement = getStartElement(START_ELEMENT_TAG);
 
-        when(mockElementMatcher.matches(startElement)).thenReturn(true);
         when(mockXmlParser.parseElementData(startElement, mockXMLEventReader, mockBodyProcessingContext)).thenReturn(mockSlideshowData);
 		when(mockSlideshowData.getTitle()).thenReturn(TITLE_STRING);
         when(mockSlideshowData.isAllRequiredDataPresent()).thenReturn(true);
