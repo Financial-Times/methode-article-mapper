@@ -402,6 +402,19 @@ public class MethodeLinksBodyProcessorTest {
 	}
 
 	@Test
+	public void thatWhitespaceNotRemovedWhenParenthesisPunctuation() {
+		when(clientResponse.getStatus()).thenReturn(200);
+		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
+
+		String body = "<body><p><a href=\"" + uuid + "\">link text</a>  (some details)</p></body>";
+		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content> (some details)</p></body>";
+		
+		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+
+		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
+	}
+
+	@Test
 	public void thatWhitespaceFromLinkTextAreRemoved() {
 		when(clientResponse.getStatus()).thenReturn(200);
 		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
