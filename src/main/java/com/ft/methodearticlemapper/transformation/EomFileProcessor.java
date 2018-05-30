@@ -334,8 +334,7 @@ public class EomFileProcessor {
 
     private String determineType(final XPath xpath,
                                  final Document attributesDocument,
-                                 ParsedEomFile eomFile)
-            throws XPathExpressionException, TransformerException {
+                                 ParsedEomFile eomFile) throws XPathExpressionException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
@@ -373,7 +372,7 @@ public class EomFileProcessor {
     private String getContentPackage(final String type,
                                      final XPath xpath,
                                      final Document valueDocument,
-                                     final UUID articleUuid) throws TransformerException, XPathExpressionException {
+                                     final UUID articleUuid) throws XPathExpressionException {
         if (!Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
