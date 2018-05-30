@@ -174,7 +174,7 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
-        final String type = determineType(xpath, attributes, eomFile);
+        final String type = determineType(xpath, attributes, eomFile.getContentSource());
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
@@ -334,13 +334,13 @@ public class EomFileProcessor {
 
     private String determineType(final XPath xpath,
                                  final Document attributesDocument,
-                                 ParsedEomFile eomFile) throws XPathExpressionException {
+                                 ContentSource contentSource) throws XPathExpressionException {
         final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
         if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
             return Type.CONTENT_PACKAGE;
         }
 
-        if (eomFile.getContentSource().equals(ContentSource.DynamicContent)) {
+        if (contentSource.equals(ContentSource.DynamicContent)) {
             return Type.DYNAMIC_CONTENT;
         }
 
