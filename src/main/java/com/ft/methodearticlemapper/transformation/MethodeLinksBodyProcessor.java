@@ -384,13 +384,29 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     }
 
     private void transformLinkToAssetOnFtCom(Node aTag, String uuid) {
-        String newHref = String.format(canonicalUrlTemplate, uuid);
+        String oldHref = getHref(aTag);
+        String newHref;
+
+        Matcher matcher = FT_COM_URL_REGEX_PATTERN.matcher(oldHref);
+        if (matcher.matches()) {
+            URI ftAssetUri = URI.create(oldHref);
+            String path = ftAssetUri.getPath();
+
+            if (path.startsWith("/intl") || path.startsWith("/cms/s") || path.startsWith("/video") || path.startsWith("/content")) {
+                newHref = String.format(canonicalUrlTemplate, uuid);
+            } else {
+                newHref = oldHref;
+            }
+        } else {
+            newHref = String.format(canonicalUrlTemplate, uuid);
+        }
+
         getAttribute(aTag, "href").setNodeValue(newHref);
 
-		// We might have added a type attribute to identify the type of content this links to.
-		// If so, it should be removed, because it is not HTML5 compliant.
-		removeTypeAttributeIfPresent(aTag);
-	}
+        // We might have added a type attribute to identify the type of content this links to.
+        // If so, it should be removed, because it is not HTML5 compliant.
+        removeTypeAttributeIfPresent(aTag);
+    }
 
     private void removeTypeAttributeIfPresent(Node aTag) {
         if (getAttribute(aTag, TYPE) != null) {
