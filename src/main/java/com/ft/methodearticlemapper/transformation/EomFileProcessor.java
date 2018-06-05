@@ -33,6 +33,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.management.Attribute;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,16 +54,8 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
 
 import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -78,6 +71,7 @@ public class EomFileProcessor {
     }
 
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
+    protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -90,6 +84,7 @@ public class EomFileProcessor {
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
     private static final String BLOCKS_XPATH = "/doc/blocks";
+    private static final String IG_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -168,6 +163,7 @@ public class EomFileProcessor {
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
+
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final Document attributes = eomFile.getAttributes();
         final Document value = eomFile.getValue();
@@ -230,7 +226,6 @@ public class EomFileProcessor {
                 .withMainImage(mainImage)
                 .withBrands(new TreeSet<>(Collections.singletonList(brand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
-                .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, attributes))
                 .withTransactionId(refFieldName, transactionId)
@@ -247,6 +242,7 @@ public class EomFileProcessor {
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
                 .withBlocks(blocks)
+                .withIdentifiers(getIdentifiers(xpath, attributes, type, uuid))
                 .build();
     }
 
@@ -543,5 +539,13 @@ public class EomFileProcessor {
             blockList.add(new Block(key.getTextContent(), valueXML.getTextContent(), BLOCK_TYPE));
         }
         return blockList;
+    }
+
+    private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
+        if (!Type.DYNAMIC_CONTENT.equals(type)) {
+            return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
+        }
+        final Node igUUID = (Node) xPath.evaluate(IG_UUID_XPATH, attributes, XPathConstants.NODE);
+        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(IG, igUUID.getTextContent()));
     }
 }
