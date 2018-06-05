@@ -429,7 +429,7 @@ public class MethodeLinksBodyProcessorTest {
 
 	@Test
 	public void thatStreamLinksArePreserved() {
-		String body = "<body><a href=\"https://www.ft.com/stream/" + uuid +"\">Matteo Salvini</a></body>";
+		String body = "<body><a href=\"https://www.ft.com/stream/" + uuid + "\">Matteo Salvini</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
 		assertThat(processedBody, is(identicalXmlTo(body)));
@@ -437,10 +437,10 @@ public class MethodeLinksBodyProcessorTest {
 
 	@Test
 	public void thatVideoLinksAreChangedToContent() {
-		String body = "<body><a href=\"https://www.ft.com/video/" + uuid +"\">Matteo Salvini</a></body>";
+		String body = "<body><a href=\"https://www.ft.com/video/" + uuid + "\">Matteo Salvini</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><a href=\"https://www.ft.com/content/" + uuid +"\">Matteo Salvini</a></body>";
+		String expectedBody = "<body><a href=\"https://www.ft.com/content/" + uuid + "\">Matteo Salvini</a></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
