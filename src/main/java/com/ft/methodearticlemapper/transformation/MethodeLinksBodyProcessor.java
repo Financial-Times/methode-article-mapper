@@ -392,7 +392,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
             URI ftAssetUri = URI.create(oldHref);
             String path = ftAssetUri.getPath();
 
-            if (path.startsWith("/intl") || path.startsWith("/cms/s") || path.startsWith("/video")) {
+            if (path.startsWith("/intl") || path.startsWith("/cms/s") || path.startsWith("/video") || path.startsWith("/content")) {
                 newHref = String.format(canonicalUrlTemplate, uuid);
             } else {
                 newHref = oldHref;

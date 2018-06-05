@@ -253,7 +253,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"http://www.ft.com/content/" + uuid + "\" type=\"some-type\"> Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><a href=\"http://www.ft.com/content/" + uuid + "\"> Link Text</a></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><a href=\"https://www.ft.com/content/" + uuid + "\"> Link Text</a></body>")));
 	}
 
 	@Test
