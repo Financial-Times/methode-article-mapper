@@ -33,7 +33,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.management.Attribute;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,8 +53,17 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -83,7 +91,7 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
-    private static final String BLOCKS_XPATH = "/doc/blocks";
+    private static final String BLOCKS_XPATH = "/doc/blocks//block";
     private static final String IG_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
 
     private static final String START_BODY = "<body";
@@ -162,7 +170,6 @@ public class EomFileProcessor {
 
     private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
-
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final Document attributes = eomFile.getAttributes();
@@ -528,17 +535,18 @@ public class EomFileProcessor {
         if (!Type.DYNAMIC_CONTENT.equals(type)) {
             return null;
         }
+        List<Block> resultedBlocks = new ArrayList<>();
 
-        final Node blocks = (Node) xpath.evaluate(BLOCKS_XPATH, value, XPathConstants.NODE);
-        final List<Block> blockList = new ArrayList<>();
-        NodeList blocksChildren = blocks.getChildNodes();
-        for (int i = 0; i < blocksChildren.getLength(); i++) {
-            Node blockNode = blocksChildren.item(i);
-            final Node key = (Node) xpath.evaluate("block-name", blockNode, XPathConstants.NODE);
-            final Node valueXML = (Node) xpath.evaluate("block-html-value", blockNode, XPathConstants.NODE);
-            blockList.add(new Block(key.getTextContent(), valueXML.getTextContent(), BLOCK_TYPE));
+        NodeList xmlBlocks = (NodeList) xpath.compile(BLOCKS_XPATH).evaluate(value, XPathConstants.NODESET);
+        for (int i = 0; i < xmlBlocks.getLength(); i++) {
+            Node currentBlock = xmlBlocks.item(i);
+            Node key = (Node) xpath.evaluate("block-name", currentBlock, XPathConstants.NODE);
+            Node valueXML = (Node) xpath.evaluate("block-html-value", currentBlock, XPathConstants.NODE);
+
+            resultedBlocks.add(new Block(key.getTextContent(), valueXML.getTextContent(), BLOCK_TYPE));
         }
-        return blockList;
+
+        return resultedBlocks;
     }
 
     private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
