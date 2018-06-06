@@ -63,7 +63,7 @@ public class MethodeLinksBodyProcessor implements BodyProcessor {
     private static final String ANCHOR_PREFIX = "#";
     private static final String TYPE = "type";
 
-    private static final String UUID_REGEX = ".*([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
+    private static final String UUID_REGEX = ".*?([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
     private static final Pattern UUID_REGEX_PATTERN = Pattern.compile(UUID_REGEX);
     private static final String UUID_PARAM_REGEX = ".*uuid=" + UUID_REGEX;
     private static final Pattern UUID_PARAM_REGEX_PATTERN = Pattern.compile(UUID_PARAM_REGEX);
