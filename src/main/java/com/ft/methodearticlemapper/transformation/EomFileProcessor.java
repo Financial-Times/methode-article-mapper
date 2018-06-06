@@ -473,6 +473,11 @@ public class EomFileProcessor {
         return htmlFieldProcessor.process(nodeAsString, null);
     }
 
+    private String getNodeValueAsString(Node node) throws TransformerException {
+        String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
+        return nodeAsString.replace("<" + node.getNodeName() + ">", "").replace("</" + node.getNodeName() + ">", "");
+    }
+
     private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
         StringWriter writer = new StringWriter();
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -531,7 +536,7 @@ public class EomFileProcessor {
         return builder.build();
     }
 
-    private List<Block> getBlocks(XPath xpath, Document value, String type) throws XPathExpressionException {
+    private List<Block> getBlocks(XPath xpath, Document value, String type) throws XPathExpressionException, TransformerException {
         if (!Type.DYNAMIC_CONTENT.equals(type)) {
             return null;
         }
@@ -540,10 +545,13 @@ public class EomFileProcessor {
         NodeList xmlBlocks = (NodeList) xpath.compile(BLOCKS_XPATH).evaluate(value, XPathConstants.NODESET);
         for (int i = 0; i < xmlBlocks.getLength(); i++) {
             Node currentBlock = xmlBlocks.item(i);
-            Node key = (Node) xpath.evaluate("block-name", currentBlock, XPathConstants.NODE);
-            Node valueXML = (Node) xpath.evaluate("block-html-value", currentBlock, XPathConstants.NODE);
+            Node keyNode = (Node) xpath.evaluate("block-name", currentBlock, XPathConstants.NODE);
+            Node valueXMLNode = (Node) xpath.evaluate("block-html-value", currentBlock, XPathConstants.NODE);
 
-            resultedBlocks.add(new Block(key.getTextContent(), valueXML.getTextContent(), BLOCK_TYPE));
+            String key = getNodeValueAsString(keyNode);
+            String valueXML = getNodeValueAsString(valueXMLNode);
+
+            resultedBlocks.add(new Block(key, valueXML, BLOCK_TYPE));
         }
 
         return resultedBlocks;
