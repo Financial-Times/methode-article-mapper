@@ -444,4 +444,14 @@ public class MethodeLinksBodyProcessorTest {
 
         assertThat(processedBody, is(identicalXmlTo(expectedBody)));
     }
+    
+    @Test
+    public void thatCorrectUUIDisAppendedToConvertedLink() {   	
+        String body = "<body><a href=\"https://www.ft.com/content/" + uuid + "?segmentId=" + UUID.randomUUID().toString() +"\">random text</a></body>";
+        String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
+
+        String expectedBody = "<body><a href=\"https://www.ft.com/content/" + uuid + "\">random text</a></body>";
+
+        assertThat(processedBody, is(identicalXmlTo(expectedBody)));
+    }
 }
