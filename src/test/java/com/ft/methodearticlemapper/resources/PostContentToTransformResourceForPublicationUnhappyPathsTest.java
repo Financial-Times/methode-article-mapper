@@ -99,7 +99,7 @@ public class PostContentToTransformResourceForPublicationUnhappyPathsTest {
      */
     @Test
     public void shouldThrow404ExceptionWhenContentIsMarkedAsDeletedInMethode() {
-        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).thenThrow(new MethodeMarkedDeletedException(uuid));
+        when(eomFileProcessor.process(eq(eomFile), eq(TransformationMode.PUBLISH), eq(TRANSACTION_ID), any())).thenThrow(new MethodeMarkedDeletedException(uuid, "FT"));
         try {
             postContentToTransformResource.map(eomFile, false, null);
             fail("No exception was thrown, but expected one.");

@@ -43,7 +43,7 @@ public class MessageProducingArticleMapperTest {
 
     @Before
     public void setUp() {
-        msgProducingArticleMapper = new MessageProducingArticleMapper (
+        msgProducingArticleMapper = new MessageProducingArticleMapper(
                 messageBuilder,
                 producer,
                 mapper
@@ -80,12 +80,15 @@ public class MessageProducingArticleMapperTest {
         String tid = "tid";
         Date date = new Date();
         String uuid = UUID.randomUUID().toString();
+        String contentType = "Article";
         Message deletedContentMsg = mock(Message.class);
+        MethodeMarkedDeletedException ex = mock(MethodeMarkedDeletedException.class);
 
-        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
-        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, "Article")).thenReturn(deletedContentMsg);
+        when(ex.getType()).thenReturn(contentType);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(ex);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, contentType)).thenReturn(deletedContentMsg);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date);
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).withType(contentType).build(), tid, date);
 
         verify(producer).send(Collections.singletonList(deletedContentMsg));
     }

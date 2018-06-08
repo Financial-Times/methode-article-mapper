@@ -17,7 +17,7 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
-import com.ft.methodearticlemapper.util.DetermineType;
+import com.ft.methodearticlemapper.util.ContentType;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -52,11 +52,9 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
@@ -166,7 +164,7 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
-        final String type = DetermineType.determineType(xpath, attributes, eomFile.getContentSource());
+        final String type = ContentType.determineType(xpath, attributes, eomFile.getContentSource());
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
@@ -252,7 +250,7 @@ public class EomFileProcessor {
             return EMPTY_VALIDATED_BODY;
         }
 
-        if (DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
+        if (ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return EMPTY_VALIDATED_BODY;
         }
 
@@ -325,7 +323,7 @@ public class EomFileProcessor {
     private String getDescription(final String type,
                                   final XPath xpath,
                                   final Document valueDocument) throws TransformerException, XPathExpressionException {
-        if (!DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
+        if (!ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -348,7 +346,7 @@ public class EomFileProcessor {
                                      final XPath xpath,
                                      final Document valueDocument,
                                      final UUID articleUuid) throws XPathExpressionException {
-        if (!DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
+        if (!ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -491,7 +489,7 @@ public class EomFileProcessor {
     private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {
             case FT:
-                return DetermineType.Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
+                return ContentType.Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
             case Reuters:
                 return Distribution.NO;
             default:
@@ -509,7 +507,7 @@ public class EomFileProcessor {
     }
 
     private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
-        if (!DetermineType.Type.DYNAMIC_CONTENT.equals(type)) {
+        if (!ContentType.Type.DYNAMIC_CONTENT.equals(type)) {
             return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
         }
         final Node igUUID = (Node) xPath.evaluate(IG_UUID_XPATH, attributes, XPathConstants.NODE);

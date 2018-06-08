@@ -40,7 +40,8 @@ public class MessageBuilder {
         MessageBody msgBody = new MessageBody(
                 content,
                 contentUriBuilder.build(content.getUuid()).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC)), content.getType()
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC)),
+                content.getType()
         );
 
         return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
@@ -50,7 +51,8 @@ public class MessageBuilder {
         MessageBody msgBody = new MessageBody(
                 null,
                 contentUriBuilder.build(uuid).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC)), contentType
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC)),
+                contentType
         );
         return buildMessage(uuid, publishReference, msgBody);
     }

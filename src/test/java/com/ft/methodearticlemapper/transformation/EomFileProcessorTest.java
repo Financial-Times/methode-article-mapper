@@ -27,13 +27,12 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
-import com.ft.methodearticlemapper.util.DetermineType;
+import com.ft.methodearticlemapper.util.ContentType;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import gherkin.lexer.Eo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +46,6 @@ import java.util.*;
 
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.EomFileProcessor.METHODE;
 import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
 import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
 import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
@@ -1086,7 +1084,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFile(uuid);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(DetermineType.Type.ARTICLE, equalTo(content.getType()));
+        assertThat(ContentType.Type.ARTICLE, equalTo(content.getType()));
     }
 
     @Test
@@ -1211,7 +1209,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(content.getType(), is(DetermineType.Type.CONTENT_PACKAGE));
+        assertThat(content.getType(), is(ContentType.Type.CONTENT_PACKAGE));
         assertThat(content.getDescription(), is(expectedDescription));
         assertThat(content.getContentPackage(), is(expectedListId));
         assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));
@@ -1238,7 +1236,7 @@ public class EomFileProcessorTest {
 
         final EomFile eomFile = createDynamicContent(attributesTemplateValues);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getType(), equalTo(DetermineType.Type.DYNAMIC_CONTENT));
+        assertThat(content.getType(), equalTo(ContentType.Type.DYNAMIC_CONTENT));
     }
 
     @Test
@@ -1459,6 +1457,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
+                .withValue(buildEomFileValue(new HashMap<>()))
                 .withAttributes(buildEomFileAttributes(attributesTemplateValues))
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
                 .withWorkflowStatus(EomFile.WEB_READY)
@@ -1491,7 +1490,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent(ContentSource contentSource) {
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
-                .withType(DetermineType.Type.ARTICLE)
+                .withType(ContentType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
