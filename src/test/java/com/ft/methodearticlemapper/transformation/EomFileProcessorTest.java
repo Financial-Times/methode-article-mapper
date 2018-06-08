@@ -27,6 +27,7 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
+import com.ft.methodearticlemapper.util.DetermineType;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -1085,7 +1086,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFile(uuid);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(EomFileProcessor.Type.ARTICLE, equalTo(content.getType()));
+        assertThat(DetermineType.Type.ARTICLE, equalTo(content.getType()));
     }
 
     @Test
@@ -1210,7 +1211,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(content.getType(), is(EomFileProcessor.Type.CONTENT_PACKAGE));
+        assertThat(content.getType(), is(DetermineType.Type.CONTENT_PACKAGE));
         assertThat(content.getDescription(), is(expectedDescription));
         assertThat(content.getContentPackage(), is(expectedListId));
         assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));
@@ -1230,163 +1231,23 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testBlocksIsSet() {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "x-value");
-        templateValues.put("block-name-2", "y");
-        templateValues.put("block-html-value-2", "y-value");
-
-        Map<String, Object> attributesTemplateValues = new HashMap<>();
-        attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
-
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getBlocks(), notNullValue());
-        assertThat(content.getBlocks().size(), equalTo(2));
-        assertThat(content.getBlocks().get(0).getKey(), equalTo("x"));
-        assertThat(content.getBlocks().get(0).getValueXML(), equalTo("x-value"));
-        assertThat(content.getBlocks().get(0).getType(), equalTo("html-block"));
-        assertThat(content.getBlocks().get(1).getKey(), equalTo("y"));
-        assertThat(content.getBlocks().get(1).getValueXML(), equalTo("y-value"));
-        assertThat(content.getBlocks().get(1).getType(), equalTo("html-block"));
-    }
-
-    @Test
-    public void testBlocksKeyIsEmpty() {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "");
-        templateValues.put("block-html-value-1", "x-value");
-        templateValues.put("block-name-2", "");
-        templateValues.put("block-html-value-2", "y-value");
-
-        Map<String, Object> attributesTemplateValues = new HashMap<>();
-        attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
-
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getBlocks(), notNullValue());
-        assertThat(content.getBlocks().size(), equalTo(2));
-        assertThat(content.getBlocks().get(0).getKey(), equalTo(""));
-        assertThat(content.getBlocks().get(0).getValueXML(), equalTo("x-value"));
-        assertThat(content.getBlocks().get(0).getType(), equalTo("html-block"));
-        assertThat(content.getBlocks().get(1).getKey(), equalTo(""));
-        assertThat(content.getBlocks().get(1).getValueXML(), equalTo("y-value"));
-        assertThat(content.getBlocks().get(1).getType(), equalTo("html-block"));
-    }
-
-    @Test
-    public void testBlocksValueIsEmpty() {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "");
-        templateValues.put("block-name-2", "y");
-        templateValues.put("block-html-value-2", "");
-
-        Map<String, Object> attributesTemplateValues = new HashMap<>();
-        attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
-
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getBlocks(), notNullValue());
-        assertThat(content.getBlocks().size(), equalTo(2));
-        assertThat(content.getBlocks().get(0).getKey(), equalTo("x"));
-        assertThat(content.getBlocks().get(0).getValueXML(), equalTo(""));
-        assertThat(content.getBlocks().get(0).getType(), equalTo("html-block"));
-        assertThat(content.getBlocks().get(1).getKey(), equalTo("y"));
-        assertThat(content.getBlocks().get(1).getValueXML(), equalTo(""));
-        assertThat(content.getBlocks().get(1).getType(), equalTo("html-block"));
-    }
-
-    @Test
-    public void testBlocksIsEmpty() {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "");
-        templateValues.put("block-html-value-1", "");
-        templateValues.put("block-name-2", "");
-        templateValues.put("block-html-value-2", "");
-
-        Map<String, Object> attributesTemplateValues = new HashMap<>();
-        attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
-
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getBlocks(), notNullValue());
-        assertThat(content.getBlocks().size(), equalTo(2));
-        assertThat(content.getBlocks().get(0).getKey(), equalTo(""));
-        assertThat(content.getBlocks().get(0).getValueXML(), equalTo(""));
-        assertThat(content.getBlocks().get(0).getType(), equalTo("html-block"));
-        assertThat(content.getBlocks().get(1).getKey(), equalTo(""));
-        assertThat(content.getBlocks().get(1).getValueXML(), equalTo(""));
-        assertThat(content.getBlocks().get(1).getType(), equalTo("html-block"));
-    }
-
-    @Test
-    public void testBlocksPTagIsRetain() {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "<p>x-value</p>");
-        templateValues.put("block-name-2", "y");
-        templateValues.put("block-html-value-2", "<p>y-value</p>");
-
-        Map<String, Object> attributesTemplateValues = new HashMap<>();
-        attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
-
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
-
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getBlocks(), notNullValue());
-        assertThat(content.getBlocks().size(), equalTo(2));
-        assertThat(content.getBlocks().get(0).getKey(), equalTo("x"));
-        assertThat(content.getBlocks().get(0).getValueXML(), equalTo("<p>x-value</p>"));
-        assertThat(content.getBlocks().get(0).getType(), equalTo("html-block"));
-        assertThat(content.getBlocks().get(1).getKey(), equalTo("y"));
-        assertThat(content.getBlocks().get(1).getValueXML(), equalTo("<p>y-value</p>"));
-        assertThat(content.getBlocks().get(1).getType(), equalTo("html-block"));
-    }
-
-    @Test
     public void testDCTypeIsSet(){
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "<p>x-value</p>");
-
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
         attributesTemplateValues.put("dc-uuid", DC_UUID);
 
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-        assertThat(content.getType(), equalTo(EomFileProcessor.Type.DYNAMIC_CONTENT));
+        assertThat(content.getType(), equalTo(DetermineType.Type.DYNAMIC_CONTENT));
     }
 
     @Test
     public void testIdentifiersIsSet(){
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "<p>x-value</p>");
-
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
         attributesTemplateValues.put("dc-uuid", DC_UUID);
 
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
@@ -1397,16 +1258,11 @@ public class EomFileProcessorTest {
 
     @Test
     public void testDCUUIDisEmpty(){
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put("blocks", Boolean.TRUE);
-        templateValues.put("block-name-1", "x");
-        templateValues.put("block-html-value-1", "<p>x-value</p>");
-
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
         attributesTemplateValues.put("dc-uuid", "");
 
-        final EomFile eomFile = createDynamicContent(templateValues, attributesTemplateValues);
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
@@ -1594,7 +1450,7 @@ public class EomFileProcessorTest {
                 .build();
     }
 
-    private EomFile createDynamicContent(Map<String, Object> templateValues, Map<String, Object> attributesTemplateValues) {
+    private EomFile createDynamicContent(Map<String, Object> attributesTemplateValues) {
         attributesTemplateValues.put("lastPublicationDate", lastPublicationDateAsString);
         attributesTemplateValues.put("initialPublicationDate", initialPublicationDateAsString);
         attributesTemplateValues.put("subscriptionLevel", SUBSCRIPTION_LEVEL);
@@ -1603,7 +1459,6 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(templateValues))
                 .withAttributes(buildEomFileAttributes(attributesTemplateValues))
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
                 .withWorkflowStatus(EomFile.WEB_READY)
@@ -1636,7 +1491,7 @@ public class EomFileProcessorTest {
     private Content createStandardExpectedContent(ContentSource contentSource) {
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
-                .withType(EomFileProcessor.Type.ARTICLE)
+                .withType(DetermineType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))

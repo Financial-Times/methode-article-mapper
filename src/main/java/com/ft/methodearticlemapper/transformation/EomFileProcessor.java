@@ -4,7 +4,6 @@ import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
-import com.ft.content.model.Block;
 import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
@@ -18,6 +17,7 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
+import com.ft.methodearticlemapper.util.DetermineType;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -71,13 +70,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 public class EomFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
-
-    interface Type {
-        String CONTENT_PACKAGE = "ContentPackage";
-        String ARTICLE = "Article";
-        String DYNAMIC_CONTENT = "DynamicContent";
-    }
-
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
@@ -91,14 +83,11 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
-    private static final String BLOCKS_XPATH = "/doc/blocks//block";
     private static final String IG_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
     private static final String EMPTY_VALIDATED_BODY = "<body></body>";
-
-    private static final String BLOCK_TYPE = "html-block";
 
     private final EnumSet<TransformationMode> supportedModes;
     private final FieldTransformer bodyTransformer;
@@ -177,7 +166,7 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
-        final String type = determineType(xpath, attributes, eomFile.getContentSource());
+        final String type = DetermineType.determineType(xpath, attributes, eomFile.getContentSource());
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
@@ -220,7 +209,6 @@ public class EomFileProcessor {
 
         final URI webUrl = URI.create(String.format(this.webUrlTemplate, uuid));
         final URI canonicalWebUrl = URI.create(String.format(this.canonicalWebUrlTemplate, uuid));
-        final List<Block> blocks = getBlocks(xpath, value, type);
 
         return Content.builder()
                 .withUuid(uuid)
@@ -248,7 +236,6 @@ public class EomFileProcessor {
                 .withEditorialDesk(editorialDesk)
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
-                .withBlocks(blocks)
                 .withIdentifiers(getIdentifiers(xpath, attributes, type, uuid))
                 .build();
     }
@@ -265,7 +252,7 @@ public class EomFileProcessor {
             return EMPTY_VALIDATED_BODY;
         }
 
-        if (Type.CONTENT_PACKAGE.equals(type)) {
+        if (DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
             return EMPTY_VALIDATED_BODY;
         }
 
@@ -335,25 +322,10 @@ public class EomFileProcessor {
         }
     }
 
-    private String determineType(final XPath xpath,
-                                 final Document attributesDocument,
-                                 ContentSource contentSource) throws XPathExpressionException {
-        final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
-        if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
-            return Type.CONTENT_PACKAGE;
-        }
-
-        if (contentSource.equals(ContentSource.DynamicContent)) {
-            return Type.DYNAMIC_CONTENT;
-        }
-
-        return Type.ARTICLE;
-    }
-
     private String getDescription(final String type,
                                   final XPath xpath,
                                   final Document valueDocument) throws TransformerException, XPathExpressionException {
-        if (!Type.CONTENT_PACKAGE.equals(type)) {
+        if (!DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -376,7 +348,7 @@ public class EomFileProcessor {
                                      final XPath xpath,
                                      final Document valueDocument,
                                      final UUID articleUuid) throws XPathExpressionException {
-        if (!Type.CONTENT_PACKAGE.equals(type)) {
+        if (!DetermineType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -519,7 +491,7 @@ public class EomFileProcessor {
     private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {
             case FT:
-                return Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
+                return DetermineType.Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
             case Reuters:
                 return Distribution.NO;
             default:
@@ -536,29 +508,8 @@ public class EomFileProcessor {
         return builder.build();
     }
 
-    private List<Block> getBlocks(XPath xpath, Document value, String type) throws XPathExpressionException, TransformerException {
-        if (!Type.DYNAMIC_CONTENT.equals(type)) {
-            return null;
-        }
-        List<Block> resultedBlocks = new ArrayList<>();
-
-        NodeList xmlBlocks = (NodeList) xpath.compile(BLOCKS_XPATH).evaluate(value, XPathConstants.NODESET);
-        for (int i = 0; i < xmlBlocks.getLength(); i++) {
-            Node currentBlock = xmlBlocks.item(i);
-            Node keyNode = (Node) xpath.evaluate("block-name", currentBlock, XPathConstants.NODE);
-            Node valueXMLNode = (Node) xpath.evaluate("block-html-value", currentBlock, XPathConstants.NODE);
-
-            String key = getNodeValueAsString(keyNode);
-            String valueXML = getNodeValueAsString(valueXMLNode);
-
-            resultedBlocks.add(new Block(key, valueXML, BLOCK_TYPE));
-        }
-
-        return resultedBlocks;
-    }
-
     private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
-        if (!Type.DYNAMIC_CONTENT.equals(type)) {
+        if (!DetermineType.Type.DYNAMIC_CONTENT.equals(type)) {
             return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
         }
         final Node igUUID = (Node) xPath.evaluate(IG_UUID_XPATH, attributes, XPathConstants.NODE);

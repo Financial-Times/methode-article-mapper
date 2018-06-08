@@ -13,7 +13,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
@@ -47,7 +51,7 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageIsCreatedFromMappedArticle() {
+    public void thatMessageIsCreatedFromMappedArticle() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
         Date lastModified = new Date();
         Content mappedArticle = new Content.Builder()
                 .withUuid(UUID.randomUUID())
@@ -60,7 +64,7 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageWithContentIsSentToQueue() {
+    public void thatMessageWithContentIsSentToQueue() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
         Content mockedContent = mock(Content.class);
         Message mockedMessage = mock(Message.class);
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenReturn(mockedContent);
@@ -72,14 +76,14 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageWithContentMarkedAsDeletedIsSentToQueue() {
+    public void thatMessageWithContentMarkedAsDeletedIsSentToQueue() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
         String tid = "tid";
         Date date = new Date();
         String uuid = UUID.randomUUID().toString();
         Message deletedContentMsg = mock(Message.class);
 
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
-        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date)).thenReturn(deletedContentMsg);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, "Article")).thenReturn(deletedContentMsg);
 
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date);
 

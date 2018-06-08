@@ -40,17 +40,17 @@ public class MessageBuilder {
         MessageBody msgBody = new MessageBody(
                 content,
                 contentUriBuilder.build(content.getUuid()).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC))
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC)), content.getType()
         );
 
         return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
     }
 
-    Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified) {
+    Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified, String contentType) {
         MessageBody msgBody = new MessageBody(
                 null,
                 contentUriBuilder.build(uuid).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC))
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC)), contentType
         );
         return buildMessage(uuid, publishReference, msgBody);
     }
@@ -82,6 +82,8 @@ public class MessageBuilder {
         public final String contentUri;
         @JsonProperty("lastModified")
         public final String lastModified;
+        @JsonProperty("contentType")
+        public final String contentType;
 
         MessageBody(
                 @JsonProperty("payload")
@@ -89,10 +91,13 @@ public class MessageBuilder {
                 @JsonProperty("contentUri")
                         String contentUri,
                 @JsonProperty("lastModified")
-                        String lastModified) {
+                        String lastModified,
+                @JsonProperty("contentType")
+                        String contentType) {
             this.contentUri = contentUri;
             this.payload = payload;
             this.lastModified = lastModified;
+            this.contentType = contentType;
         }
     }
 }
