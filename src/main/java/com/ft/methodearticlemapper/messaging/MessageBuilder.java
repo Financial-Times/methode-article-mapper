@@ -29,6 +29,8 @@ public class MessageBuilder {
     private final UriBuilder contentUriBuilder;
     private final SystemId systemId;
     private final ObjectMapper objectMapper;
+    private final String TYPE_BASE_URL = "http://www.ft.com/ontology/content/";
+
 
     public MessageBuilder(UriBuilder contentUriBuilder, String systemId, ObjectMapper objectMapper) {
         this.contentUriBuilder = contentUriBuilder;
@@ -41,7 +43,7 @@ public class MessageBuilder {
                 content,
                 contentUriBuilder.build(content.getUuid()).toString(),
                 RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC)),
-                content.getType()
+                TYPE_BASE_URL + content.getType()
         );
 
         return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
@@ -52,7 +54,7 @@ public class MessageBuilder {
                 null,
                 contentUriBuilder.build(uuid).toString(),
                 RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC)),
-                contentType
+                TYPE_BASE_URL + contentType
         );
         return buildMessage(uuid, publishReference, msgBody);
     }
