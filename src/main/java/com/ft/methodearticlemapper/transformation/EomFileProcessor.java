@@ -69,7 +69,7 @@ public class EomFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
-    protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
+    protected static final String INTERACTIVE_GRAPHICS = "http://api.ft.com/system/FTCOM-IG";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -81,7 +81,7 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
-    private static final String IG_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
+    private static final String INTERACTIVE_GRAPHICS_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -443,11 +443,6 @@ public class EomFileProcessor {
         return htmlFieldProcessor.process(nodeAsString, null);
     }
 
-    private String getNodeValueAsString(Node node) throws TransformerException {
-        String nodeAsString = convertNodeToStringReturningEmptyIfNull(node);
-        return nodeAsString.replace("<" + node.getNodeName() + ">", "").replace("</" + node.getNodeName() + ">", "");
-    }
-
     private String convertNodeToStringReturningEmptyIfNull(Node node) throws TransformerException {
         StringWriter writer = new StringWriter();
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -510,7 +505,7 @@ public class EomFileProcessor {
         if (!ContentType.Type.DYNAMIC_CONTENT.equals(type)) {
             return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
         }
-        final Node igUUID = (Node) xPath.evaluate(IG_UUID_XPATH, attributes, XPathConstants.NODE);
-        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(IG, igUUID.getTextContent()));
+        final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, attributes, XPathConstants.NODE);
+        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
     }
 }

@@ -34,7 +34,7 @@ public class MessageProducingArticleMapper {
         this.articleMapper = articleMapper;
     }
 
-    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException {
+    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) {
         Message message;
         try {
             message = messageBuilder.buildMessage(

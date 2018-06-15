@@ -55,12 +55,6 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
             msgProducingArticleMapper.mapArticle(methodeContent, transactionId, message.getMessageTimestamp());
         } catch (IOException e) {
             throw new MethodeArticleMapperException("Unable to process message", e);
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
         }
         return true;
     }

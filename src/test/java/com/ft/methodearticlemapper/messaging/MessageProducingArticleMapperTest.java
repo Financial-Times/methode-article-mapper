@@ -51,7 +51,7 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageIsCreatedFromMappedArticle() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
+    public void thatMessageIsCreatedFromMappedArticle() {
         Date lastModified = new Date();
         Content mappedArticle = new Content.Builder()
                 .withUuid(UUID.randomUUID())
@@ -64,7 +64,7 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageWithContentIsSentToQueue() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
+    public void thatMessageWithContentIsSentToQueue() {
         Content mockedContent = mock(Content.class);
         Message mockedMessage = mock(Message.class);
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenReturn(mockedContent);
@@ -76,7 +76,7 @@ public class MessageProducingArticleMapperTest {
     }
 
     @Test
-    public void thatMessageWithContentMarkedAsDeletedIsSentToQueue() throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
+    public void thatMessageWithContentMarkedAsDeletedIsSentToQueue() {
         String tid = "tid";
         Date date = new Date();
         String uuid = UUID.randomUUID().toString();
