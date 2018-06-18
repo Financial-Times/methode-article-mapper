@@ -477,6 +477,14 @@ public class EomFileProcessorTest {
     }
 
     @Test
+    public void thatSuggestEmptyTransformedBodyIsAllowed() {
+        final EomFile eomFile = createEomStoryFile(uuid);
+        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.SUGGEST), anyVararg())).thenReturn(EMPTY_BODY);
+        Content actual = eomFileProcessor.process(eomFile, TransformationMode.SUGGEST, TRANSACTION_ID, new Date());
+        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
+    }
+
+    @Test
     public void thatContentPackageNullBodyIsAllowed() {
         final EomFile eomFile = createEomFileWithRandomContentPackage();
 
