@@ -250,7 +250,7 @@ public class EomFileProcessor {
             return transformedBody;
         }
 
-        if (TransformationMode.PREVIEW.equals(mode)) {
+        if (TransformationMode.PREVIEW.equals(mode) || TransformationMode.SUGGEST.equals(mode)) {
             return EMPTY_VALIDATED_BODY;
         }
 
