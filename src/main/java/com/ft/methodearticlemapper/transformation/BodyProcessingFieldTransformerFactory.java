@@ -67,6 +67,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 tearSheetsBodyProcessor(),
                 new ImageExtractorBodyProcessor(),
                 new PromoBoxExtractorBodyProcessor(),
+                new DynamicContentExtractorBodyProcessor(),
                 stAXTransformingBodyProcessor(),
                 new RegexRemoverBodyProcessor("(<p>)(\\s|(<br/>))*(</p>)"),
                 new RegexReplacerBodyProcessor("</p>(\\r?\\n)+<p>", "</p>" + System.lineSeparator() + "<p>"),
