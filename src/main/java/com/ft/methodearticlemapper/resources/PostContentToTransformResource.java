@@ -40,26 +40,26 @@ import org.slf4j.MDC;
 @Path("/")
 public class PostContentToTransformResource {
     private static final Logger LOG = LoggerFactory.getLogger(PostContentToTransformResource.class);
-    
+
     private static final String CHARSET_UTF_8 = ";charset=utf-8";
     private static final String TX_ID = "transaction_id";
-    
+
     private static final Supplier<String> TX_ID_SUPPLIER = () -> {
         String txId = MDC.get(TX_ID);
         if (Strings.isNullOrEmpty(txId)) {
             throw new NullPointerException();
         }
-        
+
         txId = txId.substring(txId.indexOf('=') + 1);
-        
+
         return txId;
     };
-    
+
     private final EomFileProcessor eomFileProcessor;
     private final PropertySource lastModifiedSource;
     private final PropertySource txIdSource;
     private final String txIdField;
-    
+
     public PostContentToTransformResource(EomFileProcessor eomFileProcessor,
             PropertySource lastModifiedSource,
             PropertySource txIdSource, String txIdField) {
@@ -76,7 +76,7 @@ public class PostContentToTransformResource {
 	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode) {
 		final String uuid = eomFile.getUuid();
 		validateUuid(uuid);
-		
+
 		TransformationMode transformationMode = null;
 		if (mode == null) {
 		    transformationMode = preview ? TransformationMode.PREVIEW : TransformationMode.PUBLISH;
@@ -91,7 +91,7 @@ public class PostContentToTransformResource {
 		    }
 		}
         // otherwise, mode trumps the preview flag if there is a mismatch
-		
+
 		String txId = getTransactionId(eomFile);
 		Date lastModified = getLastModifiedDate(eomFile);
 		return processRequest(uuid, transformationMode, eomFile, txId, lastModified);
@@ -110,11 +110,11 @@ public class PostContentToTransformResource {
 	                }
 	            }
 	            break;
-	        
+
 	        default:
 	            lastModified = new Date();
 	    }
-	    
+
 	    return lastModified;
 	}
 
@@ -124,14 +124,14 @@ public class PostContentToTransformResource {
             case fromNative:
                 txId = eomFile.getAdditionalProperties().get(txIdField);
                 break;
-            
+
             default:
                 txId = TX_ID_SUPPLIER.get();
         }
-        
+
         return txId;
     }
-	
+
     private Content processRequest(String uuid, TransformationMode mode, EomFile eomFile, String transactionId, Date lastModified) {
         try {
             return eomFileProcessor.process(eomFile, mode, transactionId, lastModified);

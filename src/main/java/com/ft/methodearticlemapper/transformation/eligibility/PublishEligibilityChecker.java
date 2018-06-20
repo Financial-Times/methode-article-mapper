@@ -3,6 +3,7 @@ package com.ft.methodearticlemapper.transformation.eligibility;
 import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
 
 import com.ft.methodearticlemapper.methode.ContentSource;
+import com.ft.methodearticlemapper.util.ContentType;
 import com.google.common.base.Strings;
 
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
@@ -140,7 +141,7 @@ public abstract class PublishEligibilityChecker {
         checkNotEmbargoed();
         ContentSource contentSource = processSourceForPublish();
         checkObjectType();
-        checkNotDeleted();
+        checkNotDeleted(contentSource);
         checkChannel();
         checkPublicationDate();
         checkInitialPublicationDate();
@@ -212,12 +213,12 @@ public abstract class PublishEligibilityChecker {
         return contentSource;
     }
 
-    protected final void checkNotDeleted()
+    protected final void checkNotDeleted(ContentSource contentSource)
             throws XPathExpressionException {
-
         String markedDeletedString = xpath.evaluate(MARKED_DELETED_ATTR_XPATH, attributesDocument);
         if (Boolean.parseBoolean(markedDeletedString)) {
-            throw new MethodeMarkedDeletedException(uuid);
+            String type = ContentType.determineType(xpath, attributesDocument, contentSource);
+            throw new MethodeMarkedDeletedException(uuid, type);
         }
     }
 
