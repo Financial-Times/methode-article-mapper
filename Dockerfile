@@ -1,8 +1,8 @@
-FROM coco/dropwizardbase:0.7.x-mvn333
+FROM openjdk:8-alpine
 
 COPY . /methode-article-mapper
 
-RUN apk --update add git \
+RUN apk --update add git maven \
  && cd methode-article-mapper \
  && HASH=$(git log -1 --pretty=format:%H) \
  && TAG=$(git tag -l --points-at $HASH | head -n1) \
@@ -12,7 +12,7 @@ RUN apk --update add git \
  && rm -f target/methode-article-mapper-*sources.jar \
  && mv target/methode-article-mapper-*.jar /methode-article-mapper.jar \
  && mv methode-article-mapper.yaml /config.yaml \
- && apk del git \
+ && apk del git maven \
  && rm -rf /var/cache/apk/* \
  && rm -rf /root/.m2/*
 
