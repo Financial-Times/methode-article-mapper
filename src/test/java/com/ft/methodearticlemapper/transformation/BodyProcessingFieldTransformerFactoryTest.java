@@ -793,6 +793,30 @@ public class BodyProcessingFieldTransformerFactoryTest {
     }
 
     @Test
+    public void promoBoxWithPromoTitleThatIsEmptyIsBigNumber() {
+        String bigNumberFromMethode = "<body><p>patelka</p><p><promo-box class=\"numbers-component\" align=\"left\">&lt;<table width=\"170px\" align=\"left\" cellpadding=\"6px\"><tr><td><promo-title>" +
+                "</promo-title>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-headline><p>£350m</p>\n" +
+                "</promo-headline>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "<tr><td><promo-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p>\n" +
+                "</promo-intro>\n" +
+                "</td>\n" +
+                "</tr>\n" +
+                "</table>&gt;</promo-box></p></body>";
+
+        String processedBigNumber = "<body><p>patelka</p><big-number>" +
+                "<big-number-headline><p>£350m</p></big-number-headline>" +
+                "<big-number-intro><p>Cost of the rights expected to increase by one-third — or about £350m a year — although some anticipate inflation of up to 70%</p></big-number-intro>" +
+                "</big-number></body>";
+
+        checkTransformation(bigNumberFromMethode, processedBigNumber);
+    }
+
+    @Test
     public void shouldRetainAllValidAttributesForTableTag() {
     	String dataTableFromMethode = "<body><p>The following data table" +
                 "<div><table class=\"data-table\" id=\"U1817116616509jH\" data-name=\"\"" +
