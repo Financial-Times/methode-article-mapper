@@ -17,6 +17,7 @@ import com.ft.methodearticlemapper.exception.UntransformableMethodeContentExcept
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.eligibility.PublishEligibilityChecker;
+import com.ft.methodearticlemapper.util.ContentType;
 import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
@@ -56,25 +57,19 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
 
 import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 public class EomFileProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EomFileProcessor.class);
-
-    interface Type {
-        String CONTENT_PACKAGE = "ContentPackage";
-        String ARTICLE = "Article";
-    }
-
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
+    protected static final String INTERACTIVE_GRAPHICS = "http://api.ft.com/system/FTCOM-IG";
     private static final String DATE_TIME_FORMAT = "yyyyMMddHHmmss";
     private static final String DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED = "data-embedded";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
@@ -86,6 +81,7 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
+    private static final String INTERACTIVE_GRAPHICS_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -141,7 +137,7 @@ public class EomFileProcessor {
             throw new UnsupportedTransformationModeException(uuid.toString(), mode);
         }
         LOGGER.info("processing UUID={} in {} mode", uuid, mode);
-        
+
         PublishEligibilityChecker eligibilityChecker =
                 PublishEligibilityChecker.forEomFile(eomFile, uuid, transactionId);
 
@@ -168,7 +164,7 @@ public class EomFileProcessor {
 
         final String headline = Strings.nullToEmpty(xpath.evaluate(HEADLINE_XPATH, value)).trim();
         final AlternativeTitles altTitles = buildAlternativeTitles(value, xpath);
-        final String type = determineType(xpath, attributes);
+        final String type = ContentType.determineType(xpath, attributes, eomFile.getContentSource());
 
         final String lastPublicationDateAsString = xpath.evaluate(EomFile.LAST_PUBLICATION_DATE_XPATH, attributes);
         final String firstPublicationDateAsString = xpath.evaluate(EomFile.INITIAL_PUBLICATION_DATE_XPATH, attributes);
@@ -178,7 +174,7 @@ public class EomFileProcessor {
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
         final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId, mode,
-            Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
+                Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
@@ -201,9 +197,9 @@ public class EomFileProcessor {
 
         final String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
         String editorialDesk = workFolder.trim();
-        if(isNotBlank(workFolder)){
+        if (isNotBlank(workFolder)) {
             String subFolder = xpath.evaluate(EomFile.SUB_FOLDER_SYSTEM_ATTRIBUTE_XPATH, eomFile.getSystemAttributes());
-            if(isNotBlank(subFolder)){
+            if (isNotBlank(subFolder)) {
                 String unescapedSubFolder = StringEscapeUtils.unescapeHtml(subFolder);
                 editorialDesk = new StringBuilder(workFolder.trim()).append("/").append(unescapedSubFolder.trim()).toString();
             }
@@ -223,7 +219,6 @@ public class EomFileProcessor {
                 .withMainImage(mainImage)
                 .withBrands(new TreeSet<>(Collections.singletonList(brand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
-                .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, attributes))
                 .withTransactionId(refFieldName, transactionId)
@@ -239,6 +234,7 @@ public class EomFileProcessor {
                 .withEditorialDesk(editorialDesk)
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
+                .withIdentifiers(getIdentifiers(xpath, attributes, type, uuid))
                 .build();
     }
 
@@ -254,7 +250,7 @@ public class EomFileProcessor {
             return EMPTY_VALIDATED_BODY;
         }
 
-        if (Type.CONTENT_PACKAGE.equals(type)) {
+        if (ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return EMPTY_VALIDATED_BODY;
         }
 
@@ -267,7 +263,7 @@ public class EomFileProcessor {
             return null;
         }
         try {
-           return UUID.fromString(storyPackageUuid).toString();
+            return UUID.fromString(storyPackageUuid).toString();
         } catch (IllegalArgumentException e) {
             throw new UntransformableMethodeContentException(articleUuid.toString(), String.format("Article has an invalid reference to a story package - invalid uuid=%s", storyPackageUuid));
         }
@@ -324,21 +320,10 @@ public class EomFileProcessor {
         }
     }
 
-    private String determineType(final XPath xpath,
-                                 final Document attributesDocument)
-        throws XPathExpressionException, TransformerException {
-        final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
-        if (Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
-            return Type.CONTENT_PACKAGE;
-        }
-
-        return Type.ARTICLE;
-    }
-
     private String getDescription(final String type,
                                   final XPath xpath,
                                   final Document valueDocument) throws TransformerException, XPathExpressionException {
-        if (!Type.CONTENT_PACKAGE.equals(type)) {
+        if (!ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -360,8 +345,8 @@ public class EomFileProcessor {
     private String getContentPackage(final String type,
                                      final XPath xpath,
                                      final Document valueDocument,
-                                     final UUID articleUuid) throws TransformerException, XPathExpressionException {
-        if (!Type.CONTENT_PACKAGE.equals(type)) {
+                                     final UUID articleUuid) throws XPathExpressionException {
+        if (!ContentType.Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
 
@@ -430,10 +415,10 @@ public class EomFileProcessor {
     }
 
     private String transformField(final String originalFieldAsString,
-        final FieldTransformer transformer,
-        final String transactionId,
-        final TransformationMode mode,
-        final Entry<String, Object>... contextData) {
+                                  final FieldTransformer transformer,
+                                  final String transactionId,
+                                  final TransformationMode mode,
+                                  final Entry<String, Object>... contextData) {
 
         String transformedField = "";
         if (!Strings.isNullOrEmpty(originalFieldAsString)) {
@@ -482,13 +467,13 @@ public class EomFileProcessor {
         AlternativeTitles.Builder builder = AlternativeTitles.builder();
 
         final String promotionalTitle =
-            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
+                Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_PROMO_TITLE_XPATH, doc)).trim();
         if (!promotionalTitle.isEmpty()) {
             builder = builder.withPromotionalTitle(promotionalTitle);
         }
 
         final String contentPackageTitle =
-            Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH, doc)).trim();
+                Strings.nullToEmpty(xpath.evaluate(ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH, doc)).trim();
         if (!contentPackageTitle.isEmpty()) {
             builder = builder.withContentPackageTitle(contentPackageTitle);
         }
@@ -499,7 +484,7 @@ public class EomFileProcessor {
     private Distribution getCanBeDistributed(ContentSource contentSource, String type) {
         switch (contentSource) {
             case FT:
-                return Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
+                return ContentType.Type.CONTENT_PACKAGE.equals(type) ? Distribution.VERIFY : Distribution.YES;
             case Reuters:
                 return Distribution.NO;
             default:
@@ -514,5 +499,13 @@ public class EomFileProcessor {
             builder = builder.withPromotionalStandfirst(promotionalStandfirst);
         }
         return builder.build();
+    }
+
+    private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
+        if (!ContentType.Type.DYNAMIC_CONTENT.equals(type)) {
+            return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
+        }
+        final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, attributes, XPathConstants.NODE);
+        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
     }
 }

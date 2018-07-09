@@ -13,7 +13,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
@@ -39,7 +43,7 @@ public class MessageProducingArticleMapperTest {
 
     @Before
     public void setUp() {
-        msgProducingArticleMapper = new MessageProducingArticleMapper (
+        msgProducingArticleMapper = new MessageProducingArticleMapper(
                 messageBuilder,
                 producer,
                 mapper
@@ -76,12 +80,15 @@ public class MessageProducingArticleMapperTest {
         String tid = "tid";
         Date date = new Date();
         String uuid = UUID.randomUUID().toString();
+        String contentType = "Article";
         Message deletedContentMsg = mock(Message.class);
+        MethodeMarkedDeletedException ex = mock(MethodeMarkedDeletedException.class);
 
-        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
-        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date)).thenReturn(deletedContentMsg);
+        when(ex.getType()).thenReturn(contentType);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(ex);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, contentType)).thenReturn(deletedContentMsg);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date);
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).withType(contentType).build(), tid, date);
 
         verify(producer).send(Collections.singletonList(deletedContentMsg));
     }

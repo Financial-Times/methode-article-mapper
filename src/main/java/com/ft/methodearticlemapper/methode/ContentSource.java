@@ -5,7 +5,8 @@ import java.util.Map;
 
 public enum ContentSource {
     FT("FT"),
-    Reuters("REU2");
+    Reuters("REU2"),
+    DynamicContent("DynamicContent");
 
     private static Map<String, ContentSource> contentSourceByCode = new HashMap<>();
 

@@ -105,7 +105,7 @@ public class MessageBuilderTest {
         String lastModified = "2016-11-02T07:59:24.715Z";
         Date lastModifiedDate = Date.from(Instant.parse(lastModified));
 
-        Message msg = messageBuilder.buildMessageForDeletedMethodeContent(UUID.toString(), "tid", lastModifiedDate);
+        Message msg = messageBuilder.buildMessageForDeletedMethodeContent(UUID.toString(), "tid", lastModifiedDate, "Article");
 
         Map<String, Object> msgContent = objectMapper.reader(Map.class).readValue(msg.getMessageBody());
         assertThat(msgContent.get("contentUri"), equalTo(contentUri.toString()));
