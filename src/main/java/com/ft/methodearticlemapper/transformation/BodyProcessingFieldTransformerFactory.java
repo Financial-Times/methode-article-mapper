@@ -64,6 +64,7 @@ public class BodyProcessingFieldTransformerFactory implements FieldTransformerFa
                 new RegexRemoverBodyProcessor("<span>\\s*</span>"),
                 new RegexRemoverBodyProcessor("<b>\\s*</b>"),
                 new RegexRemoverBodyProcessor("(<p[^/>]*>\\s*</p>)|(<p/>)|(<p\\s[^/>]*/>)"),
+                new RegexRemoverBodyProcessor("<caption>\\s*</caption>"),
                 tearSheetsBodyProcessor(),
                 new ImageExtractorBodyProcessor(),
                 new PromoBoxExtractorBodyProcessor(),
