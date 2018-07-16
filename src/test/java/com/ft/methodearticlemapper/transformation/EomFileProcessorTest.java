@@ -14,6 +14,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
+import com.ft.methodearticlemapper.exception.MethodeContentInvalidException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
@@ -121,7 +122,7 @@ public class EomFileProcessorTest {
     private static final String TEMPLATE_WEB_SUBHEAD = "webSubhead";
 
     private static final String IMAGE_SET_UUID = "U116035516646705FC";
-    private static final String DC_UUID = "ccac6b68-d688-41f8-9209-31e4b4900b1b";
+    private static final String IG_UUID = "ce0cccf2-747a-11e8-b4ef-b1558cf87650";
 
     private final UUID uuid = UUID.randomUUID();
 
@@ -1240,9 +1241,11 @@ public class EomFileProcessorTest {
     public void testDCTypeIsSet(){
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
 
-        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put("ig-uuid", IG_UUID);
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, templateValues);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getType(), equalTo(ContentType.Type.DYNAMIC_CONTENT));
     }
@@ -1251,28 +1254,46 @@ public class EomFileProcessorTest {
     public void testIdentifiersIsSet(){
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", DC_UUID);
 
-        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put("ig-uuid", IG_UUID);
 
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, templateValues);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
-        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo("ccac6b68-d688-41f8-9209-31e4b4900b1b"));
+        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo("ce0cccf2-747a-11e8-b4ef-b1558cf87650"));
         assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
         assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
     }
 
     @Test
-    public void testDCUUIDisEmpty(){
+    public void testIGUUIDisEmpty(){
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
-        attributesTemplateValues.put("dc-uuid", "");
 
-        final EomFile eomFile = createDynamicContent(attributesTemplateValues);
+        Map<String, Object> valueTemplateValues = new HashMap<>();
+        valueTemplateValues.put("ig-uuid", "");
 
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, valueTemplateValues);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
         assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo(""));
+        assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
+        assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
+    }
+
+    @Test(expected = MethodeContentInvalidException.class)
+    public void testIGUUIDisNull(){
+        Map<String, Object> attributesTemplateValues = new HashMap<>();
+        attributesTemplateValues.put("sourceCode", "DynamicContent");
+
+        Map<String, Object> valueTemplateValues = new HashMap<>();
+        valueTemplateValues.put("ig-uuid", null);
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, valueTemplateValues);
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
+        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo(null));
         assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
         assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
     }
@@ -1456,7 +1477,7 @@ public class EomFileProcessorTest {
                 .build();
     }
 
-    private EomFile createDynamicContent(Map<String, Object> attributesTemplateValues) {
+    private EomFile createDynamicContent(Map<String, Object> attributesTemplateValues, Map<String, Object> templateValues) {
         attributesTemplateValues.put("lastPublicationDate", lastPublicationDateAsString);
         attributesTemplateValues.put("initialPublicationDate", initialPublicationDateAsString);
         attributesTemplateValues.put("subscriptionLevel", SUBSCRIPTION_LEVEL);
@@ -1465,7 +1486,7 @@ public class EomFileProcessorTest {
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
                 .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(new HashMap<>()))
+                .withValue(buildEomFileValue(templateValues))
                 .withAttributes(buildEomFileAttributes(attributesTemplateValues))
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
                 .withWorkflowStatus(EomFile.WEB_READY)

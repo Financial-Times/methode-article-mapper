@@ -12,6 +12,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
+import com.ft.methodearticlemapper.exception.MethodeContentInvalidException;
 import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
@@ -81,7 +82,7 @@ public class EomFileProcessor {
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
-    private static final String INTERACTIVE_GRAPHICS_UUID_XPATH = "/ObjectMetadata/EditorialNotes/DC-UUID";
+    private static final String INTERACTIVE_GRAPHICS_UUID_XPATH = "/doc/lead/external-content/ig-uuid";
 
     private static final String START_BODY = "<body";
     private static final String END_BODY = "</body>";
@@ -234,7 +235,7 @@ public class EomFileProcessor {
                 .withEditorialDesk(editorialDesk)
                 .withWebUrl(webUrl)
                 .withCanonicalWebUrl(canonicalWebUrl)
-                .withIdentifiers(getIdentifiers(xpath, attributes, type, uuid))
+                .withIdentifiers(getIdentifiers(xpath, value, type, uuid))
                 .build();
     }
 
@@ -501,11 +502,15 @@ public class EomFileProcessor {
         return builder.build();
     }
 
-    private SortedSet<Identifier> getIdentifiers(XPath xPath, Document attributes, String type, UUID uuid) throws XPathExpressionException {
+    private SortedSet<Identifier> getIdentifiers(XPath xPath, Document value, String type, UUID uuid) throws XPathExpressionException {
         if (!ContentType.Type.DYNAMIC_CONTENT.equals(type)) {
             return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
         }
-        final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, attributes, XPathConstants.NODE);
+        final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, value, XPathConstants.NODE);
+        if (igUUID == null) {
+            throw new MethodeContentInvalidException(uuid, "The ig-uuid cannot be null");
+        }
+        LOGGER.warn("The ig-uuid cannot be null");
         return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
     }
 }
