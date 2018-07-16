@@ -12,7 +12,7 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.InvalidSubscriptionLevelException;
-import com.ft.methodearticlemapper.exception.MethodeContentInvalidException;
+import com.ft.methodearticlemapper.exception.MissingInteractiveGraphicUuidException;
 import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.methode.ContentSource;
@@ -508,9 +508,9 @@ public class EomFileProcessor {
         }
         final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, value, XPathConstants.NODE);
         if (igUUID == null) {
-            throw new MethodeContentInvalidException(uuid, "The ig-uuid cannot be null");
+            throw new MissingInteractiveGraphicUuidException(uuid, "The ig-uuid cannot be null");
         }
-        LOGGER.warn("The ig-uuid cannot be null");
+        LOGGER.error("The ig-uuid cannot be null");
         return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
     }
 }

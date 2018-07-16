@@ -14,11 +14,11 @@ import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
-import com.ft.methodearticlemapper.exception.MethodeContentInvalidException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
+import com.ft.methodearticlemapper.exception.MissingInteractiveGraphicUuidException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
@@ -1282,7 +1282,7 @@ public class EomFileProcessorTest {
         assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
     }
 
-    @Test(expected = MethodeContentInvalidException.class)
+    @Test(expected = MissingInteractiveGraphicUuidException.class)
     public void testIGUUIDisNull(){
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");
