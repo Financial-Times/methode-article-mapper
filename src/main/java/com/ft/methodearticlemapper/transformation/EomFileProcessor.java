@@ -508,9 +508,9 @@ public class EomFileProcessor {
         }
         final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, value, XPathConstants.NODE);
         if (igUUID == null) {
+            LOGGER.error("Processing the article with UUID={} error: The ig-uuid cannot be null", uuid);
             throw new MissingInteractiveGraphicUuidException(uuid, "The ig-uuid cannot be null");
         }
-        LOGGER.error("The ig-uuid cannot be null");
         return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
     }
 }
