@@ -1266,7 +1266,7 @@ public class EomFileProcessorTest {
         assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
     }
 
-    @Test
+    @Test(expected = MissingInteractiveGraphicUuidException.class)
     public void testIGUUIDisEmpty(){
         Map<String, Object> attributesTemplateValues = new HashMap<>();
         attributesTemplateValues.put("sourceCode", "DynamicContent");

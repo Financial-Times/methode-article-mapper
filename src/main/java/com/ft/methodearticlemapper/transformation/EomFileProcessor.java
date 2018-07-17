@@ -506,11 +506,11 @@ public class EomFileProcessor {
         if (!ContentType.Type.DYNAMIC_CONTENT.equals(type)) {
             return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()));
         }
-        final Node igUUID = (Node) xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, value, XPathConstants.NODE);
-        if (igUUID == null) {
-            LOGGER.error("Processing the article with UUID={} error: The ig-uuid cannot be null", uuid);
-            throw new MissingInteractiveGraphicUuidException(uuid, "The ig-uuid cannot be null");
+        final String igUUID = xPath.evaluate(INTERACTIVE_GRAPHICS_UUID_XPATH, value).trim();
+        if (Strings.isNullOrEmpty(igUUID)) {
+            LOGGER.error("Processing the article with UUID={} error: The ig-uuid cannot be null for DynamicContent", uuid);
+            throw new MissingInteractiveGraphicUuidException(uuid, "The ig-uuid cannot be null or empty for DynamicContent");
         }
-        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID.getTextContent()));
+        return ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString()), new Identifier(INTERACTIVE_GRAPHICS, igUUID));
     }
 }
