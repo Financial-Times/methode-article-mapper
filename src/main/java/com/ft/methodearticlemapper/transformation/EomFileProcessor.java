@@ -83,7 +83,7 @@ public class EomFileProcessor {
     private static final String ALT_TITLE_PROMO_TITLE_XPATH = "/doc/lead/web-index-headline/ln";
     private static final String ALT_TITLE_CONTENT_PACKAGE_TITLE_XPATH = "/doc/lead/package-navigation-headline/ln";
     private static final String STANDFIRST_XPATH = "/doc/lead/web-stand-first";
-    private static final String INTERNAL_ANALYTICS_TAGS_XPATH = "/ObjectMetadata//EditorialNotes/InternalAnalyticsTags";
+    private static final String INTERNAL_ANALYTICS_TAGS_XPATH = "/ObjectMetadata/EditorialNotes/InternalAnalyticsTags";
     private static final String BYLINE_XPATH = "/doc/story/text/byline";
     private static final String SUBSCRIPTION_LEVEL_XPATH = "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomSubscriptionLevel";
     private static final String PROMOTIONAL_STANDFIRST_XPATH = "/doc/lead/web-subhead";
