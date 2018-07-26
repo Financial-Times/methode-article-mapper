@@ -88,6 +88,11 @@ class EomFileAttributesBuilder {
         return this;
     }
 
+    EomFileAttributesBuilder withInternalAnalyticsTags(String tags) {
+        this.attributes.put("internalAnalyticsTags", tags);
+        return this;
+    }
+
     String build() {
         Template mustache = Mustache.compiler().compile(attributesTemplate);
         return mustache.execute(attributes);
