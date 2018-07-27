@@ -102,6 +102,9 @@ public class EomFileProcessorTest {
     private static final String SUB_FOLDER_RETAIL = "Retail &amp; Consumer";
     private static final String ES_SUB_FOLDER_RETAIL = "Retail & Consumer";
 
+    private static final String INTERNAL_ANALYTICS_TAGS = "sometag, another_tag, tag with spaces, mixedCaseTag, House &amp; Home, Less &lt; More, Life+Arts";
+    private static final String ES_INTERNAL_ANALYTICS_TAGS = "sometag, another_tag, tag with spaces, mixedCaseTag, House & Home, Less < More, Life+Arts";
+
 
     private static final String TRANSFORMED_BODY = "<body><p>some other random text</p></body>";
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
@@ -162,6 +165,7 @@ public class EomFileProcessorTest {
                                 .withContributorRights("")
                                 .withObjectLocation(OBJECT_LOCATION)
                                 .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
+                                .withInternalAnalyticsTags(INTERNAL_ANALYTICS_TAGS)
                                 .build())
                 .withSystemAttributes(
                         buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
@@ -378,6 +382,25 @@ public class EomFileProcessorTest {
         assertThat(content.getEditorialDesk(), equalTo(WORK_FOLDER_COMPANIES));
     }
 
+    @Test
+    public void shouldMapInternalAnalyticsTags() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFile(uuid))
+                .build();
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(content.getInternalAnalyticsTags(), equalTo(ES_INTERNAL_ANALYTICS_TAGS));
+    }
+
+    @Test
+    public void shouldMapWithNoInternalAnalyticsTags() {
+        final EomFile eomFile = new EomFile.Builder()
+                .withValuesFrom(createStandardEomFileWithoutInternalAnalytics(uuid))
+                .build();
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+
+        assertThat(content.getInternalAnalyticsTags(), nullValue());
+    }
 
     @Test
     public void shouldNotBarfOnExternalDtd() {
@@ -696,6 +719,7 @@ public class EomFileProcessorTest {
                                 .withObjectLocation(OBJECT_LOCATION)
                                 .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
                                 .withContentPackageFlag(Boolean.FALSE)
+                                .withInternalAnalyticsTags(INTERNAL_ANALYTICS_TAGS)
                                 .build())
                 .withSystemAttributes(
                         buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
@@ -808,6 +832,7 @@ public class EomFileProcessorTest {
                         .withSourceCode("FT")
                         .withObjectLocation(OBJECT_LOCATION)
                         .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
+                        .withInternalAnalyticsTags(INTERNAL_ANALYTICS_TAGS)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
@@ -1307,91 +1332,103 @@ public class EomFileProcessorTest {
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", objectLocation, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", workflowStatus, lastPublicationDateAsString,
                 initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileNonFtOrAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "REU2", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
                 FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithoutWorkFolder(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "", SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
-                FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+            FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+            null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithoutSubFolder(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+    }
+
+    private EomFile createStandardEomFileWithoutInternalAnalytics(UUID uuid) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
+                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                null, null, null, null, "");
+    }
+
+    private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
+                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithSubscriptionLevel(UUID uuid, String subscriptionLevel) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, subscriptionLevel,
-                null, null, null, null);
+                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithContentPackage(UUID uuid, Boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                hasContentPackage, contentPackageDesc, contentPackageHref, null);
+                hasContentPackage, contentPackageDesc, contentPackageHref, null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithImageSet(String imageSetID) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, imageSetID);
+            initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
+            null, null, null, imageSetID, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
@@ -1401,7 +1438,7 @@ public class EomFileProcessorTest {
                                           String eomType, String contributorRights,
                                           String objectLocation, String subscriptionLevel,
                                           Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref,
-                                          String imageSetID) {
+                                          String imageSetID, String internalAnalyticsTags) {
 
         String embargoDate = "";
         if (embargoDateInTheFuture) {
@@ -1436,6 +1473,7 @@ public class EomFileProcessorTest {
                         .withObjectLocation(objectLocation)
                         .withSubscriptionLevel(subscriptionLevel)
                         .withContentPackageFlag(hasContentPackage)
+                        .withInternalAnalyticsTags(internalAnalyticsTags)
                         .build()
                 )
                 .withSystemAttributes(buildEomFileSystemAttributes(channel, workFolder, subFolder))
@@ -1540,6 +1578,7 @@ public class EomFileProcessorTest {
                 .withEditorialDesk(WORK_FOLDER_COMPANIES + "/" + ES_SUB_FOLDER_RETAIL)
                 .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
+                .withInternalAnalyticsTags(ES_INTERNAL_ANALYTICS_TAGS)
                 .build();
     }
 }
