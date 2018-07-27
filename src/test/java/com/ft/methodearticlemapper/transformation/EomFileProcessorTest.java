@@ -1520,6 +1520,7 @@ public class EomFileProcessorTest {
         attributesTemplateValues.put("initialPublicationDate", initialPublicationDateAsString);
         attributesTemplateValues.put("subscriptionLevel", SUBSCRIPTION_LEVEL);
         attributesTemplateValues.put("objectLocation", OBJECT_LOCATION);
+        attributesTemplateValues.put("internalAnalyticsTags", "<InternalAnalyticsTags>{{internalAnalyticsTags}}</InternalAnalyticsTags>");
 
         return new EomFile.Builder()
                 .withUuid(uuid.toString())
