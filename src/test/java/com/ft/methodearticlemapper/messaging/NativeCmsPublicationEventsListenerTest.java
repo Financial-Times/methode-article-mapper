@@ -16,6 +16,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -65,7 +67,7 @@ public class NativeCmsPublicationEventsListenerTest {
 
         listener.onMessage(msg, TX_ID);
 
-        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any(), Matchers.any());
     }
 
     @Test
@@ -84,7 +86,7 @@ public class NativeCmsPublicationEventsListenerTest {
 
         listener.onMessage(msg, TX_ID);
 
-        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any(), Matchers.any());
     }
 
     @SuppressWarnings("unchecked")
@@ -104,7 +106,7 @@ public class NativeCmsPublicationEventsListenerTest {
 
         listener.onMessage(mockMsg, TX_ID);
 
-        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any(), Matchers.any());
     }
 
     @Test (expected = MethodeArticleMapperException.class)
@@ -127,7 +129,7 @@ public class NativeCmsPublicationEventsListenerTest {
 
         listener.onMessage(mockMsg, TX_ID);
 
-        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+        verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any(), Matchers.any());
     }
 
     @Test
@@ -143,10 +145,17 @@ public class NativeCmsPublicationEventsListenerTest {
                                 .build()
                 )
         );
-
+        
+        Map<String,String> uppHeaders = new HashMap<>();
+        uppHeaders.put("UPP-foo", "12345");
+        uppHeaders.put("upp-bar", "qwerty");
+        for (Map.Entry<String,String> en : uppHeaders.entrySet()) {
+            msg.addCustomMessageHeader(en.getKey(), en.getValue());
+        }
+        
         listener.onMessage(msg, TX_ID);
 
-        verify(mapper).mapArticle(Matchers.any(), eq(TX_ID), Matchers.any());
+        verify(mapper).mapArticle(Matchers.any(), eq(TX_ID), Matchers.any(), eq(uppHeaders));
     }
 
     @Test
@@ -165,7 +174,7 @@ public class NativeCmsPublicationEventsListenerTest {
 
         listener.onMessage(msg, TX_ID);
 
-        verify(mapper).mapArticle(Matchers.any(), eq(TX_ID), Matchers.any());
+        verify(mapper).mapArticle(Matchers.any(), eq(TX_ID), Matchers.any(), Matchers.any());
     }
 
     @Test
@@ -184,6 +193,6 @@ public class NativeCmsPublicationEventsListenerTest {
 
       listener.onMessage(msg, TX_ID);
       
-      verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any());
+      verify(mapper, never()).mapArticle(Matchers.any(), anyString(), Matchers.any(), Matchers.any());
     }
 }

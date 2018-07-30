@@ -16,7 +16,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -60,12 +62,20 @@ public class MessageBuilderTest {
                 .build();
         when(contentUriBuilder.build(content.getUuid())).thenReturn(URI.create("foobar"));
         when(objectMapper.writeValueAsString(anyMap())).thenReturn("\"foo\":\"bar\"");
+        
+        Map<String,String> uppHeaders = new HashMap<>();
+        uppHeaders.put("UPP-foo", "12345");
+        uppHeaders.put("UPP-bar", "qwerty");
 
-        Message msg = messageBuilder.buildMessage(content);
+        Message msg = messageBuilder.buildMessage(content, uppHeaders);
 
         assertThat(msg.getCustomMessageHeader("X-Request-Id"), equalTo(PUBLISH_REFERENCE));
         assertThat(msg.getOriginSystemId().toString(), containsString(SYSTEM_ID));
-    }
+        
+        for (Map.Entry<String,String> en : uppHeaders.entrySet()) {
+            assertThat(msg.getCustomMessageHeader(en.getKey()), equalTo(en.getValue()));
+        }
+}
 
     @Test
     public void thatMsgBodyIsCorrect() throws IOException {
@@ -83,8 +93,8 @@ public class MessageBuilderTest {
 
         URI contentUri = URI.create("foobar");
         when(contentUriBuilder.build(UUID.toString())).thenReturn(contentUri);
-
-        Message msg = messageBuilder.buildMessage(content);
+        
+        Message msg = messageBuilder.buildMessage(content, Collections.emptyMap());
 
         Map<String, Object> msgContent = objectMapper.reader(Map.class).readValue(msg.getMessageBody());
         assertThat(msgContent.get("contentUri"), equalTo(contentUri.toString()));
@@ -105,7 +115,7 @@ public class MessageBuilderTest {
         String lastModified = "2016-11-02T07:59:24.715Z";
         Date lastModifiedDate = Date.from(Instant.parse(lastModified));
 
-        Message msg = messageBuilder.buildMessageForDeletedMethodeContent(UUID.toString(), "tid", lastModifiedDate);
+        Message msg = messageBuilder.buildMessageForDeletedMethodeContent(UUID.toString(), "tid", lastModifiedDate, Collections.emptyMap());
 
         Map<String, Object> msgContent = objectMapper.reader(Map.class).readValue(msg.getMessageBody());
         assertThat(msgContent.get("contentUri"), equalTo(contentUri.toString()));
@@ -124,6 +134,6 @@ public class MessageBuilderTest {
         when(contentUriBuilder.build(list.getUuid())).thenReturn(URI.create("foobar"));
         when(objectMapper.writeValueAsString(anyMap())).thenThrow(new JsonMappingException("oh-oh"));
 
-        messageBuilder.buildMessage(list);
+        messageBuilder.buildMessage(list, Collections.emptyMap());
     }
 }
