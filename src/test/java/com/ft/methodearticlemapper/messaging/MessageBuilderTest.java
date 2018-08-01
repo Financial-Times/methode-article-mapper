@@ -45,10 +45,10 @@ public class MessageBuilderTest {
     private ObjectMapper objectMapper;
 
     private MessageBuilder messageBuilder;
-
+    private Map<String, String> contentTypeHeader;
     @Before
     public void setUp() {
-        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper);
+        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper, contentTypeHeader);
     }
 
     @Test
@@ -71,7 +71,7 @@ public class MessageBuilderTest {
     public void thatMsgBodyIsCorrect() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         UriBuilder contentUriBuilder = mock(UriBuilder.class);
-        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper);
+        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper, contentTypeHeader);
 
         String lastModified = "2016-11-02T07:59:24.715Z";
         Date lastModifiedDate = Date.from(Instant.parse(lastModified));
@@ -97,7 +97,7 @@ public class MessageBuilderTest {
     public void thatMessageForDeletedContentIsCorrect() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         UriBuilder contentUriBuilder = mock(UriBuilder.class);
-        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper);
+        messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper, contentTypeHeader);
 
         URI contentUri = URI.create("foobar");
         when(contentUriBuilder.build(UUID.toString())).thenReturn(contentUri);

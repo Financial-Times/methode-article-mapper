@@ -3,6 +3,8 @@ brands:
       id: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
     - brand: "Reuters"
       id: "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7"
+    - brand: "DynamicContent"
+      id: "http://api.ft.com/things/ce0cccf2-747a-11e8-b4ef-b1558cf87650"
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
@@ -136,6 +138,12 @@ contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
 additionalNativeContentProperties:
   lastModified: lastModified
   publishReference: publishReference
+
+kafkaContentMessage:
+  Article: application/vnd.ft-upp-article+json
+  DynamicContent: application/vnd.ft-upp-dynamic-content+json
+  ContentPackage: application/vnd.ft-upp-content-package+json
+  Audio         : application/vnd.ft-upp-audio+json
 
 lastModifiedSource: fromTransaction
 transactionIdSource: fromTransaction
