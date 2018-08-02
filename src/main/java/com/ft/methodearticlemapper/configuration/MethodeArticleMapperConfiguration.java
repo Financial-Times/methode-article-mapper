@@ -58,7 +58,7 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("webUrlTemplate") String webUrlTemplate,
                                              @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
                                              @JsonProperty("appInfo") AppInfo appInfo,
-                                             @JsonProperty("contentType") Map<String, String> contentTypeHeader) {
+                                             @JsonProperty("contentTypeHeader") Map<String, String> contentTypeHeader) {
 
         if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
             this.documentStoreApiEnabled = true;

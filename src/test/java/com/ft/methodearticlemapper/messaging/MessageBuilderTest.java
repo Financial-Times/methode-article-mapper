@@ -46,6 +46,7 @@ public class MessageBuilderTest {
 
     private MessageBuilder messageBuilder;
     private Map<String, String> contentTypeHeader;
+
     @Before
     public void setUp() {
         messageBuilder = new MessageBuilder(contentUriBuilder, SYSTEM_ID, objectMapper, contentTypeHeader);
@@ -92,7 +93,6 @@ public class MessageBuilderTest {
         assertThat(msgContent.get("payload"), instanceOf(Map.class));
     }
 
-
     @Test
     public void thatMessageForDeletedContentIsCorrect() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -112,7 +112,6 @@ public class MessageBuilderTest {
         assertThat(msgContent.get("lastModified"), equalTo(lastModified));
         assertNull(msgContent.get("payload"));
     }
-
 
     @Test (expected = MethodeArticleMapperException.class)
     public void thatMethodeArticleMapperExceptionIsThrownIfMarshallingToStringFails() throws JsonProcessingException {
