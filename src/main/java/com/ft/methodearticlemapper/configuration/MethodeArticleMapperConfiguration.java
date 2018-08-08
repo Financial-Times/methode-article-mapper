@@ -35,6 +35,7 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private final String webUrlTemplate;
     private final String canonicalWebUrlTemplate;
     private final AppInfo appInfo;
+    private final Map<String, String> contentTypeHeader;
     @JsonProperty
     private final GTGConfig gtgConfig= new GTGConfig();
 
@@ -56,7 +57,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("apiHost") String apiHost,
                                              @JsonProperty("webUrlTemplate") String webUrlTemplate,
                                              @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
-                                             @JsonProperty("appInfo") AppInfo appInfo) {
+                                             @JsonProperty("appInfo") AppInfo appInfo,
+                                             @JsonProperty("contentTypeHeader") Map<String, String> contentTypeHeader) {
 
         if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
             this.documentStoreApiEnabled = true;
@@ -87,6 +89,7 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         this.webUrlTemplate = webUrlTemplate;
         this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
         this.appInfo = appInfo;
+        this.contentTypeHeader = contentTypeHeader;
     }
     
     public boolean isConcordanceApiEnabled() {
@@ -135,7 +138,7 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         return contentUriPrefix;
     }
 
-    public Map<String,String> getAdditionalNativeContentProperties() {
+    public Map<String, String> getAdditionalNativeContentProperties() {
         return additionalNativeContentProperties;
     }
     
@@ -175,4 +178,8 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
 	public GTGConfig getGtg() {
 		return gtgConfig;
 	}
+
+	public Map<String, String> getContentTypeHeader() {
+        return contentTypeHeader;
+    }
 }

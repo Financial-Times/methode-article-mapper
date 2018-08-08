@@ -111,6 +111,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         }
         
         EomFile.setAdditionalMappings(configuration.getAdditionalNativeContentProperties());
+        EomFile.setAdditionalMappings(configuration.getContentTypeHeader());
         
         EomFileProcessor eomFileProcessor = configureEomFileProcessorForContentStore(
                 documentStoreApiClient,
@@ -247,7 +248,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         return new MessageBuilder(
                 UriBuilder.fromUri(configuration.getContentUriPrefix()).path("{uuid}"),
                 configuration.getConsumerConfiguration().getSystemCode(),
-                environment.getObjectMapper()
+                environment.getObjectMapper(),
+                configuration.getContentTypeHeader()
         );
     }
 

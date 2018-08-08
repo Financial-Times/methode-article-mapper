@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
@@ -29,18 +30,20 @@ public class MessageBuilder {
     private final UriBuilder contentUriBuilder;
     private final SystemId systemId;
     private final ObjectMapper objectMapper;
+    private final Map<String, String> contentTypeHeader;
 
-    public MessageBuilder(UriBuilder contentUriBuilder, String systemId, ObjectMapper objectMapper) {
+    public MessageBuilder(UriBuilder contentUriBuilder, String systemId, ObjectMapper objectMapper, Map<String, String> contentTypeHeader) {
         this.contentUriBuilder = contentUriBuilder;
         this.systemId = SystemId.systemIdFromCode(systemId);
         this.objectMapper = objectMapper;
+        this.contentTypeHeader = contentTypeHeader;
     }
 
     Message buildMessage(Content content) {
         MessageBody msgBody = new MessageBody(
                 content,
                 contentUriBuilder.build(content.getUuid()).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC))
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC)), contentTypeHeader
         );
 
         return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
@@ -50,7 +53,7 @@ public class MessageBuilder {
         MessageBody msgBody = new MessageBody(
                 null,
                 contentUriBuilder.build(uuid).toString(),
-                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC))
+                RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC)), contentTypeHeader
         );
         return buildMessage(uuid, publishReference, msgBody);
     }
@@ -82,6 +85,8 @@ public class MessageBuilder {
         public final String contentUri;
         @JsonProperty("lastModified")
         public final String lastModified;
+        @JsonProperty("contentTypeHeader")
+        public final Map<String, String> contentTypeHeader;
 
         MessageBody(
                 @JsonProperty("payload")
@@ -89,10 +94,13 @@ public class MessageBuilder {
                 @JsonProperty("contentUri")
                 String contentUri,
                 @JsonProperty("lastModified")
-                String lastModified) {
+                String lastModified,
+                @JsonProperty("contentTypeHeader")
+                Map<String, String> contentTypeHeader) {
             this.contentUri = contentUri;
             this.payload = payload;
             this.lastModified = lastModified;
+            this.contentTypeHeader = contentTypeHeader;
         }
     }
 }
