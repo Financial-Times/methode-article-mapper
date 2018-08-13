@@ -5,6 +5,7 @@ import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.message.consumer.MessageListener;
 import com.ft.messaging.standards.message.v1.Message;
+import com.ft.messaging.standards.message.v1.MessageHeader;
 import com.ft.messaging.standards.message.v1.SystemId;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.EomFileType;
@@ -19,6 +20,10 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -53,8 +58,10 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
 
         LOG.info("Process message");
         try {
+            Date timestamp = message.getMessageTimestamp();
+            Map<String,String> headers = extractUppHeaders(message.getCustomMessageHeaders());
             EomFile methodeContent = objectMapper.reader(EomFile.class).readValue(message.getMessageBody());
-            msgProducingArticleMapper.mapArticle(methodeContent, transactionId, message.getMessageTimestamp());
+            msgProducingArticleMapper.mapArticle(methodeContent, transactionId, timestamp, headers);
         } catch (IOException e) {
             throw new MethodeArticleMapperException("Unable to process message", e);
         }
@@ -103,5 +110,17 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
       }
       
       return ContentSource.getByCode(sourceCode) != null;
+    }
+    
+    private Map<String,String> extractUppHeaders(List<MessageHeader> headers) {
+        Map<String,String> uppHeaders = new LinkedHashMap<>();
+        
+        for (MessageHeader h : headers) {
+            if (h.getName().toUpperCase().startsWith("UPP-")) {
+                uppHeaders.put(h.getName(), h.getValue());
+            }
+        }
+        
+        return uppHeaders;
     }
 }

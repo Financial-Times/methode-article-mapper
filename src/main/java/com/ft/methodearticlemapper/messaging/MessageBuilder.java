@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
@@ -36,26 +37,26 @@ public class MessageBuilder {
         this.objectMapper = objectMapper;
     }
 
-    Message buildMessage(Content content) {
+    Message buildMessage(Content content, Map<String,String> headers) {
         MessageBody msgBody = new MessageBody(
                 content,
                 contentUriBuilder.build(content.getUuid()).toString(),
                 RFC3339_FMT.format(OffsetDateTime.ofInstant(content.getLastModified().toInstant(), UTC))
         );
 
-        return buildMessage(content.getUuid(), content.getPublishReference(), msgBody);
+        return buildMessage(content.getUuid(), content.getPublishReference(), headers, msgBody);
     }
 
-    Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified) {
+    Message buildMessageForDeletedMethodeContent(String uuid, String publishReference, Date lastModified, Map<String,String> headers) {
         MessageBody msgBody = new MessageBody(
                 null,
                 contentUriBuilder.build(uuid).toString(),
                 RFC3339_FMT.format(OffsetDateTime.ofInstant(lastModified.toInstant(), UTC))
         );
-        return buildMessage(uuid, publishReference, msgBody);
+        return buildMessage(uuid, publishReference, headers, msgBody);
     }
 
-    private Message buildMessage(String uuid, String publishReference, MessageBody msgBody) {
+    private Message buildMessage(String uuid, String publishReference, Map<String,String> headers, MessageBody msgBody) {
         Message msg;
         try {
             String messageBody = objectMapper.writeValueAsString(msgBody);
@@ -68,6 +69,9 @@ public class MessageBuilder {
                     .build();
 
             msg.addCustomMessageHeader(TRANSACTION_ID_HEADER, publishReference);
+            for (Map.Entry<String,String> en : headers.entrySet()) {
+                msg.addCustomMessageHeader(en.getKey(), en.getValue());
+            }
             msg = KeyedMessage.forMessageAndKey(msg, uuid);
         } catch (JsonProcessingException e) {
             throw new MethodeArticleMapperException("unable to write JSON for message", e);
