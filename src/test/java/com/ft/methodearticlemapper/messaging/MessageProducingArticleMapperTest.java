@@ -13,13 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Matchers.any;
@@ -58,9 +55,10 @@ public class MessageProducingArticleMapperTest {
                 .build();
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), eq("tid"), eq(lastModified))).thenReturn(mappedArticle);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", lastModified);
+        Map<String, String> uppHeaders = Collections.singletonMap("UPP-foo", "bar");
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", lastModified, uppHeaders);
 
-        verify(messageBuilder).buildMessage(mappedArticle);
+        verify(messageBuilder).buildMessage(mappedArticle, uppHeaders);
     }
 
     @Test
@@ -68,9 +66,9 @@ public class MessageProducingArticleMapperTest {
         Content mockedContent = mock(Content.class);
         Message mockedMessage = mock(Message.class);
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenReturn(mockedContent);
-        when(messageBuilder.buildMessage(mockedContent)).thenReturn(mockedMessage);
+        when(messageBuilder.buildMessage(mockedContent, Collections.emptyMap())).thenReturn(mockedMessage);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", new Date());
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", new Date(), Collections.emptyMap());
 
         verify(producer).send(Collections.singletonList(mockedMessage));
     }
@@ -86,9 +84,9 @@ public class MessageProducingArticleMapperTest {
 
         when(ex.getType()).thenReturn(contentType);
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(ex);
-        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, contentType)).thenReturn(deletedContentMsg);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, contentType, Collections.emptyMap())).thenReturn(deletedContentMsg);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).withType(contentType).build(), tid, date);
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).withType(contentType).build(), tid, date, Collections.emptyMap());
 
         verify(producer).send(Collections.singletonList(deletedContentMsg));
     }

@@ -15,6 +15,7 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 
 public class MessageProducingArticleMapper {
 
@@ -34,16 +35,17 @@ public class MessageProducingArticleMapper {
         this.articleMapper = articleMapper;
     }
 
-    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp) {
+    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp, Map<String,String> headers) {
         Message message;
         try {
             message = messageBuilder.buildMessage(
-                    articleMapper.process(methodeContent, TransformationMode.PUBLISH, transactionId, messageTimestamp)
+                    articleMapper.process(methodeContent, TransformationMode.PUBLISH, transactionId, messageTimestamp),
+                    headers
             );
         } catch (MethodeMarkedDeletedException e) {
             LOGGER.info("Article {} is marked as deleted.", methodeContent.getUuid());
             message = messageBuilder.buildMessageForDeletedMethodeContent(
-                    methodeContent.getUuid(), transactionId, messageTimestamp, e.getType()
+                    methodeContent.getUuid(), transactionId, messageTimestamp, e.getType(), headers
             );
         }
         producer.send(Collections.singletonList(message));
