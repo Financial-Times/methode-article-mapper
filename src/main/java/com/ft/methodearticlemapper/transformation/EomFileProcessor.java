@@ -196,7 +196,7 @@ public class EomFileProcessor {
         final AccessLevel accessLevel = getAccessLevel(xpath, attributes, uuid);
 
         final String description = getDescription(type, xpath, value);
-        final String contentPackage = getContentPackage(type, xpath, value, uuid);
+        final String contentPackage = getContentPackage(type, xpath, value, uuid, mode);
         final Distribution canBeDistributed = getCanBeDistributed(eomFile.getContentSource(), type);
         final AlternativeStandfirsts alternativeStandfirsts = buildAlternativeStandfirsts(xpath, value);
 
@@ -364,7 +364,8 @@ public class EomFileProcessor {
     private String getContentPackage(final String type,
                                      final XPath xpath,
                                      final Document valueDocument,
-                                     final UUID articleUuid) throws TransformerException, XPathExpressionException {
+                                     final UUID articleUuid,
+                                     TransformationMode mode) throws TransformerException, XPathExpressionException {
         if (!Type.CONTENT_PACKAGE.equals(type)) {
             return null;
         }
@@ -375,6 +376,10 @@ public class EomFileProcessor {
         try {
             return UUID.fromString(linkId.trim()).toString();
         } catch (final IllegalArgumentException e) {
+            if (mode == TransformationMode.SUGGEST) {
+                return null;
+            }
+            
             throw new UntransformableMethodeContentException(
                     articleUuid.toString(),
                     "Type is CONTENT_PACKAGE, but no valid content package collection UUID was found");
