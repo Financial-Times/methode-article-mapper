@@ -11,9 +11,11 @@ import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
+import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.ParsedEomFile;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -60,7 +62,9 @@ public abstract class PublishEligibilityChecker {
             "/ObjectMetadata/OutputChannels/DIFTcom/DIFTcomMarkDeleted";
     private static final String EMBARGO_ATTR_XPATH = "/ObjectMetadata/EditorialNotes/EmbargoDate";
     private static final String OBJECT_LOCATION_ATTR_XPATH = "//ObjectMetadata/EditorialNotes/ObjectLocation";
-
+    
+    private static final String CONTENT_PACKAGE_LINK_XPATH = "/doc/lead/lead-components/content-package/content-package-link/a/@href";
+    
     protected final XPath xpath = XPathFactory.newInstance().newXPath();
     protected final EomFile eomFile;
     protected final UUID uuid;
@@ -145,6 +149,8 @@ public abstract class PublishEligibilityChecker {
         checkPublicationDate();
         checkInitialPublicationDate();
         checkWorkFolder();
+        checkContentPackage();
+        checkStoryPackage();
         checkBody();
 
         return new ParsedEomFile(uuid, eomFileDocument, rawBody,
@@ -245,6 +251,37 @@ public abstract class PublishEligibilityChecker {
         String workFolder = xpath.evaluate(EomFile.WORK_FOLDER_SYSTEM_ATTRIBUTE_XPATH, systemAttributesDocument);
         if (Strings.isNullOrEmpty(workFolder)){
             throw new MethodeMissingFieldException(uuid, "workFolder");
+        }
+    }
+    
+    protected final void checkContentPackage() throws XPathExpressionException {
+        final String isContentPackage = xpath.evaluate("/ObjectMetadata/OutputChannels/DIFTcom/isContentPackage", attributesDocument);
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(isContentPackage)) {
+            return;
+        }
+        
+        String contentPackageLink = xpath.evaluate(CONTENT_PACKAGE_LINK_XPATH, eomFileDocument);
+        final String linkId = StringUtils.substringAfter(contentPackageLink, "uuid=");
+        try {
+            UUID.fromString(linkId.trim());
+        } catch (final IllegalArgumentException e) {
+            throw new UntransformableMethodeContentException(
+                    uuid.toString(),
+                    "Type is CONTENT_PACKAGE, but no valid content package collection UUID was found");
+        }
+    }
+
+    protected final void checkStoryPackage() throws XPathExpressionException {
+        String storyPackageLink = xpath.evaluate(EomFile.STORY_PACKAGE_LINK_XPATH, eomFileDocument);
+        if (StringUtils.isBlank(storyPackageLink)) {
+            return;
+        }
+        
+        String linkId = StringUtils.substringAfter(storyPackageLink, "uuid=");
+        try {
+           UUID.fromString(linkId);
+        } catch (IllegalArgumentException e) {
+            throw new UntransformableMethodeContentException(uuid.toString(), String.format("Article has an invalid reference to a story package - invalid uuid=%s", linkId));
         }
     }
 
