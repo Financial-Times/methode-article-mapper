@@ -13,15 +13,12 @@ import com.ft.content.model.Distribution;
 import com.ft.content.model.Identifier;
 import com.ft.content.model.Standout;
 import com.ft.content.model.Syndication;
-import com.ft.methodearticlemapper.methode.ContentSource;
-import com.ft.uuidutils.DeriveUUID;
-import com.google.common.collect.ImmutableSortedSet;
-
 import com.ft.methodearticlemapper.exception.EmbargoDateInTheFutureException;
 import com.ft.methodearticlemapper.exception.MethodeContentNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.MethodeMarkedDeletedException;
 import com.ft.methodearticlemapper.exception.MethodeMissingBodyException;
 import com.ft.methodearticlemapper.exception.MethodeMissingFieldException;
+import com.ft.methodearticlemapper.exception.MissingInteractiveGraphicUuidException;
 import com.ft.methodearticlemapper.exception.NotWebChannelException;
 import com.ft.methodearticlemapper.exception.SourceNotEligibleForPublishException;
 import com.ft.methodearticlemapper.exception.UnsupportedEomTypeException;
@@ -29,11 +26,14 @@ import com.ft.methodearticlemapper.exception.UnsupportedObjectTypeException;
 import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeException;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.exception.WorkflowStatusNotEligibleForPublishException;
+import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
+import com.ft.methodearticlemapper.util.ContentType;
+import com.ft.uuidutils.DeriveUUID;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,20 +43,13 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.EomFileProcessor.METHODE;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.*;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
@@ -79,6 +72,9 @@ import static org.mockito.Mockito.when;
 public class EomFileProcessorTest {
     public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
     public static final String REUTERS_BRAND = "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7";
+    public static final String DYNAMIC_CONTENT = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
+    protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
+    protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
 
     private static final String ARTICLE_TEMPLATE = FileUtils.readFile("article/article_value.xml.mustache");
     private static final String ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_attributes.xml.mustache");
@@ -129,6 +125,7 @@ public class EomFileProcessorTest {
     private static final String TEMPLATE_WEB_SUBHEAD = "webSubhead";
 
     private static final String IMAGE_SET_UUID = "U116035516646705FC";
+    private static final String IG_UUID = "ce0cccf2-747a-11e8-b4ef-b1558cf87650";
 
     private final UUID uuid = UUID.randomUUID();
 
@@ -139,7 +136,6 @@ public class EomFileProcessorTest {
     private BodyProcessor htmlFieldProcessor;
 
     private Map<ContentSource, Brand> contentSourceBrandMap;
-
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
@@ -191,6 +187,11 @@ public class EomFileProcessorTest {
         return mustache.execute(attributes);
     }
 
+    private static String buildEomFileAttributes(Map<String, Object> templatePlaceholdersValues) {
+        Template mustache = Mustache.compiler().escapeHTML(false).compile(ATTRIBUTES_TEMPLATE);
+        return mustache.execute(templatePlaceholdersValues);
+    }
+
     private static Date toDate(String dateString, String format) {
         if (dateString == null || dateString.equals("")) {
             return null;
@@ -217,6 +218,7 @@ public class EomFileProcessorTest {
         contentSourceBrandMap = new HashMap<>();
         contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
+        contentSourceBrandMap.put(ContentSource.DynamicContent, new Brand(DYNAMIC_CONTENT));
 
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
@@ -365,8 +367,8 @@ public class EomFileProcessorTest {
     @Test(expected = MethodeMissingFieldException.class)
     public void shouldThrowExceptionIfNoWorkFolder() {
         final EomFile eomFile = new EomFile.Builder()
-            .withValuesFrom(createStandardEomFileWithoutWorkFolder(uuid))
-            .build();
+                .withValuesFrom(createStandardEomFileWithoutWorkFolder(uuid))
+                .build();
         eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
     }
 
@@ -842,7 +844,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testArticleWithNoSubscriptionLevelHasNullAccessLevel(){
+    public void testArticleWithNoSubscriptionLevelHasNullAccessLevel() {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "");
         expectedException.expect(UntransformableMethodeContentException.class);
 
@@ -851,7 +853,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testArticleWithUnknownSubscriptionLevelHasNullAccessLevel(){
+    public void testArticleWithUnknownSubscriptionLevelHasNullAccessLevel() {
         final EomFile eomFile = createStandardEomFileWithSubscriptionLevel(uuid, "5");
         expectedException.expect(UntransformableMethodeContentException.class);
 
@@ -902,9 +904,9 @@ public class EomFileProcessorTest {
         templateValues.put(TEMPLATE_PLACEHOLDER_STANDFIRST, expectedStandfirst);
 
         final EomFile eomFile = (new EomFile.Builder())
-          .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(templateValues))
-          .build();
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(equalToIgnoringWhiteSpace(expectedStandfirst)));
@@ -916,9 +918,9 @@ public class EomFileProcessorTest {
         templateValues.put(TEMPLATE_PLACEHOLDER_STANDFIRST, "\n");
 
         final EomFile eomFile = (new EomFile.Builder())
-          .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(templateValues))
-          .build();
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content.getStandfirst(), is(nullValue()));
@@ -942,9 +944,9 @@ public class EomFileProcessorTest {
         templateValues.put(TEMPLATE_CONTENT_PACKAGE_TITLE, contentPackageTitle);
 
         final EomFile eomFile = (new EomFile.Builder())
-          .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(templateValues))
-          .build();
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
 
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
@@ -975,9 +977,9 @@ public class EomFileProcessorTest {
         templateValues.put(TEMPLATE_CONTENT_PACKAGE_TITLE, "\t");
 
         final EomFile eomFile = (new EomFile.Builder())
-          .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(templateValues))
-          .build();
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
 
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
@@ -995,9 +997,9 @@ public class EomFileProcessorTest {
         templateValues.put(TEMPLATE_CONTENT_PACKAGE_TITLE, "<?EM-dummyText content package title here... ?>");
 
         final EomFile eomFile = (new EomFile.Builder())
-          .withValuesFrom(createStandardEomFile(uuid))
-          .withValue(buildEomFileValue(templateValues))
-          .build();
+                .withValuesFrom(createStandardEomFile(uuid))
+                .withValue(buildEomFileValue(templateValues))
+                .build();
 
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
         assertThat(content, is(notNullValue()));
@@ -1102,7 +1104,7 @@ public class EomFileProcessorTest {
     @Test
     public void testAgencyContentProcessPreview() {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(TRANSFORMED_BODY);
-        
+
         final EomFile eomFile = createStandardEomFileAgencySource(uuid);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PREVIEW, TRANSACTION_ID, LAST_MODIFIED);
 
@@ -1116,16 +1118,16 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFile(uuid);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(EomFileProcessor.Type.ARTICLE, equalTo(content.getType()));
+        assertThat(ContentType.Type.ARTICLE, equalTo(content.getType()));
     }
 
     @Test
     public void testImageSet() {
         String expectedUUID = UUID.nameUUIDFromBytes(IMAGE_SET_UUID.getBytes(UTF_8)).toString();
         String expectedBody = "<body>"
-            + "<p>random text for now</p>"
-            + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
-            + "</body>";
+                + "<p>random text for now</p>"
+                + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
+                + "</body>";
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
@@ -1138,9 +1140,9 @@ public class EomFileProcessorTest {
     public void testImageSetPreview() {
         String expectedUUID = UUID.nameUUIDFromBytes(IMAGE_SET_UUID.getBytes(UTF_8)).toString();
         String expectedBody = "<body>"
-            + "<p>random text for now</p>"
-            + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
-            + "</body>";
+                + "<p>random text for now</p>"
+                + "<ft-content type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"http://api.ft.com/content/" + expectedUUID + "\" data-embedded=\"true\"></ft-content>"
+                + "</body>";
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PREVIEW), anyVararg())).thenReturn(expectedBody);
 
         EomFile eomFile = createStandardEomFileWithImageSet(IMAGE_SET_UUID);
@@ -1178,7 +1180,7 @@ public class EomFileProcessorTest {
     @Test
     public void thatSuggestModeIsPassedThrough() {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.SUGGEST), anyVararg())).thenReturn(TRANSFORMED_BODY);
-        
+
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .build();
@@ -1198,12 +1200,12 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test(expected=UnsupportedTransformationModeException.class)
+    @Test(expected = UnsupportedTransformationModeException.class)
     public void thatUnsupportedModeIsRejected() {
         eomFileProcessor = new EomFileProcessor(EnumSet.of(TransformationMode.SUGGEST), bodyTransformer,
                 bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
-        
+
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
                 .build();
@@ -1241,7 +1243,7 @@ public class EomFileProcessorTest {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(content.getType(), is(EomFileProcessor.Type.CONTENT_PACKAGE));
+        assertThat(content.getType(), is(ContentType.Type.CONTENT_PACKAGE));
         assertThat(content.getDescription(), is(expectedDescription));
         assertThat(content.getContentPackage(), is(expectedListId));
         assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));
@@ -1252,14 +1254,74 @@ public class EomFileProcessorTest {
         final UUID imageUuid = UUID.randomUUID();
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid,
-            articleImageMetadataFlag);
+                articleImageMetadataFlag);
         Content content = eomFileProcessor
-            .process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+                .process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
 
         String expectedBody = String.format(expectedTransformedBody, expectedMainImageUuid);
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
     }
 
+    @Test
+    public void testDCTypeIsSet(){
+        Map<String, Object> attributesTemplateValues = new HashMap<>();
+        attributesTemplateValues.put("sourceCode", "DynamicContent");
+
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put("ig-uuid", IG_UUID);
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, templateValues);
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getType(), equalTo(ContentType.Type.DYNAMIC_CONTENT));
+    }
+
+    @Test
+    public void testIdentifiersIsSet(){
+        Map<String, Object> attributesTemplateValues = new HashMap<>();
+        attributesTemplateValues.put("sourceCode", "DynamicContent");
+
+        Map<String, Object> templateValues = new HashMap<>();
+        templateValues.put("ig-uuid", IG_UUID);
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, templateValues);
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
+        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo("ce0cccf2-747a-11e8-b4ef-b1558cf87650"));
+        assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
+        assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
+    }
+
+    @Test(expected = MissingInteractiveGraphicUuidException.class)
+    public void testIGUUIDisEmpty(){
+        Map<String, Object> attributesTemplateValues = new HashMap<>();
+        attributesTemplateValues.put("sourceCode", "DynamicContent");
+
+        Map<String, Object> valueTemplateValues = new HashMap<>();
+        valueTemplateValues.put("ig-uuid", "");
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, valueTemplateValues);
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
+        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo(""));
+        assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
+        assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
+    }
+
+    @Test(expected = MissingInteractiveGraphicUuidException.class)
+    public void testIGUUIDisNull(){
+        Map<String, Object> attributesTemplateValues = new HashMap<>();
+        attributesTemplateValues.put("sourceCode", "DynamicContent");
+
+        Map<String, Object> valueTemplateValues = new HashMap<>();
+        valueTemplateValues.put("ig-uuid", null);
+
+        final EomFile eomFile = createDynamicContent(attributesTemplateValues, valueTemplateValues);
+        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
+        assertThat(content.getIdentifiers().first().getAuthority(), equalTo(IG));
+        assertThat(content.getIdentifiers().first().getIdentifierValue(), equalTo(null));
+        assertThat(content.getIdentifiers().last().getAuthority(), equalTo(METHODE));
+        assertThat(content.getIdentifiers().last().getIdentifierValue(), equalTo(uuid.toString()));
+    }
     /**
      * Creates EomFile with an non-standard type EOM::Story as opposed to EOM::CompoundStory which
      * is standard.
@@ -1274,7 +1336,7 @@ public class EomFileProcessorTest {
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL,"FT", EomFile.WEB_READY, lastPublicationDateAsString,
+        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
                 null, null, null, null, INTERNAL_ANALYTICS_TAGS);
     }
@@ -1453,6 +1515,23 @@ public class EomFileProcessorTest {
                 .build();
     }
 
+    private EomFile createDynamicContent(Map<String, Object> attributesTemplateValues, Map<String, Object> templateValues) {
+        attributesTemplateValues.put("lastPublicationDate", lastPublicationDateAsString);
+        attributesTemplateValues.put("initialPublicationDate", initialPublicationDateAsString);
+        attributesTemplateValues.put("subscriptionLevel", SUBSCRIPTION_LEVEL);
+        attributesTemplateValues.put("objectLocation", OBJECT_LOCATION);
+        attributesTemplateValues.put("internalAnalyticsTags", "<InternalAnalyticsTags>{{internalAnalyticsTags}}</InternalAnalyticsTags>");
+
+        return new EomFile.Builder()
+                .withUuid(uuid.toString())
+                .withType(EOMCompoundStory.getTypeName())
+                .withValue(buildEomFileValue(templateValues))
+                .withAttributes(buildEomFileAttributes(attributesTemplateValues))
+                .withSystemAttributes(buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
+                .withWorkflowStatus(EomFile.WEB_READY)
+                .build();
+    }
+
     private String dateInTheFutureAsStringInMethodeFormat() {
         return dateFromNowInMethodeFormat(10);
     }
@@ -1476,10 +1555,10 @@ public class EomFileProcessorTest {
         return createStandardExpectedContent(ContentSource.Reuters);
     }
 
-    private Content createStandardExpectedContent(ContentSource contentSource){
+    private Content createStandardExpectedContent(ContentSource contentSource) {
         return Content.builder()
                 .withTitle(EXPECTED_TITLE)
-                .withType(EomFileProcessor.Type.ARTICLE)
+                .withType(ContentType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
                 .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
@@ -1497,7 +1576,7 @@ public class EomFileProcessorTest {
                         ? Distribution.YES
                         : contentSource == ContentSource.Reuters ? Distribution.NO : Distribution.VERIFY)
                 .withAlternativeStandfirsts(new AlternativeStandfirsts(null))
-                .withEditorialDesk(WORK_FOLDER_COMPANIES+ "/" + ES_SUB_FOLDER_RETAIL)
+                .withEditorialDesk(WORK_FOLDER_COMPANIES + "/" + ES_SUB_FOLDER_RETAIL)
                 .withWebUrl(URI.create(String.format(WEB_URL_TEMPLATE, uuid)))
                 .withCanonicalWebUrl(URI.create(String.format(CANONICAL_WEB_URL_TEMPLATE, uuid)))
                 .withInternalAnalyticsTags(ES_INTERNAL_ANALYTICS_TAGS)

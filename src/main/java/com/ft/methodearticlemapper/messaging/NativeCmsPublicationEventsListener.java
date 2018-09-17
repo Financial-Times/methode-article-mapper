@@ -1,17 +1,14 @@
 package com.ft.methodearticlemapper.messaging;
 
-import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ft.message.consumer.MessageListener;
 import com.ft.messaging.standards.message.v1.Message;
 import com.ft.messaging.standards.message.v1.MessageHeader;
 import com.ft.messaging.standards.message.v1.SystemId;
+import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.EomFileType;
-import com.ft.methodearticlemapper.exception.MethodeArticleMapperException;
 import com.ft.methodearticlemapper.model.EomFile;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -32,6 +29,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
+import static com.ft.methodearticlemapper.model.EomFile.SOURCE_ATTR_XPATH;
 
 public class NativeCmsPublicationEventsListener implements MessageListener {
 
@@ -82,7 +81,7 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
                 return false;
             }
             return isValidType(eomFile.getType())
-                && isValidSource(eomFile.getAttributes());
+                    && isValidSource(eomFile.getAttributes());
         };
     }
 
@@ -90,37 +89,37 @@ public class NativeCmsPublicationEventsListener implements MessageListener {
         return (EomFileType.EOMCompoundStory.getTypeName().equals(type)) ||
                 (EomFileType.EOMStory.getTypeName().equals((type)));
     }
-    
+
     private boolean isValidSource(String attributes) {
-      String sourceCode = null;
-      
-      try {
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        
-        DocumentBuilder db = documentBuilderFactory.newDocumentBuilder();
-        Document attributesDocument = db.parse(new InputSource(new StringReader(attributes)));
-        
-        XPath xpath = XPathFactory.newInstance().newXPath();
-        
-        sourceCode = xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
-      } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException e) {
-        LOG.warn("Unable to obtain EOMFile source", e);
-        // and fall through, to return false
-      }
-      
-      return ContentSource.getByCode(sourceCode) != null;
+        String sourceCode = null;
+
+        try {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+            DocumentBuilder db = documentBuilderFactory.newDocumentBuilder();
+            Document attributesDocument = db.parse(new InputSource(new StringReader(attributes)));
+
+            XPath xpath = XPathFactory.newInstance().newXPath();
+
+            sourceCode = xpath.evaluate(SOURCE_ATTR_XPATH, attributesDocument);
+        } catch (IOException | ParserConfigurationException | SAXException | XPathExpressionException e) {
+            LOG.warn("Unable to obtain EOMFile source", e);
+            // and fall through, to return false
+        }
+
+        return ContentSource.getByCode(sourceCode) != null;
     }
-    
+
     private Map<String,String> extractUppHeaders(List<MessageHeader> headers) {
         Map<String,String> uppHeaders = new LinkedHashMap<>();
-        
+
         for (MessageHeader h : headers) {
             if (h.getName().toUpperCase().startsWith("UPP-")) {
                 uppHeaders.put(h.getName(), h.getValue());
             }
         }
-        
+
         return uppHeaders;
     }
 }

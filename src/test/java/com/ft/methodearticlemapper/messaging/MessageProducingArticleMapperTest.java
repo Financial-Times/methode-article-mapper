@@ -40,7 +40,7 @@ public class MessageProducingArticleMapperTest {
 
     @Before
     public void setUp() {
-        msgProducingArticleMapper = new MessageProducingArticleMapper (
+        msgProducingArticleMapper = new MessageProducingArticleMapper(
                 messageBuilder,
                 producer,
                 mapper
@@ -55,7 +55,7 @@ public class MessageProducingArticleMapperTest {
                 .build();
         when(mapper.process(any(), eq(TransformationMode.PUBLISH), eq("tid"), eq(lastModified))).thenReturn(mappedArticle);
 
-        Map<String,String> uppHeaders = Collections.singletonMap("UPP-foo", "bar");
+        Map<String, String> uppHeaders = Collections.singletonMap("UPP-foo", "bar");
         msgProducingArticleMapper.mapArticle(new EomFile.Builder().build(), "tid", lastModified, uppHeaders);
 
         verify(messageBuilder).buildMessage(mappedArticle, uppHeaders);
@@ -78,12 +78,15 @@ public class MessageProducingArticleMapperTest {
         String tid = "tid";
         Date date = new Date();
         String uuid = UUID.randomUUID().toString();
+        String contentType = "Article";
         Message deletedContentMsg = mock(Message.class);
+        MethodeMarkedDeletedException ex = mock(MethodeMarkedDeletedException.class);
 
-        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(MethodeMarkedDeletedException.class);
-        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, Collections.emptyMap())).thenReturn(deletedContentMsg);
+        when(ex.getType()).thenReturn(contentType);
+        when(mapper.process(any(), eq(TransformationMode.PUBLISH), anyString(), any())).thenThrow(ex);
+        when(messageBuilder.buildMessageForDeletedMethodeContent(uuid, tid, date, contentType, Collections.emptyMap())).thenReturn(deletedContentMsg);
 
-        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).build(), tid, date, Collections.emptyMap());
+        msgProducingArticleMapper.mapArticle(new EomFile.Builder().withUuid(uuid).withType(contentType).build(), tid, date, Collections.emptyMap());
 
         verify(producer).send(Collections.singletonList(deletedContentMsg));
     }

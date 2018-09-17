@@ -3,6 +3,8 @@ brands:
       id: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
     - brand: "Reuters"
       id: "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7"
+    - brand: "DynamicContent"
+      id: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 
 videoSiteConfig:
     - urlPattern: "https?://www.youtube.com/watch\\?v=(?<id>[A-Za-z0-9_-]+)"
@@ -140,6 +142,11 @@ additionalNativeContentProperties:
 lastModifiedSource: fromTransaction
 transactionIdSource: fromTransaction
 transactionIdProperty: publishReference
+
+contentTypeMappings:
+  Article: application/vnd.ft-upp-article+json
+  ContentPackage: application/vnd.ft-upp-content-package+json
+  DynamicContent: application/vnd.ft-upp-dynamic-content+json
 
 apiHost: "api.ft.com"
 canonicalWebUrlTemplate: "https://www.ft.com/content/%s"
