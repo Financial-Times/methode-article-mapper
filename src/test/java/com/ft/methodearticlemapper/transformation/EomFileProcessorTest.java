@@ -43,7 +43,15 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
@@ -116,11 +124,7 @@ public class EomFileProcessorTest {
     private static final String TEMPLATE_PLACEHOLDER_PROMO_TITLE = "promoTitle";
     private static final String TEMPLATE_PLACEHOLDER_STANDFIRST = "standfirst";
     private static final String TEMPLATE_PLACEHOLDER_BYLINE = "byline";
-    private static final String TEMPLATE_PLACEHOLDER_STORY_PACKAGE_UUID = "storyPackageUuid";
     private static final String TEMPLATE_PLACEHOLDER_IMAGE_SET_UUID = "imageSetID";
-    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE = "contentPackage";
-    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_DESC = "contentPackageDesc";
-    private static final String TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_LIST_HREF = "contentPackageListHref";
     private static final String TEMPLATE_CONTENT_PACKAGE_TITLE = "contentPackageTitle";
     private static final String TEMPLATE_WEB_SUBHEAD = "webSubhead";
 
@@ -510,41 +514,6 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void thatContentPackageNullBodyIsAllowed() {
-        final EomFile eomFile = createEomFileWithRandomContentPackage();
-
-        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(null);
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
-        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
-    }
-
-    @Test
-    public void thatContentPackageEmptyBodyIsAllowed() {
-        final EomFile eomFile = createEomFileWithRandomContentPackage();
-
-        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("");
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
-        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
-    }
-
-    @Test
-    public void thatContentPackageBlankTransformedBodyIsAllowed() {
-        final EomFile eomFile = createEomFileWithRandomContentPackage();
-
-        when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn("<body> \n \n \n </body>");
-        Content actual = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, new Date());
-        assertThat(actual.getBody(), is(equalTo(EMPTY_BODY)));
-    }
-
-    private EomFile createEomFileWithRandomContentPackage() {
-        return createStandardEomFileWithContentPackage(
-                uuid,
-                Boolean.TRUE,
-                "cp",
-                "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + UUID.randomUUID().toString() + "\"/>");
-    }
-
-    @Test
     public void shouldAddPublishReferenceToTransformedBody() {
 
         final String reference = "some unstructured reference";
@@ -676,55 +645,6 @@ public class EomFileProcessorTest {
                 "            </body>";
         assertThat(content.getMainImage(), nullValue());
         assertThat(content.getBody(), equalToIgnoringWhiteSpace(expectedBody));
-    }
-
-    @Test
-    public void testStoryPackage() {
-        final UUID storyPackageUuid = UUID.randomUUID();
-        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid.toString());
-        Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-
-        assertThat(content.getStoryPackage(), notNullValue());
-        assertThat(content.getStoryPackage(), equalTo(storyPackageUuid.toString()));
-    }
-
-    @Test(expected = UntransformableMethodeContentException.class)
-    public void testStoryPackageWithInvalidUuid() {
-        final String storyPackageUuid = "invalid-uuid";
-        final EomFile eomFile = createStandardEomFileWithStoryPackage(uuid, storyPackageUuid);
-        eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-    }
-
-    private static EomFile createStandardEomFileWithStoryPackage(UUID uuid, String storyPackageUuid) {
-        Map<String, Object> templateValues = new HashMap<>();
-        templateValues.put(TEMPLATE_PLACEHOLDER_STORY_PACKAGE_UUID, storyPackageUuid);
-
-        return new EomFile.Builder()
-                .withUuid(uuid.toString())
-                .withType(EOMCompoundStory.getTypeName())
-                .withValue(buildEomFileValue(templateValues))
-                .withAttributes(
-                        new EomFileAttributesBuilder(ATTRIBUTES_TEMPLATE)
-                                .withLastPublicationDate(lastPublicationDateAsString)
-                                .withInitialPublicationDate(initialPublicationDateAsString)
-                                .withMarkedDeleted(FALSE)
-                                .withImageMetadata("No picture")
-                                .withCommentsEnabled(FALSE)
-                                .withEditorsPick("")
-                                .withExclusive("")
-                                .withScoop("")
-                                .withEmbargoDate("")
-                                .withSourceCode("FT")
-                                .withContributorRights("")
-                                .withObjectLocation(OBJECT_LOCATION)
-                                .withSubscriptionLevel(Integer.toString(FOLLOW_USUAL_RULES.getSubscriptionLevel()))
-                                .withContentPackageFlag(Boolean.FALSE)
-                                .withInternalAnalyticsTags(INTERNAL_ANALYTICS_TAGS)
-                                .build())
-                .withSystemAttributes(
-                        buildEomFileSystemAttributes("FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL))
-                .withWorkflowStatus(EomFile.WEB_READY)
-                .build();
     }
 
     @Test
@@ -1027,71 +947,6 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testContentPackageWithFormattedDescAndHref() throws Exception {
-        final String description = "<p>Description</p>";
-        final String listId = UUID.randomUUID().toString();
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
-
-        testContentPackage(description, listHref, description, listId);
-    }
-
-    @Test
-    public void testContentPackageWithNonFormattedDescAndDummyTextInLink() throws Exception {
-        final String description = "Description";
-        final String listId = UUID.randomUUID().toString();
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"><?EM-dummyText ...?>\\r\\n</a>";
-
-        testContentPackage(description, listHref, description, listId);
-    }
-
-    @Test
-    public void testContentPackageWithEmptyDescription() throws Exception {
-        final String description = "";
-        final String listId = UUID.randomUUID().toString();
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
-
-        testContentPackage(description, listHref, null, listId);
-    }
-
-    @Test
-    public void testContentPackageWithDummyDescription() throws Exception {
-        final String description = "<?EM-dummyText ...?>";
-        final String listId = UUID.randomUUID().toString();
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=" + listId + "\"/>";
-
-        testContentPackage(description, listHref, null, listId);
-    }
-
-    @Test(expected = UntransformableMethodeContentException.class)
-    public void testContentPackageWithEmptyHref() throws Exception {
-        final String description = "<p>Description</p>";
-        final String listHref = "";
-
-        testContentPackage(description, listHref, null, null);
-    }
-
-    @Test(expected = UntransformableMethodeContentException.class)
-    public void testContentPackageWithNoUuidInHref() throws Exception {
-        final String description = "<p>Description</p>";
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc\"/>";
-
-        testContentPackage(description, listHref, null, null);
-    }
-
-    @Test(expected = UntransformableMethodeContentException.class)
-    public void testContentPackageWithInvalidUuidInHref() throws Exception {
-        final String description = "<p>Description</p>";
-        final String listHref = "<a href=\"/FT/Content/Content%20Package/Live/content-package-test.dwc?uuid=123\"/>";
-
-        testContentPackage(description, listHref, null, null);
-    }
-
-    @Test(expected = UntransformableMethodeContentException.class)
-    public void testContentPackageAttributeSetButNoValues() throws Exception {
-        testContentPackage(null, null, null, null);
-    }
-
-    @Test
     public void testAgencyContentProcessPublication() {
         final EomFile eomFile = createStandardEomFileAgencySource(uuid);
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -1236,19 +1091,6 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    private void testContentPackage(final String description,
-                                    final String listHref,
-                                    final String expectedDescription,
-                                    final String expectedListId) {
-        final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
-        final Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
-
-        assertThat(content.getType(), is(ContentType.Type.CONTENT_PACKAGE));
-        assertThat(content.getDescription(), is(expectedDescription));
-        assertThat(content.getContentPackage(), is(expectedListId));
-        assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));
-    }
-
     private void testMainImageReferenceIsPutInBodyWithMetadataFlag(String articleImageMetadataFlag, String expectedTransformedBody) {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).then(returnsFirstArg());
         final UUID imageUuid = UUID.randomUUID();
@@ -1332,103 +1174,91 @@ public class EomFileProcessorTest {
     private EomFile createEomStoryFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithObjectLocation(UUID uuid, String objectLocation) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", objectLocation, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createEomStoryFile(UUID uuid, String workflowStatus, String channel, String initialPublicationDate) {
         return createStandardEomFile(uuid, FALSE, false, channel, WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", workflowStatus, lastPublicationDateAsString,
                 initialPublicationDate, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileNonFtOrAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "Pepsi", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted) {
         return createStandardEomFile(uuid, markedDeleted, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileAgencySource(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "REU2", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithEmbargoDateInTheFuture(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, true, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithNoLastPublicationDate(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
                 FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithoutWorkFolder(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", "", SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, "", initialPublicationDateAsString,
             FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-            null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+            null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithoutSubFolder(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithoutInternalAnalytics(UUID uuid) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, "", "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, "");
-    }
-
-    private EomFile createStandardEomFileWithWebUrl(UUID uuid, URI webUrl) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, FALSE, "", "", "", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, "");
     }
 
     private EomFile createStandardEomFileWithContributorRights(UUID uuid, String contributorRights) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), contributorRights, OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithSubscriptionLevel(UUID uuid, String subscriptionLevel) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
                 initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMCompoundStory.getTypeName(), "", OBJECT_LOCATION, subscriptionLevel,
-                null, null, null, null, INTERNAL_ANALYTICS_TAGS);
-    }
-
-    private EomFile createStandardEomFileWithContentPackage(UUID uuid, Boolean hasContentPackage, String contentPackageDesc, String contentPackageHref) {
-        return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
-                initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-                hasContentPackage, contentPackageDesc, contentPackageHref, null, INTERNAL_ANALYTICS_TAGS);
+                null, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFileWithImageSet(String imageSetID) {
         return createStandardEomFile(uuid, FALSE, false, "FTcom", WORK_FOLDER_COMPANIES, SUB_FOLDER_RETAIL, "FT", EomFile.WEB_READY, lastPublicationDateAsString,
             initialPublicationDateAsString, TRUE, "Yes", "Yes", "Yes", EOMStory.getTypeName(), "", OBJECT_LOCATION, SUBSCRIPTION_LEVEL,
-            null, null, null, imageSetID, INTERNAL_ANALYTICS_TAGS);
+            imageSetID, INTERNAL_ANALYTICS_TAGS);
     }
 
     private EomFile createStandardEomFile(UUID uuid, String markedDeleted, boolean embargoDateInTheFuture,
@@ -1437,7 +1267,6 @@ public class EomFileProcessorTest {
                                           String commentsEnabled, String editorsPick, String exclusive, String scoop,
                                           String eomType, String contributorRights,
                                           String objectLocation, String subscriptionLevel,
-                                          Boolean hasContentPackage, String contentPackageDesc, String contentPackageListHref,
                                           String imageSetID, String internalAnalyticsTags) {
 
         String embargoDate = "";
@@ -1446,11 +1275,6 @@ public class EomFileProcessorTest {
         }
 
         Map<String, Object> templateValues = new HashMap<>();
-        if (contentPackageDesc != null && contentPackageListHref != null) {
-            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE, Boolean.TRUE);
-            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_DESC, contentPackageDesc);
-            templateValues.put(TEMPLATE_PLACEHOLDER_CONTENT_PACKAGE_LIST_HREF, contentPackageListHref);
-        }
 
         templateValues.put(TEMPLATE_PLACEHOLDER_IMAGE_SET_UUID, imageSetID);
 
@@ -1472,7 +1296,7 @@ public class EomFileProcessorTest {
                         .withContributorRights(contributorRights)
                         .withObjectLocation(objectLocation)
                         .withSubscriptionLevel(subscriptionLevel)
-                        .withContentPackageFlag(hasContentPackage)
+                        .withContentPackageFlag(false)
                         .withInternalAnalyticsTags(internalAnalyticsTags)
                         .build()
                 )
