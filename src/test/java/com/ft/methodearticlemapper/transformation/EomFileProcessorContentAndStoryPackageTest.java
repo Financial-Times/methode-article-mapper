@@ -9,6 +9,7 @@ import com.ft.content.model.Distribution;
 import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
+import com.ft.methodearticlemapper.util.ContentType;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 
@@ -271,7 +272,7 @@ public class EomFileProcessorContentAndStoryPackageTest {
         final EomFile eomFile = createStandardEomFileWithContentPackage(UUID.randomUUID(), true, description, listHref);
         final Content content = eomFileProcessor.process(eomFile, mode, TRANSACTION_ID, LAST_MODIFIED);
 
-        assertThat(content.getType(), is(EomFileProcessor.Type.CONTENT_PACKAGE));
+        assertThat(content.getType(), is(ContentType.Type.CONTENT_PACKAGE));
         assertThat(content.getDescription(), is(expectedDescription));
         assertThat(content.getContentPackage(), is(expectedListId));
         assertThat(content.getCanBeDistributed(), is(Distribution.VERIFY));

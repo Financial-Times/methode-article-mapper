@@ -3,30 +3,54 @@
 <ObjectMetadata>
     <OutputChannels>
         <DIFTcom>
+            {{#lastPublicationDate}}
             <DIFTcomLastPublication>{{lastPublicationDate}}</DIFTcomLastPublication>
+            {{/lastPublicationDate}}
+            {{#initialPublicationDate}}
             <DIFTcomInitialPublication>{{initialPublicationDate}}</DIFTcomInitialPublication>
+            {{/initialPublicationDate}}
+            {{#deleted}}
             <DIFTcomMarkDeleted>{{deleted}}</DIFTcomMarkDeleted>
+            {{/deleted}}
+            {{#articleImage}}
             <DIFTcomArticleImage>{{articleImage}}</DIFTcomArticleImage>
+            {{/articleImage}}
+            {{#comments}}
             <DIFTcomDiscussion>{{comments}}</DIFTcomDiscussion>
+            {{/comments}}
+            {{#subscriptionLevel}}
             <DIFTcomSubscriptionLevel>{{subscriptionLevel}}</DIFTcomSubscriptionLevel>
+            {{/subscriptionLevel}}
+            {{#editorsPick}}
             <editorsPick>{{editorsPick}}</editorsPick>
+            {{/editorsPick}}
+            {{#exclusive}}
             <exclusive>{{exclusive}}</exclusive>
+            {{/exclusive}}
+            {{#scoop}}
             <scoop>{{scoop}}</scoop>
+            {{/scoop}}
 {{#contentPackage}}
             <isContentPackage>{{contentPackage}}</isContentPackage>
 {{/contentPackage}}
         </DIFTcom>
     </OutputChannels>
     <EditorialNotes>
+    {{#embargoDate}}
         <EmbargoDate>{{embargoDate}}</EmbargoDate>
+    {{/embargoDate}}
+    {{#objectLocation}}
         <ObjectLocation>{{objectLocation}}</ObjectLocation>
+    {{/objectLocation}}
         <Sources>
             <Source>
                 <SourceCode>{{sourceCode}}</SourceCode>
             </Source>
         </Sources>
         <CCMS>
+        {{#contributorRights}}
             <CCMSContributorRights>{{contributorRights}}</CCMSContributorRights>
+        {{/contributorRights}}
         </CCMS>
         <InternalAnalyticsTags>{{internalAnalyticsTags}}</InternalAnalyticsTags>
     </EditorialNotes>

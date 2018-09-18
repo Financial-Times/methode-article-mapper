@@ -32,7 +32,7 @@ public class MessageProducingArticleMapper {
         this.articleMapper = articleMapper;
     }
 
-    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp, Map<String,String> headers) {
+    void mapArticle(EomFile methodeContent, String transactionId, Date messageTimestamp, Map<String, String> headers) {
         Message message;
         try {
             message = messageBuilder.buildMessage(
@@ -42,7 +42,7 @@ public class MessageProducingArticleMapper {
         } catch (MethodeMarkedDeletedException e) {
             LOGGER.info("Article {} is marked as deleted.", methodeContent.getUuid());
             message = messageBuilder.buildMessageForDeletedMethodeContent(
-                    methodeContent.getUuid(), transactionId, messageTimestamp, headers
+                    methodeContent.getUuid(), transactionId, messageTimestamp, e.getType(), headers
             );
         }
         producer.send(Collections.singletonList(message));

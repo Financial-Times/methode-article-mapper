@@ -247,7 +247,8 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         return new MessageBuilder(
                 UriBuilder.fromUri(configuration.getContentUriPrefix()).path("{uuid}"),
                 configuration.getConsumerConfiguration().getSystemCode(),
-                environment.getObjectMapper()
+                environment.getObjectMapper(),
+                configuration.getContentTypeMappings()
         );
     }
 
