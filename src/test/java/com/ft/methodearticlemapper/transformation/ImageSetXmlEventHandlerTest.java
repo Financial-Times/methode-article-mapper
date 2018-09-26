@@ -46,7 +46,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     private Map<String, String> expectedAttributes;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         eventHandler = new ImageSetXmlEventHandler();
 
         bodyProcessingContext = new MappedDataBodyProcessingContext(
@@ -56,7 +56,7 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
         expectedAttributes = new HashMap<>();
         expectedAttributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
-        expectedAttributes.put("url", String.format("http://%s/content/%s", API_HOST, GENERATED_UUID));
+        expectedAttributes.put("url", String.format("https://%s/content/%s", API_HOST, GENERATED_UUID));
         expectedAttributes.put("data-embedded", "true");
     }
 
