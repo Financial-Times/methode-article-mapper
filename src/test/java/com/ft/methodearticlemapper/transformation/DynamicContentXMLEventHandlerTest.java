@@ -2,15 +2,18 @@ package com.ft.methodearticlemapper.transformation;
 
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
-import java.util.HashMap;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -60,10 +63,6 @@ public class DynamicContentXMLEventHandlerTest extends BaseXMLEventHandlerTest {
     @Test
     public void shouldWriteTransformedDynamicContent() throws Exception {
         StartElement startElement = getStartElement(START_ELEMENT_TAG);
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("type", "http://www.ft.com/ontology/content/DynamicContent");
-        attributes.put("url", String.format("http://%s/content/%s", API_HOST, UUID));
-        attributes.put("data-embedded", "true");
         when(mockDynamicContentXMLParser.parseElementData(startElement, mockXMLEventReader, mockMappedDataBodyProcessingContext)).thenReturn(mockDynamicContentData);
         when(mockDynamicContentData.isAllRequiredDataPresent()).thenReturn(true);
         when(mockDynamicContentData.getUuid()).thenReturn(UUID);
@@ -71,17 +70,13 @@ public class DynamicContentXMLEventHandlerTest extends BaseXMLEventHandlerTest {
 
         dynamicContentXMLEventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockMappedDataBodyProcessingContext);
 
-        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, attributes);
+        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, getAttributes(API_HOST));
         verify(mockBodyWriter).writeEndTag(FT_CONTENT_TAG);
     }
 
     @Test
     public void shouldWriteTransformedDynamicContentWhenApiHostIsMissing() throws Exception {
         StartElement startElement = getStartElement(START_ELEMENT_TAG);
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("type", "http://www.ft.com/ontology/content/DynamicContent");
-        attributes.put("url", String.format("http://%s/content/%s", null, UUID));
-        attributes.put("data-embedded", "true");
         when(mockDynamicContentXMLParser.parseElementData(startElement, mockXMLEventReader, mockMappedDataBodyProcessingContext)).thenReturn(mockDynamicContentData);
         when(mockDynamicContentData.isAllRequiredDataPresent()).thenReturn(true);
         when(mockDynamicContentData.getUuid()).thenReturn(UUID);
@@ -89,25 +84,29 @@ public class DynamicContentXMLEventHandlerTest extends BaseXMLEventHandlerTest {
 
         dynamicContentXMLEventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockMappedDataBodyProcessingContext);
 
-        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, attributes);
+        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, getAttributes(null));
         verify(mockBodyWriter).writeEndTag(FT_CONTENT_TAG);
     }
 
     @Test
     public void shouldWriteTransformedDynamicContentWhenWrongBodyProcessingContextInstanceType() throws Exception {
         StartElement startElement = getStartElement(START_ELEMENT_TAG);
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put("type", "http://www.ft.com/ontology/content/DynamicContent");
-        attributes.put("url", String.format("http://%s/content/%s", null, UUID));
-        attributes.put("data-embedded", "true");
         when(mockDynamicContentXMLParser.parseElementData(startElement, mockXMLEventReader, mockBodyProcessingContext)).thenReturn(mockDynamicContentData);
         when(mockDynamicContentData.isAllRequiredDataPresent()).thenReturn(true);
         when(mockDynamicContentData.getUuid()).thenReturn(UUID);
 
         dynamicContentXMLEventHandler.handleStartElementEvent(startElement, mockXMLEventReader, mockBodyWriter, mockBodyProcessingContext);
 
-        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, attributes);
+        verify(mockBodyWriter).writeStartTag(FT_CONTENT_TAG, getAttributes(null));
         verify(mockBodyWriter).writeEndTag(FT_CONTENT_TAG);
+    }
+
+    private Map<String, String> getAttributes(String apiHost) {
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("type", "http://www.ft.com/ontology/content/DynamicContent");
+        attributes.put("url", String.format("https://%s/content/%s", apiHost, UUID));
+        attributes.put("data-embedded", "true");
+        return attributes;
     }
 
 }

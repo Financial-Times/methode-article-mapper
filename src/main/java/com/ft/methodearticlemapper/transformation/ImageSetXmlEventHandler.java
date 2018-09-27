@@ -35,7 +35,7 @@ public class ImageSetXmlEventHandler extends BaseXMLEventHandler {
 
             HashMap<String, String> attributes = new HashMap<>();
             attributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
-            attributes.put("url", String.format("http://%s/content/%s", apiHost, generatedUUID));
+            attributes.put("url", String.format("https://%s/content/%s", apiHost, generatedUUID));
             attributes.put("data-embedded", "true");
 
             eventWriter.writeStartTag(FT_CONTENT_TAG, attributes);
