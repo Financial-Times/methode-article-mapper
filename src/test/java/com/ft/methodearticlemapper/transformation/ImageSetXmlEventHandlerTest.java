@@ -1,18 +1,11 @@
 package com.ft.methodearticlemapper.transformation;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.DefaultTransactionIdBodyProcessingContext;
 import com.ft.bodyprocessing.writer.BodyWriter;
 import com.ft.uuidutils.GenerateV3UUID;
-import com.google.common.collect.Maps;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
+import com.google.common.collect.Maps;
 
 import org.codehaus.stax2.XMLEventReader2;
 import org.junit.Before;
@@ -21,10 +14,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+
 @RunWith(value = MockitoJUnitRunner.class)
 public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
-    private static final String API_HOST = "test.api.ft.com";
     private static final String TEST_TID = "test_tid";
     private static final String ARTICLE_UUID = "edf0d3db-6497-406a-9d40-79176b0ffadb";
 
@@ -51,12 +52,11 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
         bodyProcessingContext = new MappedDataBodyProcessingContext(
                 TEST_TID, TransformationMode.PUBLISH,
-                Maps.immutableEntry("uuid", ARTICLE_UUID),
-                Maps.immutableEntry("apiHost", API_HOST));
+                Maps.immutableEntry("uuid", ARTICLE_UUID));
 
         expectedAttributes = new HashMap<>();
         expectedAttributes.put("type", "http://www.ft.com/ontology/content/ImageSet");
-        expectedAttributes.put("url", String.format("https://%s/content/%s", API_HOST, GENERATED_UUID));
+        expectedAttributes.put("id", GENERATED_UUID);
         expectedAttributes.put("data-embedded", "true");
     }
 
@@ -109,10 +109,10 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         final StartElement imageSetStartElementTag = getStartElementWithAttributes(IMAGE_SET_TAG, attributesMap);
 
         eventHandler.handleStartElementEvent(
-            imageSetStartElementTag,
-            mockXmlEventReader,
-            mockEventWriter,
-            new DefaultTransactionIdBodyProcessingContext(TEST_TID));
+                imageSetStartElementTag,
+                mockXmlEventReader,
+                mockEventWriter,
+                new DefaultTransactionIdBodyProcessingContext(TEST_TID));
 
         verifyZeroInteractions(mockEventWriter);
     }
@@ -124,10 +124,10 @@ public class ImageSetXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         final StartElement imageSetStartElementTag = getStartElementWithAttributes(IMAGE_SET_TAG, attributesMap);
 
         eventHandler.handleStartElementEvent(
-            imageSetStartElementTag,
-            mockXmlEventReader,
-            mockEventWriter,
-            new MappedDataBodyProcessingContext(TEST_TID, TransformationMode.PUBLISH));
+                imageSetStartElementTag,
+                mockXmlEventReader,
+                mockEventWriter,
+                new MappedDataBodyProcessingContext(TEST_TID, TransformationMode.PUBLISH));
 
         verifyZeroInteractions(mockEventWriter);
     }

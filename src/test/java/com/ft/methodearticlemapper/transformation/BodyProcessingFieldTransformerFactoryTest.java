@@ -1800,7 +1800,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
                 "</body>";
 
         String transformedContent = "<body>" +
-                "<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" url=\"https://test.api.ft.com/content/" + generatedUuid + "\"></ft-content>" +
+                "<ft-content data-embedded=\"true\" type=\"http://www.ft.com/ontology/content/ImageSet\" id=\"" + generatedUuid + "\"></ft-content>" +
                 "<content data-embedded=\"true\" id=\"" + inlineImageUuid + "\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
                 "<img src=\"img1\"/>" +
                 "<img src=\"img2\"/>" +
@@ -1957,7 +1957,7 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<p><a type=\"DynamicContent\" dtxInsert=\"Interactive Graphic Link\" href=\"/FT/Content/World%20News/Stories/WebPublished/test%20ig%20story.xml?uuid=d02886fc-58ff-11e8-9859-6668838a4c10\">Interactive Graphic</a>" +
 				"</p></body>";
 		String processedDynamicContent = "<body><p>Embedded Dynamic Content</p>" +
-				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" url=\"https://test.api.ft.com/content/d02886fc-58ff-11e8-9859-6668838a4c10\"></ft-content></body>";
+				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" id=\"d02886fc-58ff-11e8-9859-6668838a4c10\"></ft-content></body>";
 
 		checkTransformation(dynamicContent, processedDynamicContent, Maps.immutableEntry("apiHost", "test.api.ft.com"));
 	}
@@ -1969,8 +1969,8 @@ public class BodyProcessingFieldTransformerFactoryTest {
 				"<a type=\"DynamicContent\" dtxInsert=\"Interactive Graphic Link\" href=\"/FT/Content/World%20News/Stories/WebPublished/test%20ig%20story.xml?uuid=f1655aa4-6320-11e8-a39d-4df188287fff\">Interactive Graphic</a>" +
 				"</p></body>";
 		String processedDynamicContent = "<body><p>Embedded Dynamic Content</p>" +
-				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" url=\"https://test.api.ft.com/content/d02886fc-58ff-11e8-9859-6668838a4c10\"></ft-content>" +
-				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" url=\"https://test.api.ft.com/content/f1655aa4-6320-11e8-a39d-4df188287fff\"></ft-content>" +
+				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" id=\"d02886fc-58ff-11e8-9859-6668838a4c10\"></ft-content>" +
+				"<ft-content type=\"http://www.ft.com/ontology/content/DynamicContent\" data-embedded=\"true\" id=\"f1655aa4-6320-11e8-a39d-4df188287fff\"></ft-content>" +
 				"</body>";
 
 		checkTransformation(dynamicContent, processedDynamicContent, Maps.immutableEntry("apiHost", "test.api.ft.com"));
