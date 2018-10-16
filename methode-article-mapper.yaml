@@ -148,7 +148,6 @@ contentTypeMappings:
   ContentPackage: application/vnd.ft-upp-content-package+json
   DynamicContent: application/vnd.ft-upp-dynamic-content+json
 
-apiHost: "api.ft.com"
 canonicalWebUrlTemplate: "https://www.ft.com/content/%s"
 webUrlTemplate: "https://www.ft.com/content/%s"
 

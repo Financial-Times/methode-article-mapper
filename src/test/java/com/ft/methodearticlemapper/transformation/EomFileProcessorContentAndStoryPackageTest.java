@@ -58,7 +58,6 @@ public class EomFileProcessorContentAndStoryPackageTest {
     private static final String FALSE = "False";
     private static final String TRUE = "True";
     private static final String PUBLISH_REF = "publishReference";
-    private static final String API_HOST = "test.api.ft.com";
     private static final String WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
     private static final String CANONICAL_WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
 
@@ -160,7 +159,7 @@ public class EomFileProcessorContentAndStoryPackageTest {
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
     }
 

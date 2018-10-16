@@ -64,12 +64,7 @@ spec:
           value: "{{ .Values.env.TX_ID_SOURCE }}"
         - name: TX_PROPERTY
           value: "{{ .Values.env.TX_PROPERTY }}"
-        - name: API_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: global-config
-              key: api.host
-        ports: 
+        ports:
         - containerPort: 8080
         - containerPort: 8081
         livenessProbe: 
