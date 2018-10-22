@@ -73,7 +73,7 @@ public class EomFileProcessorEncodingTest {
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         
         String expectedBody = String.format(
-                "<body><content data-embedded=\"true\" id=\"%s\" type=\"%s\"></content>%s</body>",
+                "<body><ft-content data-embedded=\"true\" id=\"%s\" type=\"%s\"></ft-content>%s</body>",
                 expectedMainImageUuid, "http://www.ft.com/ontology/content/ImageSet", bodyText);
         
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");

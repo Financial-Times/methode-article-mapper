@@ -585,7 +585,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testShouldAddMainImageIfPresent() throws Exception {
+    public void testShouldAddMainImageIfPresent() {
         final UUID imageUuid = UUID.randomUUID();
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");
@@ -595,7 +595,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testMainImageIsNullIfMissing() throws Exception {
+    public void testMainImageIsNullIfMissing() {
         final EomFile eomFile = createStandardEomFile(uuid);
 
         Content content = eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
@@ -603,8 +603,8 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testMainImageReferenceIsPutInBodyWhenPresentAndPrimarySizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
+    public void testMainImageReferenceIsPutInBodyWhenPresentAndPrimarySizeFlag() {
+        String expectedTransformedBody = "<body><ft-content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></ft-content>" +
                 "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Primary size",
@@ -612,8 +612,8 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testMainImageReferenceIsPutInBodyWhenPresentAndArticleSizeFlag() throws Exception {
-        String expectedTransformedBody = "<body><content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></content>" +
+    public void testMainImageReferenceIsPutInBodyWhenPresentAndArticleSizeFlag() {
+        String expectedTransformedBody = "<body><ft-content data-embedded=\"true\" id=\"%s\" type=\"http://www.ft.com/ontology/content/ImageSet\"></ft-content>" +
                 "                <p>random text for now</p>" +
                 "            </body>";
         testMainImageReferenceIsPutInBodyWithMetadataFlag("Article size",
@@ -621,7 +621,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testMainImageReferenceIsNotPutInBodyWhenPresentButNoPictureFlag() throws Exception {
+    public void testMainImageReferenceIsNotPutInBodyWhenPresentButNoPictureFlag() {
         String expectedTransformedBody = "<body>" +
                 "                <p>random text for now</p>" +
                 "            </body>";
@@ -629,7 +629,7 @@ public class EomFileProcessorTest {
     }
 
     @Test
-    public void testMainImageReferenceIsNotPutInBodyWhenMissing() throws Exception {
+    public void testMainImageReferenceIsNotPutInBodyWhenMissing() {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).then(returnsFirstArg());
         final EomFile eomFile = createStandardEomFile(uuid);
 
@@ -663,9 +663,7 @@ public class EomFileProcessorTest {
     }
 
     @Test(expected = MethodeMissingBodyException.class)
-    public void thatTransformationFailsIfThereIsNoBody()
-            throws Exception {
-
+    public void thatTransformationFailsIfThereIsNoBody() {
         String value = FileUtils.readFile("article/article_value_with_no_body.xml");
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)

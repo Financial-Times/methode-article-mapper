@@ -395,7 +395,7 @@ public class EomFileProcessor {
     }
 
     private String putMainImageReferenceInBodyNode(Node bodyNode, String mainImage) throws TransformerException {
-        Element newElement = bodyNode.getOwnerDocument().createElement("content");
+        Element newElement = bodyNode.getOwnerDocument().createElement("ft-content");
         newElement.setAttribute("id", mainImage);
         newElement.setAttribute("type", IMAGE_SET_TYPE);
         newElement.setAttribute(DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED, "true");
