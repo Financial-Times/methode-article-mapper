@@ -151,7 +151,7 @@ public class PostContentToTransformResource {
                     .error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
                     .exception(e);
         } catch (TransformationException e) {
-            throw ClientError.status(SC_NOT_FOUND)
+            throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
                     .context(uuid)
                     .error(e.getMessage())
                     .exception(e);
