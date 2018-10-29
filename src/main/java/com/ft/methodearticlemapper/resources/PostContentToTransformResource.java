@@ -17,6 +17,7 @@ import com.ft.methodearticlemapper.exception.UnsupportedTransformationModeExcept
 import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
+import com.ft.methodearticlemapper.transformation.TransformationException;
 import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.google.common.base.Strings;
 
@@ -148,6 +149,11 @@ public class PostContentToTransformResource {
         } catch (MethodeMissingFieldException e) {
             throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
                     .error(String.format(ErrorMessage.METHODE_FIELD_MISSING.toString(), e.getFieldName()))
+                    .exception(e);
+        } catch (TransformationException e) {
+            throw ClientError.status(SC_NOT_FOUND)
+                    .context(uuid)
+                    .error(e.getMessage())
                     .exception(e);
         } catch (MethodeMissingBodyException | UntransformableMethodeContentException e) {
             throw ClientError.status(SC_UNPROCESSABLE_ENTITY)
