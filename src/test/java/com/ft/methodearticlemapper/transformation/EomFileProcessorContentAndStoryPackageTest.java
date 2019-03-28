@@ -1,37 +1,8 @@
 package com.ft.methodearticlemapper.transformation;
 
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
-import com.ft.common.FileUtils;
-import com.ft.content.model.Brand;
-import com.ft.content.model.Content;
-import com.ft.content.model.Distribution;
-import com.ft.methodearticlemapper.methode.ContentSource;
-import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
-import com.ft.methodearticlemapper.model.EomFile;
-import com.ft.methodearticlemapper.util.ContentType;
-import com.samskivert.mustache.Mustache;
-import com.samskivert.mustache.Template;
-
-import org.apache.commons.lang.StringUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
-
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
 import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.*;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -44,6 +15,33 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
+import com.ft.common.FileUtils;
+import com.ft.content.model.Content;
+import com.ft.content.model.Distribution;
+import com.ft.methodearticlemapper.exception.UntransformableMethodeContentException;
+import com.ft.methodearticlemapper.model.EomFile;
+import com.ft.methodearticlemapper.util.ContentType;
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
 
 
 public class EomFileProcessorContentAndStoryPackageTest {
@@ -95,7 +93,7 @@ public class EomFileProcessorContentAndStoryPackageTest {
     private FieldTransformer bylineTransformer;
     private BodyProcessor htmlFieldProcessor;
 
-    private Map<ContentSource, Brand> contentSourceBrandMap;
+    //private Map<ContentSource, Brand> contentSourceBrandMap;
 
     private EomFileProcessor eomFileProcessor;
 
@@ -145,7 +143,8 @@ public class EomFileProcessorContentAndStoryPackageTest {
         return mustache.execute(attributes);
     }
 
-    @Before
+    @SuppressWarnings("unchecked")
+	@Before
     public void setUp() {
         bodyTransformer = mock(FieldTransformer.class);
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(TRANSFORMED_BODY);
@@ -155,12 +154,12 @@ public class EomFileProcessorContentAndStoryPackageTest {
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
 
-        contentSourceBrandMap = new HashMap<>();
-        contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
+        //contentSourceBrandMap = new HashMap<>();
+        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
+        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
     }
 

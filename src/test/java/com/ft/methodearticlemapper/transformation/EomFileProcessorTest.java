@@ -139,7 +139,7 @@ public class EomFileProcessorTest {
     private FieldTransformer bylineTransformer;
     private BodyProcessor htmlFieldProcessor;
 
-    private Map<ContentSource, Brand> contentSourceBrandMap;
+    //private Map<ContentSource, Brand> contentSourceBrandMap;
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
@@ -209,7 +209,8 @@ public class EomFileProcessorTest {
         }
     }
 
-    @Before
+    @SuppressWarnings("unchecked")
+	@Before
     public void setUp() {
         bodyTransformer = mock(FieldTransformer.class);
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(TRANSFORMED_BODY);
@@ -219,16 +220,16 @@ public class EomFileProcessorTest {
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
 
-        contentSourceBrandMap = new HashMap<>();
-        contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
-        contentSourceBrandMap.put(ContentSource.DynamicContent, new Brand(DYNAMIC_CONTENT));
+        //contentSourceBrandMap = new HashMap<>();
+        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
+        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
+        //contentSourceBrandMap.put(ContentSource.DynamicContent, new Brand(DYNAMIC_CONTENT));
 
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
     }
 
@@ -291,7 +292,8 @@ public class EomFileProcessorTest {
         eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowEOMStoryWithNonEligibleWorkflowStatusBeforeEnforceDate() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "FTcom", initialPublicationDateAsStringPreWfsEnforce))
@@ -326,7 +328,8 @@ public class EomFileProcessorTest {
         eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowEOMStoryWithFinancialTimesChannelAndNonEligibleWorkflowStatus() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "Financial Times", initialPublicationDateAsString))
@@ -413,7 +416,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldTransformBodyOnPublish() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
@@ -436,7 +440,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowBodyWithAttributes() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
@@ -551,7 +556,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldTransformBylineWhenPresentOnPublish() {
         String byline = "By <author-name>Gillian Tett</author-name>";
 
@@ -1032,7 +1038,8 @@ public class EomFileProcessorTest {
         assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(nullValue()));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void thatSuggestModeIsPassedThrough() {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.SUGGEST), anyVararg())).thenReturn(TRANSFORMED_BODY);
 
@@ -1058,7 +1065,7 @@ public class EomFileProcessorTest {
     @Test(expected = UnsupportedTransformationModeException.class)
     public void thatUnsupportedModeIsRejected() {
         eomFileProcessor = new EomFileProcessor(EnumSet.of(TransformationMode.SUGGEST), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         final EomFile eomFile = new EomFile.Builder()
@@ -1072,7 +1079,7 @@ public class EomFileProcessorTest {
     public void thatDraftReferenceIsAddedToTransformedBody() {
         EomFile.setAdditionalMappings(Collections.singletonMap(DRAFT_REF, DRAFT_REF));
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, DRAFT_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, DRAFT_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         final String reference = "test_draft";
@@ -1385,7 +1392,7 @@ public class EomFileProcessorTest {
                 .withType(ContentType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
-                .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
+                //.withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))

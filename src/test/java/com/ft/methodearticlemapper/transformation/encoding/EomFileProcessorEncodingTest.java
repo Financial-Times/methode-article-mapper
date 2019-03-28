@@ -1,8 +1,6 @@
 package com.ft.methodearticlemapper.transformation.encoding;
 
 import static com.ft.methodearticlemapper.transformation.EomFileProcessorTest.createStandardEomFileWithMainImage;
-import static com.ft.methodearticlemapper.transformation.EomFileProcessorTest.FINANCIAL_TIMES_BRAND;
-import static com.ft.methodearticlemapper.transformation.EomFileProcessorTest.REUTERS_BRAND;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -12,24 +10,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import com.ft.bodyprocessing.BodyProcessor;
-import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
-import com.ft.content.model.Brand;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.ft.bodyprocessing.BodyProcessor;
+import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.content.model.Content;
-import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.transformation.EomFileProcessor;
 import com.ft.methodearticlemapper.transformation.FieldTransformer;
 import com.ft.methodearticlemapper.transformation.TransformationMode;
 import com.ft.uuidutils.DeriveUUID;
-import org.junit.Before;
-import org.junit.Test;
 
 
 public class EomFileProcessorEncodingTest {
@@ -48,14 +43,15 @@ public class EomFileProcessorEncodingTest {
     
     private EomFileProcessor eomFileProcessor;
 
-    @Before
+    @SuppressWarnings("unchecked")
+	@Before
     public void setUp() {
-        Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
-        contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
+        //Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
+        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
+        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
