@@ -1,12 +1,52 @@
 package com.ft.methodearticlemapper.transformation;
 
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.common.FileUtils;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
-import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Distribution;
@@ -34,47 +74,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
-
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 public class EomFileProcessorTest {
