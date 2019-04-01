@@ -41,6 +41,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
@@ -128,6 +129,7 @@ public class EomFileProcessor {
         }
     }
 
+    @JsonIgnoreProperties(value = { "brands" })
     public Content process(EomFile eomFile, TransformationMode mode, String transactionId, Date lastModifiedDate) {
         UUID uuid = UUID.fromString(eomFile.getUuid());
         if (!supportedModes.contains(mode)) {

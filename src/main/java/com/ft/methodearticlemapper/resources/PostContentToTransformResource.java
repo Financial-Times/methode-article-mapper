@@ -5,6 +5,7 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 
 import com.codahale.metrics.annotation.Timed;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ft.api.jaxrs.errors.ClientError;
 import com.ft.content.model.Content;
 import com.ft.methodearticlemapper.configuration.PropertySource;
@@ -74,6 +75,7 @@ public class PostContentToTransformResource {
 	@Timed
 	@Path("/map")
 	@Produces(MediaType.APPLICATION_JSON + CHARSET_UTF_8)
+	@JsonIgnoreProperties(value = { "brands" })
 	public final Content map(EomFile eomFile, @QueryParam("preview") boolean preview, @QueryParam("mode") String mode) {
 		final String uuid = eomFile.getUuid();
 		validateUuid(uuid);
