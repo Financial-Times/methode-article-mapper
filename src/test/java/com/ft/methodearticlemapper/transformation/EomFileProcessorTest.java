@@ -1,12 +1,52 @@
 package com.ft.methodearticlemapper.transformation;
 
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
+import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
+import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.common.FileUtils;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
-import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Distribution;
@@ -34,52 +74,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
-
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMCompoundStory;
-import static com.ft.methodearticlemapper.methode.EomFileType.EOMStory;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.FOLLOW_USUAL_RULES;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.PREMIUM;
-import static com.ft.methodearticlemapper.transformation.SubscriptionLevel.SHOWCASE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 public class EomFileProcessorTest {
-    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
-    public static final String REUTERS_BRAND = "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7";
     public static final String DYNAMIC_CONTENT = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
@@ -139,7 +136,6 @@ public class EomFileProcessorTest {
     private FieldTransformer bylineTransformer;
     private BodyProcessor htmlFieldProcessor;
 
-    private Map<ContentSource, Brand> contentSourceBrandMap;
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
@@ -209,7 +205,8 @@ public class EomFileProcessorTest {
         }
     }
 
-    @Before
+    @SuppressWarnings("unchecked")
+	@Before
     public void setUp() {
         bodyTransformer = mock(FieldTransformer.class);
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH), anyVararg())).thenReturn(TRANSFORMED_BODY);
@@ -219,16 +216,11 @@ public class EomFileProcessorTest {
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
 
-        contentSourceBrandMap = new HashMap<>();
-        contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
-        contentSourceBrandMap.put(ContentSource.DynamicContent, new Brand(DYNAMIC_CONTENT));
-
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
     }
 
@@ -291,7 +283,8 @@ public class EomFileProcessorTest {
         eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowEOMStoryWithNonEligibleWorkflowStatusBeforeEnforceDate() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "FTcom", initialPublicationDateAsStringPreWfsEnforce))
@@ -326,7 +319,8 @@ public class EomFileProcessorTest {
         eomFileProcessor.process(eomFile, TransformationMode.PUBLISH, TRANSACTION_ID, LAST_MODIFIED);
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowEOMStoryWithFinancialTimesChannelAndNonEligibleWorkflowStatus() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(createEomStoryFile(uuid, "FTContentMove/Ready", "Financial Times", initialPublicationDateAsString))
@@ -413,7 +407,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldTransformBodyOnPublish() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
@@ -436,7 +431,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldAllowBodyWithAttributes() {
         final EomFile eomFile = new EomFile.Builder()
                 .withValuesFrom(standardEomFile)
@@ -551,7 +547,8 @@ public class EomFileProcessorTest {
         assertThat(content, equalTo(expectedContent));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void shouldTransformBylineWhenPresentOnPublish() {
         String byline = "By <author-name>Gillian Tett</author-name>";
 
@@ -1032,7 +1029,8 @@ public class EomFileProcessorTest {
         assertThat(content.getAlternativeStandfirsts().getPromotionalStandfirst(), is(nullValue()));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void thatSuggestModeIsPassedThrough() {
         when(bodyTransformer.transform(anyString(), anyString(), eq(TransformationMode.SUGGEST), anyVararg())).thenReturn(TRANSFORMED_BODY);
 
@@ -1058,7 +1056,7 @@ public class EomFileProcessorTest {
     @Test(expected = UnsupportedTransformationModeException.class)
     public void thatUnsupportedModeIsRejected() {
         eomFileProcessor = new EomFileProcessor(EnumSet.of(TransformationMode.SUGGEST), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         final EomFile eomFile = new EomFile.Builder()
@@ -1072,7 +1070,7 @@ public class EomFileProcessorTest {
     public void thatDraftReferenceIsAddedToTransformedBody() {
         EomFile.setAdditionalMappings(Collections.singletonMap(DRAFT_REF, DRAFT_REF));
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, DRAFT_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, DRAFT_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         final String reference = "test_draft";
@@ -1385,7 +1383,6 @@ public class EomFileProcessorTest {
                 .withType(ContentType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
-                .withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))

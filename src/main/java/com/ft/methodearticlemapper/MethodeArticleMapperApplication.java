@@ -3,9 +3,7 @@ package com.ft.methodearticlemapper;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.UriBuilder;
@@ -17,7 +15,6 @@ import com.ft.api.util.buildinfo.BuildInfoResource;
 import com.ft.api.util.transactionid.TransactionIdFilter;
 import com.ft.bodyprocessing.html.Html5SelfClosingTagBodyProcessor;
 import com.ft.bodyprocessing.richcontent.VideoMatcher;
-import com.ft.content.model.Brand;
 import com.ft.jerseyhttpwrapper.ResilientClientBuilder;
 import com.ft.jerseyhttpwrapper.config.EndpointConfiguration;
 import com.ft.jerseyhttpwrapper.continuation.ExponentialBackoffContinuationPolicy;
@@ -25,21 +22,18 @@ import com.ft.message.consumer.MessageListener;
 import com.ft.message.consumer.MessageQueueConsumerInitializer;
 import com.ft.messagequeueproducer.MessageProducer;
 import com.ft.messagequeueproducer.QueueProxyProducer;
-import com.ft.methodearticlemapper.configuration.BrandConfiguration;
 import com.ft.methodearticlemapper.configuration.ConcordanceApiConfiguration;
 import com.ft.methodearticlemapper.configuration.ConnectionConfiguration;
 import com.ft.methodearticlemapper.configuration.ConsumerConfiguration;
 import com.ft.methodearticlemapper.configuration.DocumentStoreApiConfiguration;
 import com.ft.methodearticlemapper.configuration.MethodeArticleMapperConfiguration;
 import com.ft.methodearticlemapper.configuration.ProducerConfiguration;
-import com.ft.methodearticlemapper.exception.ConfigurationException;
 import com.ft.methodearticlemapper.health.CanConnectToMessageQueueProducerProxyHealthcheck;
 import com.ft.methodearticlemapper.health.RemoteServiceHealthCheck;
 import com.ft.methodearticlemapper.health.StandaloneHealthCheck;
 import com.ft.methodearticlemapper.messaging.MessageBuilder;
 import com.ft.methodearticlemapper.messaging.MessageProducingArticleMapper;
 import com.ft.methodearticlemapper.messaging.NativeCmsPublicationEventsListener;
-import com.ft.methodearticlemapper.methode.ContentSource;
 import com.ft.methodearticlemapper.methode.MethodeArticleTransformerErrorEntityFactory;
 import com.ft.methodearticlemapper.model.EomFile;
 import com.ft.methodearticlemapper.resources.PostContentToTransformResource;
@@ -203,7 +197,6 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 ).newInstance(),
                 new BylineProcessingFieldTransformerFactory().newInstance(),
                 new Html5SelfClosingTagBodyProcessor(),
-                processConfigurationBrands(configuration.getBrandsConfiguration()),
                 configuration.getTxIdPropertyName(),
                 configuration.getApiHost(),
                 configuration.getWebUrlTemplate(),
@@ -289,24 +282,4 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
         );
     }
 
-    private Map<ContentSource, Brand> processConfigurationBrands(List<BrandConfiguration> brands) {
-        Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
-        for (BrandConfiguration brandConfiguration : brands) {
-            ContentSource contentSource = ContentSource.valueOf(brandConfiguration.getName());
-            contentSourceBrandMap.put(contentSource, new Brand(brandConfiguration.getId()));
-        }
-
-        validateBrandsConfiguration(contentSourceBrandMap);
-
-        return contentSourceBrandMap;
-    }
-
-    private void validateBrandsConfiguration(Map<ContentSource, Brand> contentSourceBrandMap) {
-        for (ContentSource contentSource : ContentSource.values()) {
-            if (!contentSourceBrandMap.containsKey(contentSource)) {
-                throw new ConfigurationException(
-                        "No brand information configured for source with name: " + contentSource.name());
-            }
-        }
-    }
 }

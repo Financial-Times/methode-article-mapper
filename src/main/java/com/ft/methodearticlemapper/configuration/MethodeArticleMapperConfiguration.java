@@ -24,7 +24,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private boolean messagingEndpointEnabled;
     private ConsumerConfiguration consumerConfiguration;
     private ProducerConfiguration producerConfiguration;
-    private final List<BrandConfiguration> brands;
     private final List<VideoSiteConfiguration> videoSiteConfig;
     private final List<String> interactiveGraphicsWhiteList;
     private final String contentUriPrefix;
@@ -47,7 +46,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
                                              @JsonProperty("documentStoreApiEnabled") Boolean documentStoreApiEnabled,
                                              @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
-                                             @JsonProperty("brands") List<BrandConfiguration> brands,
                                              @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
                                              @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
                                              @JsonProperty("contentUriPrefix") String contentUriPrefix,
@@ -70,8 +68,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
             this.concordanceApiEnabled = true;
             this.concordanceApiConfiguration = concordanceApiConfiguration;
         }
-
-        this.brands = brands;
 
         if ((messagingEndpointEnabled == null) || messagingEndpointEnabled.booleanValue()) {
             this.messagingEndpointEnabled = true;
@@ -107,11 +103,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
 
     public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() {
         return documentStoreApiConfiguration;
-    }
-
-    @NotNull
-    public List<BrandConfiguration> getBrandsConfiguration() {
-        return brands;
     }
 
     @NotNull

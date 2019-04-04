@@ -1,10 +1,50 @@
 package com.ft.methodearticlemapper.transformation;
 
+import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TimeZone;
+import java.util.UUID;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import com.ft.bodyprocessing.BodyProcessor;
 import com.ft.content.model.AccessLevel;
 import com.ft.content.model.AlternativeStandfirsts;
 import com.ft.content.model.AlternativeTitles;
-import com.ft.content.model.Brand;
 import com.ft.content.model.Comments;
 import com.ft.content.model.Content;
 import com.ft.content.model.Distribution;
@@ -23,48 +63,6 @@ import com.ft.uuidutils.DeriveUUID;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedSet;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
-
-import static com.ft.uuidutils.DeriveUUID.Salts.IMAGE_SET;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 public class EomFileProcessor {
 
@@ -97,13 +95,11 @@ public class EomFileProcessor {
     private final String apiHost;
     private final String webUrlTemplate;
     private final String canonicalWebUrlTemplate;
-    private final Map<ContentSource, Brand> contentSourceBrandMap;
 
     public EomFileProcessor(final EnumSet<TransformationMode> supportedModes,
                             final FieldTransformer bodyTransformer,
                             final FieldTransformer bylineTransformer,
                             final BodyProcessor htmlFieldProcessor,
-                            final Map<ContentSource, Brand> contentSourceBrandMap,
                             final String refFieldName,
                             final String apiHost,
                             final String webUrlTemplate,
@@ -112,7 +108,6 @@ public class EomFileProcessor {
         this.bodyTransformer = bodyTransformer;
         this.bylineTransformer = bylineTransformer;
         this.htmlFieldProcessor = htmlFieldProcessor;
-        this.contentSourceBrandMap = contentSourceBrandMap;
         this.refFieldName = refFieldName;
         this.apiHost = apiHost;
         this.webUrlTemplate = webUrlTemplate;
@@ -157,7 +152,8 @@ public class EomFileProcessor {
         }
     }
 
-    private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
+    @SuppressWarnings("unchecked")
+	private Content transformEomFileToContent(UUID uuid, ParsedEomFile eomFile, TransformationMode mode, String transactionId, Date lastModified)
             throws SAXException, IOException, XPathExpressionException, TransformerException, ParserConfigurationException {
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
@@ -181,8 +177,6 @@ public class EomFileProcessor {
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
         final String postProcessedBody = putMainImageReferenceInBodyXml(xpath, attributes, mainImage, validatedBody);
-
-        final Brand brand = contentSourceBrandMap.get(eomFile.getContentSource());
 
         final String storyPackage = getStoryPackage(xpath, value, uuid);
 
@@ -221,7 +215,6 @@ public class EomFileProcessor {
                 .withXmlBody(postProcessedBody)
                 .withByline(transformedByline)
                 .withMainImage(mainImage)
-                .withBrands(new TreeSet<>(Collections.singletonList(brand)))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withComments(Comments.builder().withEnabled(discussionEnabled).build())
                 .withStandout(buildStandoutSection(xpath, attributes))
@@ -419,7 +412,8 @@ public class EomFileProcessor {
         return getNodeAsString(node);
     }
 
-    private String transformField(final String originalFieldAsString,
+    @SuppressWarnings("unchecked")
+	private String transformField(final String originalFieldAsString,
                                   final FieldTransformer transformer,
                                   final String transactionId,
                                   final TransformationMode mode,

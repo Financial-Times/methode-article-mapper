@@ -57,11 +57,6 @@ You can find an example of a transformed article below.
   },
   "type": "http://www.ft.com/ontology/content/ContentPackage",
   "byline": "Michael Peel, Bangkok Regional Correspondent",
-  "brands": [
-    {
-      "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-    }
-  ],
   "identifiers": [
     {
       "authority": "http://api.ft.com/system/FTCOM-METHODE",
