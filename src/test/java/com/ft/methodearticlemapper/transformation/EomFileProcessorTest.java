@@ -77,8 +77,6 @@ import com.samskivert.mustache.Template;
 
 
 public class EomFileProcessorTest {
-    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
-    public static final String REUTERS_BRAND = "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7";
     public static final String DYNAMIC_CONTENT = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
     protected static final String METHODE = "http://api.ft.com/system/FTCOM-METHODE";
     protected static final String IG = "http://api.ft.com/system/FTCOM-IG";
@@ -138,7 +136,6 @@ public class EomFileProcessorTest {
     private FieldTransformer bylineTransformer;
     private BodyProcessor htmlFieldProcessor;
 
-    //private Map<ContentSource, Brand> contentSourceBrandMap;
     private EomFile standardEomFile;
     private Content standardExpectedContent;
 
@@ -218,11 +215,6 @@ public class EomFileProcessorTest {
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
-
-        //contentSourceBrandMap = new HashMap<>();
-        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
-        //contentSourceBrandMap.put(ContentSource.DynamicContent, new Brand(DYNAMIC_CONTENT));
 
         standardEomFile = createStandardEomFile(uuid);
         standardExpectedContent = createStandardExpectedFtContent();
@@ -1391,7 +1383,6 @@ public class EomFileProcessorTest {
                 .withType(ContentType.Type.ARTICLE)
                 .withXmlBody("<body><p>some other random text</p></body>")
                 .withByline("")
-                //.withBrands(new TreeSet<>(Collections.singletonList(contentSourceBrandMap.get(contentSource))))
                 .withPublishedDate(toDate(lastPublicationDateAsString, DATE_TIME_FORMAT))
                 .withIdentifiers(ImmutableSortedSet.of(new Identifier(METHODE, uuid.toString())))
                 .withComments(new Comments(true))

@@ -46,10 +46,6 @@ public class EomFileProcessorEncodingTest {
     @SuppressWarnings("unchecked")
 	@Before
     public void setUp() {
-        //Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
-        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
-
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
                 bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);

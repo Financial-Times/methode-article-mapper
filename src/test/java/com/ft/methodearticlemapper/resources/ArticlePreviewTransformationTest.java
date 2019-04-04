@@ -28,7 +28,6 @@ import com.ft.methodearticlemapper.transformation.TransformationMode;
 
 public class ArticlePreviewTransformationTest {
 
-    //private static final String ARBITRARY_BRAND = "any brand";
     private static final boolean IS_PREVIEW = true;
     private static final String TRANSACTION_ID = "tid_test";
     private static final String VALID_EOM_FILE_TYPE = "EOM::CompoundStory";
@@ -44,7 +43,6 @@ public class ArticlePreviewTransformationTest {
     private FieldTransformer bodyTransformer = mock(FieldTransformer.class);
     private FieldTransformer bylineTransformer = mock(FieldTransformer.class);
     private BodyProcessor htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
-    //private Brand brand= new Brand(ARBITRARY_BRAND);
 
     /** Classes under test - validation for successful transformation of an article preview occurs in both classes*/
     private EomFileProcessor eomFileProcessor;
@@ -52,9 +50,6 @@ public class ArticlePreviewTransformationTest {
 
     @Before
     public void setUp() {
-        //Map<ContentSource, Brand> contentSourceBrandMap = new HashMap<>();
-        //contentSourceBrandMap.put(ContentSource.FT, new Brand(ARBITRARY_BRAND));
-
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
                 bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
@@ -76,7 +71,6 @@ public class ArticlePreviewTransformationTest {
 
         assertThat(expectedUuid.toString(), equalTo(actualContent.getUuid()));
         assertThat(TRANSACTION_ID, equalTo(actualContent.getPublishReference()));
-        //assertThat(actualContent.getBrands(), Matchers.contains(brand));
         assertThat(actualContent.getBody(), matchesPattern("^<body>.*</body>$"));
     }
 

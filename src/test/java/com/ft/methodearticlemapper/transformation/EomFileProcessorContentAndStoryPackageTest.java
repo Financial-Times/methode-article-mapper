@@ -45,9 +45,6 @@ import com.samskivert.mustache.Template;
 
 
 public class EomFileProcessorContentAndStoryPackageTest {
-    public static final String FINANCIAL_TIMES_BRAND = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54";
-    public static final String REUTERS_BRAND = "http://api.ft.com/things/ed3b6ec5-6466-47ef-b1d8-16952fd522c7";
-
     private static final String ARTICLE_TEMPLATE = FileUtils.readFile("article/article_value.xml.mustache");
     private static final String ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_attributes.xml.mustache");
     private static final String SYSTEM_ATTRIBUTES_TEMPLATE = FileUtils.readFile("article/article_system_attributes.xml.mustache");
@@ -92,8 +89,6 @@ public class EomFileProcessorContentAndStoryPackageTest {
     private FieldTransformer bodyTransformer;
     private FieldTransformer bylineTransformer;
     private BodyProcessor htmlFieldProcessor;
-
-    //private Map<ContentSource, Brand> contentSourceBrandMap;
 
     private EomFileProcessor eomFileProcessor;
 
@@ -153,10 +148,6 @@ public class EomFileProcessorContentAndStoryPackageTest {
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
 
         htmlFieldProcessor = spy(new Html5SelfClosingTagBodyProcessor());
-
-        //contentSourceBrandMap = new HashMap<>();
-        //contentSourceBrandMap.put(ContentSource.FT, new Brand(FINANCIAL_TIMES_BRAND));
-        //contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
                 bylineTransformer, htmlFieldProcessor, PUBLISH_REF, API_HOST,
