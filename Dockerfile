@@ -1,8 +1,13 @@
-FROM openjdk:8u171-jdk-alpine3.8
+FROM openjdk:8u212-jdk-alpine3.9
 
 COPY . /methode-article-mapper
 
-RUN apk --update add git maven \
+ARG SONATYPE_USER
+ARG SONATYPE_PASSWORD
+
+RUN apk --update add git maven curl \
+ && mkdir /root/.m2/ \
+ && curl -v -o /root/.m2/settings.xml "https://raw.githubusercontent.com/Financial-Times/nexus-settings/master/public-settings.xml" \
  && cd methode-article-mapper \
  && HASH=$(git log -1 --pretty=format:%H) \
  && TAG=$(git tag -l --points-at $HASH | head -n1) \
