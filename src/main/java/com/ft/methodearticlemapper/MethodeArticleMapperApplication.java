@@ -61,6 +61,7 @@ import io.dropwizard.setup.Environment;
 
 public class MethodeArticleMapperApplication extends Application<MethodeArticleMapperConfiguration> {
     private static final String DEWEY_URL = "https://dewey.ft.com/up-mam.html";
+    private ConsumerConfiguration consumerConfig;
     
     public static void main(final String[] args) throws Exception {
         new MethodeArticleMapperApplication().run(args);
@@ -134,7 +135,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                     getMessageBuilder(configuration, environment),
                     producer, eomFileProcessor);
             
-            ConsumerConfiguration consumerConfig = configuration.getConsumerConfiguration();
+            consumerConfig = configuration.getConsumerConfiguration();
             MessageListener listener = new NativeCmsPublicationEventsListener(
                     environment.getObjectMapper(),
                     msgProducingListMapper,
@@ -264,11 +265,20 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
     }
 
     protected AdvancedHealthCheck registerListener(Environment environment, MessageListener listener, ConsumerConfiguration config, Client consumerClient) {
+//        final MessageQueueConsumerInitializer messageQueueConsumerInitializer =
+//                new MessageQueueConsumerInitializer(
+//                        config.getMessageQueueConsumerConfiguration(),
+//                        listener,
+//                        consumerClient
+//                );
         final MessageQueueConsumerInitializer messageQueueConsumerInitializer =
                 new MessageQueueConsumerInitializer(
                         config.getMessageQueueConsumerConfiguration(),
                         listener,
-                        consumerClient
+                        consumerClient,
+                        environment,
+                        consumerConfig.getJerseyClientConfiguration(),
+                        "consumer-client"
                 );
         environment.lifecycle().manage(messageQueueConsumerInitializer);
 
