@@ -128,7 +128,7 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                     .withQueueProxyConfiguration(producerConfig.getMessageQueueProducerConfiguration());
 
             MessageProducer producer = queueProxyBuilder.build();
-            healthchecks.add(buildProducerHealthCheck(environment, producerConfig, queueProxyBuilder));
+//            healthchecks.add(buildProducerHealthCheck(environment, producerConfig, queueProxyBuilder));
             
             MessageProducingArticleMapper msgProducingListMapper = new MessageProducingArticleMapper(
                     getMessageBuilder(configuration, environment),
@@ -141,11 +141,11 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                     consumerConfig.getSystemCode()
                     );
             
-            healthchecks.add(
-                    registerListener(environment, listener, consumerConfig,
-                            getMessagingClient(environment, consumerConfig.getJerseyClientConfiguration(), "consumer-client")
-                            )
-                    );
+//            healthchecks.add(
+//                    registerListener(environment, listener, consumerConfig,
+//                            getMessagingClient(environment, consumerConfig.getJerseyClientConfiguration(), "consumer-client")
+//                            )
+//                    );
         }
 
         environment.jersey().register(
