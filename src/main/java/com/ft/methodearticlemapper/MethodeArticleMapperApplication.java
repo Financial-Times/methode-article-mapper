@@ -142,9 +142,9 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                     );
             
 //            healthchecks.add(
-//                    registerListener(environment, listener, consumerConfig,
-//                            getMessagingClient(environment, consumerConfig.getJerseyClientConfiguration(), "consumer-client")
-//                            )
+                    registerListener(environment, listener, consumerConfig,
+                            getMessagingClient(environment, consumerConfig.getJerseyClientConfiguration(), "consumer-client")
+                            );
 //                    );
         }
 
