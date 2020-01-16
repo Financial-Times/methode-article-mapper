@@ -158,7 +158,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"http://www.url.com/" + uuid + "\" title=\"Some absurd text here\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -169,7 +169,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"http://www.url.com/" + uuid + "\" title=\"Some absurd text here\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.DEFAULT_CONTENT_TYPE + "\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.DEFAULT_CONTENT_TYPE + "\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -180,7 +180,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"" + uuid + "\" title=\"Some absurd text here\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -191,7 +191,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"" + uuid + "\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -202,7 +202,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"/Content/2007/Path/To/Methode/Article.xml?uuid=" + uuid + "\" title=\"Some absurd text here\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" title=\"Some absurd text here\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -237,7 +237,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><a href=\"http://www.external.com/" + uuid + "\">Link Text</a></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		assertThat(processedBody, is(identicalXmlTo("<body><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</content></body>")));
+		assertThat(processedBody, is(identicalXmlTo("<body><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">Link Text</ft-content></body>")));
 	}
 
 	@Test
@@ -344,7 +344,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><p>The last time<a href=\"" + uuid + "\">China</a>was the world&#x2019;s largest economy</p></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><p>The last time <content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">China</content> was the world&#x2019;s largest economy</p></body>";
+		String expectedBody = "<body><p>The last time <ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">China</ft-content> was the world&#x2019;s largest economy</p></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
@@ -357,7 +357,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><p>The last time <a href=\"" + uuid + "\">China</a> was the world&#x2019;s largest economy</p></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><p>The last time <content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">China</content> was the world&#x2019;s largest economy</p></body>";
+		String expectedBody = "<body><p>The last time <ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">China</ft-content> was the world&#x2019;s largest economy</p></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
@@ -370,7 +370,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><p><a href=\"" + uuid + "\">link text!?</a>  Lorem ipsum doler sit amet…</p></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content>!?  Lorem ipsum doler sit amet…</p></body>";
+		String expectedBody = "<body><p><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</ft-content>!?  Lorem ipsum doler sit amet…</p></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
@@ -383,7 +383,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><p><a href=\"" + uuid + "\">link text!?</a>Lorem ipsum doler sit amet…</p></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content>!? Lorem ipsum doler sit amet…</p></body>";
+		String expectedBody = "<body><p><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</ft-content>!? Lorem ipsum doler sit amet…</p></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}
@@ -394,7 +394,7 @@ public class MethodeLinksBodyProcessorTest {
 		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
 
 		String body = "<body><p><a href=\"" + uuid + "\">link text!?</a></p></body>";
-		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content>!?</p></body>";
+		String expectedBody = "<body><p><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</ft-content>!?</p></body>";
 
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
@@ -407,7 +407,7 @@ public class MethodeLinksBodyProcessorTest {
 		when(clientResponse.getEntity(String.class)).thenReturn("[{\"uuid\":\"" + uuid + "\", \"type\": \"Article\"}]");
 
 		String body = "<body><p><a href=\"" + uuid + "\">link text</a>  (some details)</p></body>";
-		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content> (some details)</p></body>";
+		String expectedBody = "<body><p><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</ft-content> (some details)</p></body>";
 
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
@@ -422,7 +422,7 @@ public class MethodeLinksBodyProcessorTest {
 		String body = "<body><p><a href=\"" + uuid + "\">link text </a>  .  Lorem ipsum doler sit amet…</p></body>";
 		String processedBody = bodyProcessor.process(body, new DefaultTransactionIdBodyProcessingContext(TRANSACTION_ID));
 
-		String expectedBody = "<body><p><content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</content>.  Lorem ipsum doler sit amet…</p></body>";
+		String expectedBody = "<body><p><ft-content id=\"" + uuid + "\" type=\"" + MethodeLinksBodyProcessor.BASE_CONTENT_TYPE + "Article\">link text</ft-content>.  Lorem ipsum doler sit amet…</p></body>";
 
 		assertThat(processedBody, is(identicalXmlTo(expectedBody)));
 	}

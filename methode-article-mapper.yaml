@@ -114,7 +114,7 @@ consumer:
     severity: 2
     businessImpact: "Newly published Methode articles will not be available from the Content API"
     technicalSummary: "Tests that kafka-proxy is reachable and message can be consumed"
-    panicGuideUrl: "https://dewey.ft.com/up-mam.html"
+    panicGuideUrl: "https://dewey.in.ft.com/runbooks/up-mam"
   systemCode: methode-web-pub
 
 producer:
@@ -131,7 +131,7 @@ producer:
     severity: 2
     businessImpact: "Newly published Methode articles will not be available from the Content API"
     technicalSummary: "Tests that kafka-proxy is reachable and the CmsPublicationEvents topic exists"
-    panicGuideUrl: "https://dewey.ft.com/up-mam.html"
+    panicGuideUrl: "https://dewey.in.ft.com/runbooks/up-mam"
 
 contentUriPrefix: http://methode-article-mapper.svc.ft.com/content
 
@@ -148,7 +148,6 @@ contentTypeMappings:
   ContentPackage: application/vnd.ft-upp-content-package+json
   DynamicContent: application/vnd.ft-upp-dynamic-content+json
 
-apiHost: "api.ft.com"
 canonicalWebUrlTemplate: "https://www.ft.com/content/%s"
 webUrlTemplate: "https://www.ft.com/content/%s"
 

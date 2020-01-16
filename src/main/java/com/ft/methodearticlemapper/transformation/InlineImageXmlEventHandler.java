@@ -25,7 +25,7 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InlineImageXmlEventHandler.class);
 
-    private static final String CONTENT_TAG = "content";
+    private static final String FT_CONTENT_TAG = "ft-content";
     private static final String FILE_REF_ATTRIBUTE = "fileref";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String UUID_REGEX = ".*uuid=([0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}).*";
@@ -45,8 +45,8 @@ public class InlineImageXmlEventHandler extends BaseXMLEventHandler {
             attributes.put("type", IMAGE_SET_TYPE);
             attributes.put(DEFAULT_ATTRIBUTE_DATA_EMBEDDED, "true");
 
-            eventWriter.writeStartTag(CONTENT_TAG, attributes);
-            eventWriter.writeEndTag(CONTENT_TAG);
+            eventWriter.writeStartTag(FT_CONTENT_TAG, attributes);
+            eventWriter.writeEndTag(FT_CONTENT_TAG);
         }
         skipUntilMatchingEndTag(event.getName().getLocalPart(), xmlEventReader);
     }

@@ -36,7 +36,6 @@ public class EomFileProcessorEncodingTest {
     private static final String TRANSFORMED_BYLINE = "By Gillian Tett";
     private static final String TRANSACTION_ID = "tid_test";
     private static final String PUBLISH_REF = "publishReference";
-    private static final String API_HOST = "test.api.ft.com";
     private static final String WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
     private static final String CANONICAL_WEB_URL_TEMPLATE = "https://www.ft.com/content/%s";
     
@@ -55,7 +54,7 @@ public class EomFileProcessorEncodingTest {
         contentSourceBrandMap.put(ContentSource.Reuters, new Brand(REUTERS_BRAND));
 
         eomFileProcessor = new EomFileProcessor(EnumSet.allOf(TransformationMode.class), bodyTransformer,
-                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF, API_HOST,
+                bylineTransformer, htmlFieldProcessor, contentSourceBrandMap, PUBLISH_REF,
                 WEB_URL_TEMPLATE, CANONICAL_WEB_URL_TEMPLATE);
 
         when(bylineTransformer.transform(anyString(), anyString(), eq(TransformationMode.PUBLISH))).thenReturn(TRANSFORMED_BYLINE);
@@ -74,7 +73,7 @@ public class EomFileProcessorEncodingTest {
         final UUID expectedMainImageUuid = DeriveUUID.with(DeriveUUID.Salts.IMAGE_SET).from(imageUuid);
         
         String expectedBody = String.format(
-                "<body><content data-embedded=\"true\" id=\"%s\" type=\"%s\"></content>%s</body>",
+                "<body><ft-content data-embedded=\"true\" id=\"%s\" type=\"%s\"></ft-content>%s</body>",
                 expectedMainImageUuid, "http://www.ft.com/ontology/content/ImageSet", bodyText);
         
         final EomFile eomFile = createStandardEomFileWithMainImage(uuid, imageUuid, "Primary size");

@@ -94,7 +94,6 @@ public class EomFileProcessor {
     private final FieldTransformer bylineTransformer;
     private final BodyProcessor htmlFieldProcessor;
     private final String refFieldName;
-    private final String apiHost;
     private final String webUrlTemplate;
     private final String canonicalWebUrlTemplate;
     private final Map<ContentSource, Brand> contentSourceBrandMap;
@@ -105,7 +104,6 @@ public class EomFileProcessor {
                             final BodyProcessor htmlFieldProcessor,
                             final Map<ContentSource, Brand> contentSourceBrandMap,
                             final String refFieldName,
-                            final String apiHost,
                             final String webUrlTemplate,
                             final String canonicalWebUrlTemplate) {
         this.supportedModes = supportedModes;
@@ -114,7 +112,6 @@ public class EomFileProcessor {
         this.htmlFieldProcessor = htmlFieldProcessor;
         this.contentSourceBrandMap = contentSourceBrandMap;
         this.refFieldName = refFieldName;
-        this.apiHost = apiHost;
         this.webUrlTemplate = webUrlTemplate;
         this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
     }
@@ -176,7 +173,7 @@ public class EomFileProcessor {
         final String standfirst = Strings.nullToEmpty(xpath.evaluate(STANDFIRST_XPATH, value)).trim();
 
         final String transformedBody = transformField(eomFile.getBody(), bodyTransformer, transactionId, mode,
-                Maps.immutableEntry("uuid", uuid.toString()), Maps.immutableEntry("apiHost", apiHost));
+                Maps.immutableEntry("uuid", uuid.toString()));
         final String validatedBody = validateBody(mode, type, transformedBody, uuid);
 
         final String mainImage = generateMainImageUuid(xpath, eomFile.getValue());
@@ -398,7 +395,7 @@ public class EomFileProcessor {
     }
 
     private String putMainImageReferenceInBodyNode(Node bodyNode, String mainImage) throws TransformerException {
-        Element newElement = bodyNode.getOwnerDocument().createElement("content");
+        Element newElement = bodyNode.getOwnerDocument().createElement("ft-content");
         newElement.setAttribute("id", mainImage);
         newElement.setAttribute("type", IMAGE_SET_TYPE);
         newElement.setAttribute(DEFAULT_IMAGE_ATTRIBUTE_DATA_EMBEDDED, "true");

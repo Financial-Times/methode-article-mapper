@@ -205,7 +205,6 @@ public class MethodeArticleMapperApplication extends Application<MethodeArticleM
                 new Html5SelfClosingTagBodyProcessor(),
                 processConfigurationBrands(configuration.getBrandsConfiguration()),
                 configuration.getTxIdPropertyName(),
-                configuration.getApiHost(),
                 configuration.getWebUrlTemplate(),
                 configuration.getCanonicalWebUrlTemplate());
     }

@@ -32,7 +32,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
     private final PropertySource lastModifiedSource;
     private final PropertySource txIdSource;
     private final String txIdPropertyName;
-    private final String apiHost;
     private final String webUrlTemplate;
     private final String canonicalWebUrlTemplate;
     private final AppInfo appInfo;
@@ -55,7 +54,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
                                              @JsonProperty("lastModifiedSource") PropertySource lastModifiedSource,
                                              @JsonProperty("transactionIdSource") PropertySource txIdSource,
                                              @JsonProperty("transactionIdProperty") String txIdPropertyName,
-                                             @JsonProperty("apiHost") String apiHost,
                                              @JsonProperty("webUrlTemplate") String webUrlTemplate,
                                              @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
                                              @JsonProperty("appInfo") AppInfo appInfo,
@@ -86,7 +84,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
         this.lastModifiedSource = lastModifiedSource;
         this.txIdSource = txIdSource;
         this.txIdPropertyName = txIdPropertyName;
-        this.apiHost = apiHost;
         this.webUrlTemplate = webUrlTemplate;
         this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
         this.appInfo = appInfo;
@@ -155,11 +152,6 @@ public class MethodeArticleMapperConfiguration extends Configuration implements 
 
     public String getTxIdPropertyName() {
         return txIdPropertyName;
-    }
-
-    @NotNull
-    public String getApiHost() {
-        return apiHost;
     }
 
     @NotNull

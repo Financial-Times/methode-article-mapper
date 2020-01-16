@@ -117,8 +117,8 @@ public class TearSheetLinksTransformerTest {
     String actual = serializeDocument(doc);
 
     String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
+        + "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+        + "\">concorded company name</ft-concept></p>" + "</body>";
     
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
@@ -138,8 +138,8 @@ public class TearSheetLinksTransformerTest {
 
     String expectedBody = "<body>" + "<p>Some text</p>"
         + "<p>" + COMPANY_NOT_CONCORDED + "</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
+        + "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+        + "\">concorded company name</ft-concept></p>" + "</body>";
 
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
@@ -157,8 +157,8 @@ public class TearSheetLinksTransformerTest {
     String actual = serializeDocument(doc);
 
     String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
+        + "<p><ft-concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
+        + "\">concorded company name</ft-concept></p>" + "</body>";
     
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());

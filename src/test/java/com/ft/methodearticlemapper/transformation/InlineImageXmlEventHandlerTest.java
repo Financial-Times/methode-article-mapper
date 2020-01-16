@@ -28,7 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(value = MockitoJUnitRunner.class)
 public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
 
-    private static final String CONTENT_TAG = "content";
+    private static final String FT_CONTENT_TAG = "ft-content";
     private static final String FILE_REF_ATTRIBUTE = "fileref";
     private static final String IMAGE_SET_TYPE = "http://www.ft.com/ontology/content/ImageSet";
     private static final String UUID = "c12f1318-cafc-11e3-ba9d-00144feabdc0";
@@ -42,7 +42,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     private InlineImageXmlEventHandler eventHandler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         eventHandler = new InlineImageXmlEventHandler();
     }
 
@@ -58,8 +58,8 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
         expectedAttributes.put("id", DeriveUUID.with(IMAGE_SET).from(java.util.UUID.fromString(UUID)).toString());
         expectedAttributes.put("type", IMAGE_SET_TYPE);
         expectedAttributes.put("data-embedded", "true");
-        verify(mockEventWriter).writeStartTag(CONTENT_TAG, expectedAttributes);
-        verify(mockEventWriter).writeEndTag(CONTENT_TAG);
+        verify(mockEventWriter).writeStartTag(FT_CONTENT_TAG, expectedAttributes);
+        verify(mockEventWriter).writeEndTag(FT_CONTENT_TAG);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
     }
 
     @Test
-    public void testTransformInlineImageWithAdditionalData() throws Exception {
+    public void testTransformInlineImageWithAdditionalData() {
         final XMLEventHandler charactersEventHandler = new RetainXMLEventHandler();
         final XMLEventHandler inlineImageXmlEventHandler = new InlineImageXmlEventHandler();
         final XMLEventHandlerRegistry registry = new XMLEventHandlerRegistry() {{
@@ -126,7 +126,7 @@ public class InlineImageXmlEventHandlerTest extends BaseXMLEventHandlerTest {
                 "arbitrary text</web-inline-picture>", UUID);
         final String actual = processor.process(inputXml, null);
 
-        String expectedXml = String.format("<content id=\"%s\" type=\"%s\" data-embedded=\"true\"></content>",
+        String expectedXml = String.format("<ft-content id=\"%s\" type=\"%s\" data-embedded=\"true\"></ft-content>",
                 DeriveUUID.with(IMAGE_SET).from(java.util.UUID.fromString(UUID)).toString(), IMAGE_SET_TYPE);
         assertEquals(expectedXml, actual);
     }
