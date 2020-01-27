@@ -42,7 +42,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: global-config
-              key: kafka.proxy.url
+              key: kafka-msk.proxy.url
           {{- else }}
           value: "kafka-rest-proxy:8080"
           {{- end}}
