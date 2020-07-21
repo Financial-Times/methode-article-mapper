@@ -6,29 +6,33 @@ import com.google.common.base.Objects;
 
 public class ConcordanceApiConfiguration {
 
-    private final EndpointConfiguration endpointConfiguration;
+  private final EndpointConfiguration endpointConfiguration;
 
-    private final ConnectionConfiguration connectionConfiguration;
+  private final ConnectionConfiguration connectionConfiguration;
 
-    public ConcordanceApiConfiguration(@JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
-                                               @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfiguration) {
-        this.endpointConfiguration = endpointConfiguration;
-        this.connectionConfiguration = connectionConfiguration;
-    }
+  public ConcordanceApiConfiguration(
+      @JsonProperty("endpointConfiguration") EndpointConfiguration endpointConfiguration,
+      @JsonProperty("connectionConfig") ConnectionConfiguration connectionConfiguration) {
+    this.endpointConfiguration = endpointConfiguration;
+    this.connectionConfiguration = connectionConfiguration;
+  }
 
-    public EndpointConfiguration getEndpointConfiguration() { return endpointConfiguration; }
+  public EndpointConfiguration getEndpointConfiguration() {
+    return endpointConfiguration;
+  }
 
-    public ConnectionConfiguration getConnectionConfiguration() { return connectionConfiguration; }
+  public ConnectionConfiguration getConnectionConfiguration() {
+    return connectionConfiguration;
+  }
 
-    protected Objects.ToStringHelper toStringHelper() {
-        return Objects
-                .toStringHelper(this)
-                .add("endpointConfiguration", endpointConfiguration)
-                .add("connectionConfig", connectionConfiguration);
-    }
+  protected Objects.ToStringHelper toStringHelper() {
+    return Objects.toStringHelper(this)
+        .add("endpointConfiguration", endpointConfiguration)
+        .add("connectionConfig", connectionConfiguration);
+  }
 
-    @Override
-    public String toString() {
-        return toStringHelper().toString();
-    }
+  @Override
+  public String toString() {
+    return toStringHelper().toString();
+  }
 }

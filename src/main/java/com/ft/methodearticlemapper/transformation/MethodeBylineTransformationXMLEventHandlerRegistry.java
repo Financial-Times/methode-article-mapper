@@ -8,14 +8,15 @@ import com.ft.bodyprocessing.xml.eventhandlers.XMLEventHandlerRegistry;
 
 public class MethodeBylineTransformationXMLEventHandlerRegistry extends XMLEventHandlerRegistry {
 
-    public MethodeBylineTransformationXMLEventHandlerRegistry() {
+  public MethodeBylineTransformationXMLEventHandlerRegistry() {
 
-        //strip everything except characters
-        registerDefaultEventHandler(new StripXMLEventHandler());
-        registerCharactersEventHandler(new RetainXMLEventHandler());
-        registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
-        // want to be sure to strip the wrapping node
-        registerStartAndEndElementEventHandler(new StripXMLEventHandler(), "byline");
-        registerStartAndEndElementEventHandler(new StripElementAndContentsXMLEventHandler(), "annotation");
-    }
+    // strip everything except characters
+    registerDefaultEventHandler(new StripXMLEventHandler());
+    registerCharactersEventHandler(new RetainXMLEventHandler());
+    registerEntityReferenceEventHandler(new PlainTextHtmlEntityReferenceEventHandler());
+    // want to be sure to strip the wrapping node
+    registerStartAndEndElementEventHandler(new StripXMLEventHandler(), "byline");
+    registerStartAndEndElementEventHandler(
+        new StripElementAndContentsXMLEventHandler(), "annotation");
+  }
 }

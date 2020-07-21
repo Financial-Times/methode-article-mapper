@@ -6,12 +6,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import com.ft.bodyprocessing.BodyProcessingException;
+import com.ft.methodearticlemapper.model.concordance.ConceptView;
+import com.ft.methodearticlemapper.model.concordance.Concordance;
+import com.ft.methodearticlemapper.model.concordance.Concordances;
+import com.ft.methodearticlemapper.model.concordance.Identifier;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.UUID;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -22,7 +28,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.ElementNameAndTextQualifier;
 import org.custommonkey.xmlunit.XMLAssert;
@@ -32,19 +37,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.ft.bodyprocessing.BodyProcessingException;
-import com.ft.methodearticlemapper.model.concordance.ConceptView;
-import com.ft.methodearticlemapper.model.concordance.Concordance;
-import com.ft.methodearticlemapper.model.concordance.Concordances;
-import com.ft.methodearticlemapper.model.concordance.Identifier;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
-
 public class TearSheetLinksTransformerTest {
   private static final URI CONCORDANCE_API = URI.create("http://localhost/concordances");
-  private static final URI CONCORDANCE_URL = URI.create(
-      "http://localhost/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
-  private final static String TME_AUTHORITY = "http://api.ft.com/system/FT-TME";
+  private static final URI CONCORDANCE_URL =
+      URI.create(
+          "http://localhost/concordances?authority=http%3A%2F%2Fapi.ft.com%2Fsystem%2FFT-TME&identifierValue=");
+  private static final String TME_AUTHORITY = "http://api.ft.com/system/FT-TME";
   private static final String TME_ID_1 = "tmeid1";
   private static final String TME_ID_2 = "tmeid2";
   private static final String ORG_ID = UUID.randomUUID().toString();
@@ -53,12 +51,15 @@ public class TearSheetLinksTransformerTest {
   private static final String BODY_TEMPLATE = "<body><p>Some text</p>%s</body>";
 
   private static final String COMPANY_NOT_CONCORDED =
-    "<company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_1 + "\" >not concorded company name</company>";
+      "<company  DICoSEDOL=\"2297907\" CompositeId=\""
+          + TME_ID_1
+          + "\" >not concorded company name</company>";
   private static final String COMPANY_CONCORDED =
-    "<company  DICoSEDOL=\"2297907\" CompositeId=\"" + TME_ID_2 + "\" >concorded company name</company>";
+      "<company  DICoSEDOL=\"2297907\" CompositeId=\""
+          + TME_ID_2
+          + "\" >concorded company name</company>";
   private static final String COMPANY_NO_COMPOSITE_ID =
-    "<company  DICoSEDOL=\"2297907\" >company without compositeId</company>";
-
+      "<company  DICoSEDOL=\"2297907\" >company without compositeId</company>";
 
   private Document doc;
   private NodeList nodes;
@@ -77,7 +78,6 @@ public class TearSheetLinksTransformerTest {
 
     Concordance concordance = new Concordance(concept, identifier);
     concordances = new Concordances(Arrays.asList(concordance));
-
   }
 
   @Test
@@ -116,19 +116,25 @@ public class TearSheetLinksTransformerTest {
     toTest.handle(doc, nodes);
     String actual = serializeDocument(doc);
 
-    String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
-    
+    String expectedBody =
+        "<body>"
+            + "<p>Some text</p>"
+            + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\""
+            + ORG_ID
+            + "\">concorded company name</concept></p>"
+            + "</body>";
+
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
   }
 
-
   @Test
   public void shouldTransformMultipleCompanies() throws Exception {
-    final String body = String.format(BODY_TEMPLATE, "<p>" + COMPANY_NOT_CONCORDED + "</p>" + "<p>" + COMPANY_CONCORDED + "</p>");
+    final String body =
+        String.format(
+            BODY_TEMPLATE,
+            "<p>" + COMPANY_NOT_CONCORDED + "</p>" + "<p>" + COMPANY_CONCORDED + "</p>");
     doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     String queryUrl1 = CONCORDANCE_URL + TME_ID_2 + "&identifierValue=" + TME_ID_1;
@@ -136,10 +142,16 @@ public class TearSheetLinksTransformerTest {
     toTest.handle(doc, nodes);
     String actual = serializeDocument(doc);
 
-    String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p>" + COMPANY_NOT_CONCORDED + "</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
+    String expectedBody =
+        "<body>"
+            + "<p>Some text</p>"
+            + "<p>"
+            + COMPANY_NOT_CONCORDED
+            + "</p>"
+            + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\""
+            + ORG_ID
+            + "\">concorded company name</concept></p>"
+            + "</body>";
 
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
@@ -148,7 +160,10 @@ public class TearSheetLinksTransformerTest {
 
   @Test
   public void shouldTransformCompanyIfCompositeIdAttributeIsLowerCase() throws Exception {
-    final String body = String.format(BODY_TEMPLATE, "<p>" + COMPANY_CONCORDED.replace("CompositeId", "compositeid") + "</p>");
+    final String body =
+        String.format(
+            BODY_TEMPLATE,
+            "<p>" + COMPANY_CONCORDED.replace("CompositeId", "compositeid") + "</p>");
     doc = db.parse(new InputSource(new StringReader(body)));
     nodes = getNodeList(doc);
     String queryUrl = CONCORDANCE_URL + TME_ID_2;
@@ -156,10 +171,14 @@ public class TearSheetLinksTransformerTest {
     toTest.handle(doc, nodes);
     String actual = serializeDocument(doc);
 
-    String expectedBody = "<body>" + "<p>Some text</p>"
-        + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\"" + ORG_ID
-        + "\">concorded company name</concept></p>" + "</body>";
-    
+    String expectedBody =
+        "<body>"
+            + "<p>Some text</p>"
+            + "<p><concept type=\"http://www.ft.com/ontology/company/PublicCompany\" id=\""
+            + ORG_ID
+            + "\">concorded company name</concept></p>"
+            + "</body>";
+
     Diff diff = new Diff(expectedBody, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
@@ -175,10 +194,9 @@ public class TearSheetLinksTransformerTest {
     Diff diff = new Diff(body, actual);
     diff.overrideElementQualifier(new ElementNameAndTextQualifier());
     XMLAssert.assertXMLEqual(diff, true);
-    
+
     verifyZeroInteractions(client);
   }
-
 
   private NodeList getNodeList(Document doc) throws Exception {
     XPathFactory xpf = XPathFactory.newInstance();
@@ -205,7 +223,6 @@ public class TearSheetLinksTransformerTest {
     }
   }
 
-
   private void mockConcordanceQueryResponse(String queryUrl, Concordances response) {
     WebResource resource = mock(WebResource.class);
     when(client.resource(URI.create(queryUrl))).thenReturn(resource);
@@ -213,5 +230,4 @@ public class TearSheetLinksTransformerTest {
     when(resource.header("Host", "public-concordances-api")).thenReturn(builder);
     when(builder.get(Concordances.class)).thenReturn(response);
   }
-
 }
