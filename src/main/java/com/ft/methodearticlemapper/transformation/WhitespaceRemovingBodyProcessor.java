@@ -6,12 +6,12 @@ import com.ft.bodyprocessing.BodyProcessor;
 
 public class WhitespaceRemovingBodyProcessor implements BodyProcessor {
 
-	@Override
-	public String process(String body, BodyProcessingContext bodyProcessingContext) throws BodyProcessingException {
-		if (body != null) {
-			return body.trim();
-		}
-		return null;
-	}
-
+  @Override
+  public String process(String body, BodyProcessingContext bodyProcessingContext)
+      throws BodyProcessingException {
+    if (body != null) {
+      return body.trim();
+    }
+    return null;
+  }
 }

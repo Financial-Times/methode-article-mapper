@@ -1,189 +1,188 @@
 package com.ft.methodearticlemapper.configuration;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ft.bodyprocessing.richcontent.VideoSiteConfiguration;
 import com.ft.platform.dropwizard.AppInfo;
 import com.ft.platform.dropwizard.ConfigWithAppInfo;
 import com.ft.platform.dropwizard.ConfigWithGTG;
 import com.ft.platform.dropwizard.GTGConfig;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import io.dropwizard.Configuration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import javax.validation.constraints.NotNull;
 
-import io.dropwizard.Configuration;
+public class MethodeArticleMapperConfiguration extends Configuration
+    implements ConfigWithAppInfo, ConfigWithGTG {
+  private boolean documentStoreApiEnabled;
+  private DocumentStoreApiConfiguration documentStoreApiConfiguration;
+  private boolean concordanceApiEnabled;
+  private ConcordanceApiConfiguration concordanceApiConfiguration;
+  private boolean messagingEndpointEnabled;
+  private ConsumerConfiguration consumerConfiguration;
+  private ProducerConfiguration producerConfiguration;
+  private final List<BrandConfiguration> brands;
+  private final List<VideoSiteConfiguration> videoSiteConfig;
+  private final List<String> interactiveGraphicsWhiteList;
+  private final String contentUriPrefix;
+  private final Map<String, String> additionalNativeContentProperties;
+  private final PropertySource lastModifiedSource;
+  private final PropertySource txIdSource;
+  private final String txIdPropertyName;
+  private final String apiHost;
+  private final String webUrlTemplate;
+  private final String canonicalWebUrlTemplate;
+  private final AppInfo appInfo;
+  private final Map<String, String> contentTypeMappings;
+  @JsonProperty private final GTGConfig gtgConfig = new GTGConfig();
 
-public class MethodeArticleMapperConfiguration extends Configuration implements ConfigWithAppInfo, ConfigWithGTG {
-    private boolean documentStoreApiEnabled;
-    private DocumentStoreApiConfiguration documentStoreApiConfiguration;
-    private boolean concordanceApiEnabled;
-    private ConcordanceApiConfiguration concordanceApiConfiguration;
-    private boolean messagingEndpointEnabled;
-    private ConsumerConfiguration consumerConfiguration;
-    private ProducerConfiguration producerConfiguration;
-    private final List<BrandConfiguration> brands;
-    private final List<VideoSiteConfiguration> videoSiteConfig;
-    private final List<String> interactiveGraphicsWhiteList;
-    private final String contentUriPrefix;
-    private final Map<String, String> additionalNativeContentProperties;
-    private final PropertySource lastModifiedSource;
-    private final PropertySource txIdSource;
-    private final String txIdPropertyName;
-    private final String apiHost;
-    private final String webUrlTemplate;
-    private final String canonicalWebUrlTemplate;
-    private final AppInfo appInfo;
-    private final Map<String, String> contentTypeMappings;
-    @JsonProperty
-    private final GTGConfig gtgConfig = new GTGConfig();
+  public MethodeArticleMapperConfiguration(
+      @JsonProperty("messagingEndpointEnabled") Boolean messagingEndpointEnabled,
+      @JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
+      @JsonProperty("producer") ProducerConfiguration producerConfiguration,
+      @JsonProperty("concordanceApiEnabled") Boolean concordanceApiEnabled,
+      @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
+      @JsonProperty("documentStoreApiEnabled") Boolean documentStoreApiEnabled,
+      @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
+      @JsonProperty("brands") List<BrandConfiguration> brands,
+      @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
+      @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
+      @JsonProperty("contentUriPrefix") String contentUriPrefix,
+      @JsonProperty("additionalNativeContentProperties")
+          Map<String, String> additionalNativeContentProperties,
+      @JsonProperty("lastModifiedSource") PropertySource lastModifiedSource,
+      @JsonProperty("transactionIdSource") PropertySource txIdSource,
+      @JsonProperty("transactionIdProperty") String txIdPropertyName,
+      @JsonProperty("apiHost") String apiHost,
+      @JsonProperty("webUrlTemplate") String webUrlTemplate,
+      @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
+      @JsonProperty("appInfo") AppInfo appInfo,
+      @JsonProperty("contentTypeMappings") Map<String, String> contentTypeMappings) {
 
-    public MethodeArticleMapperConfiguration(@JsonProperty("messagingEndpointEnabled") Boolean messagingEndpointEnabled,
-                                             @JsonProperty("consumer") ConsumerConfiguration consumerConfiguration,
-                                             @JsonProperty("producer") ProducerConfiguration producerConfiguration,
-                                             @JsonProperty("concordanceApiEnabled") Boolean concordanceApiEnabled,
-                                             @JsonProperty("concordanceApi") ConcordanceApiConfiguration concordanceApiConfiguration,
-                                             @JsonProperty("documentStoreApiEnabled") Boolean documentStoreApiEnabled,
-                                             @JsonProperty("documentStoreApi") DocumentStoreApiConfiguration documentStoreApiConfiguration,
-                                             @JsonProperty("brands") List<BrandConfiguration> brands,
-                                             @JsonProperty("videoSiteConfig") List<VideoSiteConfiguration> videoSiteConfig,
-                                             @JsonProperty("interactiveGraphicsWhiteList") List<String> interactiveGraphicsWhiteList,
-                                             @JsonProperty("contentUriPrefix") String contentUriPrefix,
-                                             @JsonProperty("additionalNativeContentProperties") Map<String, String> additionalNativeContentProperties,
-                                             @JsonProperty("lastModifiedSource") PropertySource lastModifiedSource,
-                                             @JsonProperty("transactionIdSource") PropertySource txIdSource,
-                                             @JsonProperty("transactionIdProperty") String txIdPropertyName,
-                                             @JsonProperty("apiHost") String apiHost,
-                                             @JsonProperty("webUrlTemplate") String webUrlTemplate,
-                                             @JsonProperty("canonicalWebUrlTemplate") String canonicalWebUrlTemplate,
-                                             @JsonProperty("appInfo") AppInfo appInfo,
-                                             @JsonProperty("contentTypeMappings") Map<String, String> contentTypeMappings) {
-
-        if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
-            this.documentStoreApiEnabled = true;
-            this.documentStoreApiConfiguration = documentStoreApiConfiguration;
-        }
-
-        if ((concordanceApiEnabled == null) || concordanceApiEnabled.booleanValue()) {
-            this.concordanceApiEnabled = true;
-            this.concordanceApiConfiguration = concordanceApiConfiguration;
-        }
-
-        this.brands = brands;
-
-        if ((messagingEndpointEnabled == null) || messagingEndpointEnabled.booleanValue()) {
-            this.messagingEndpointEnabled = true;
-            this.consumerConfiguration = consumerConfiguration;
-            this.producerConfiguration = producerConfiguration;
-        }
-
-        this.videoSiteConfig = videoSiteConfig;
-        this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
-        this.contentUriPrefix = contentUriPrefix;
-        this.additionalNativeContentProperties = Collections.unmodifiableMap(additionalNativeContentProperties);
-        this.lastModifiedSource = lastModifiedSource;
-        this.txIdSource = txIdSource;
-        this.txIdPropertyName = txIdPropertyName;
-        this.apiHost = apiHost;
-        this.webUrlTemplate = webUrlTemplate;
-        this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
-        this.appInfo = appInfo;
-        this.contentTypeMappings = contentTypeMappings;
+    if ((documentStoreApiEnabled == null) || documentStoreApiEnabled.booleanValue()) {
+      this.documentStoreApiEnabled = true;
+      this.documentStoreApiConfiguration = documentStoreApiConfiguration;
     }
 
-    public boolean isConcordanceApiEnabled() {
-        return concordanceApiEnabled;
+    if ((concordanceApiEnabled == null) || concordanceApiEnabled.booleanValue()) {
+      this.concordanceApiEnabled = true;
+      this.concordanceApiConfiguration = concordanceApiConfiguration;
     }
 
-    public ConcordanceApiConfiguration getConcordanceApiConfiguration() {
-        return concordanceApiConfiguration;
+    this.brands = brands;
+
+    if ((messagingEndpointEnabled == null) || messagingEndpointEnabled.booleanValue()) {
+      this.messagingEndpointEnabled = true;
+      this.consumerConfiguration = consumerConfiguration;
+      this.producerConfiguration = producerConfiguration;
     }
 
-    public boolean isDocumentStoreApiEnabled() {
-        return documentStoreApiEnabled;
-    }
+    this.videoSiteConfig = videoSiteConfig;
+    this.interactiveGraphicsWhiteList = interactiveGraphicsWhiteList;
+    this.contentUriPrefix = contentUriPrefix;
+    this.additionalNativeContentProperties =
+        Collections.unmodifiableMap(additionalNativeContentProperties);
+    this.lastModifiedSource = lastModifiedSource;
+    this.txIdSource = txIdSource;
+    this.txIdPropertyName = txIdPropertyName;
+    this.apiHost = apiHost;
+    this.webUrlTemplate = webUrlTemplate;
+    this.canonicalWebUrlTemplate = canonicalWebUrlTemplate;
+    this.appInfo = appInfo;
+    this.contentTypeMappings = contentTypeMappings;
+  }
 
-    public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() {
-        return documentStoreApiConfiguration;
-    }
+  public boolean isConcordanceApiEnabled() {
+    return concordanceApiEnabled;
+  }
 
-    @NotNull
-    public List<BrandConfiguration> getBrandsConfiguration() {
-        return brands;
-    }
+  public ConcordanceApiConfiguration getConcordanceApiConfiguration() {
+    return concordanceApiConfiguration;
+  }
 
-    @NotNull
-    public List<VideoSiteConfiguration> getVideoSiteConfig() {
-        return videoSiteConfig;
-    }
+  public boolean isDocumentStoreApiEnabled() {
+    return documentStoreApiEnabled;
+  }
 
-    @NotNull
-    public List<String> getInteractiveGraphicsWhitelist() {
-        return interactiveGraphicsWhiteList;
-    }
+  public DocumentStoreApiConfiguration getDocumentStoreApiConfiguration() {
+    return documentStoreApiConfiguration;
+  }
 
-    public boolean isMessagingEndpointEnabled() {
-        return messagingEndpointEnabled;
-    }
+  @NotNull
+  public List<BrandConfiguration> getBrandsConfiguration() {
+    return brands;
+  }
 
-    public ConsumerConfiguration getConsumerConfiguration() {
-        return consumerConfiguration;
-    }
+  @NotNull
+  public List<VideoSiteConfiguration> getVideoSiteConfig() {
+    return videoSiteConfig;
+  }
 
-    public ProducerConfiguration getProducerConfiguration() {
-        return producerConfiguration;
-    }
+  @NotNull
+  public List<String> getInteractiveGraphicsWhitelist() {
+    return interactiveGraphicsWhiteList;
+  }
 
-    @NotNull
-    public String getContentUriPrefix() {
-        return contentUriPrefix;
-    }
+  public boolean isMessagingEndpointEnabled() {
+    return messagingEndpointEnabled;
+  }
 
-    public Map<String, String> getAdditionalNativeContentProperties() {
-        return additionalNativeContentProperties;
-    }
+  public ConsumerConfiguration getConsumerConfiguration() {
+    return consumerConfiguration;
+  }
 
-    public PropertySource getLastModifiedSource() {
-        return lastModifiedSource;
-    }
+  public ProducerConfiguration getProducerConfiguration() {
+    return producerConfiguration;
+  }
 
-    public PropertySource getTxIdSource() {
-        return txIdSource;
-    }
+  @NotNull
+  public String getContentUriPrefix() {
+    return contentUriPrefix;
+  }
 
-    public String getTxIdPropertyName() {
-        return txIdPropertyName;
-    }
+  public Map<String, String> getAdditionalNativeContentProperties() {
+    return additionalNativeContentProperties;
+  }
 
-    @NotNull
-    public String getApiHost() {
-        return apiHost;
-    }
+  public PropertySource getLastModifiedSource() {
+    return lastModifiedSource;
+  }
 
-    @NotNull
-    public String getCanonicalWebUrlTemplate() {
-        return canonicalWebUrlTemplate;
-    }
+  public PropertySource getTxIdSource() {
+    return txIdSource;
+  }
 
-    @NotNull
-    public String getWebUrlTemplate() {
-        return webUrlTemplate;
-    }
+  public String getTxIdPropertyName() {
+    return txIdPropertyName;
+  }
 
-    @Override
-    public AppInfo getAppInfo() {
-        return appInfo;
-    }
+  @NotNull
+  public String getApiHost() {
+    return apiHost;
+  }
 
-    @Override
-    public GTGConfig getGtg() {
-        return gtgConfig;
-    }
+  @NotNull
+  public String getCanonicalWebUrlTemplate() {
+    return canonicalWebUrlTemplate;
+  }
 
-    @NotNull
-    public Map<String, String> getContentTypeMappings() {
-        return contentTypeMappings;
-    }
+  @NotNull
+  public String getWebUrlTemplate() {
+    return webUrlTemplate;
+  }
+
+  @Override
+  public AppInfo getAppInfo() {
+    return appInfo;
+  }
+
+  @Override
+  public GTGConfig getGtg() {
+    return gtgConfig;
+  }
+
+  @NotNull
+  public Map<String, String> getContentTypeMappings() {
+    return contentTypeMappings;
+  }
 }

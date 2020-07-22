@@ -1,71 +1,74 @@
 package com.ft.methodearticlemapper.transformation;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.ft.bodyprocessing.BodyProcessingContext;
 import com.ft.bodyprocessing.xml.eventhandlers.BaseXMLParser;
 import com.ft.bodyprocessing.xml.eventhandlers.UnexpectedElementStructureException;
 import com.ft.bodyprocessing.xml.eventhandlers.XmlParser;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
+import org.apache.commons.lang.StringUtils;
 
-public class SlideshowXMLParser extends BaseXMLParser<SlideshowData> implements XmlParser<SlideshowData> {
+public class SlideshowXMLParser extends BaseXMLParser<SlideshowData>
+    implements XmlParser<SlideshowData> {
 
-	private static final String DEFAULT_ELEMENT_NAME = "a";
-    private static final QName HREF_QNAME = QName.valueOf("href");
-    private static final String UUID_KEY = "uuid";
-	private static final QName TITLE_QNAME = QName.valueOf("title");
+  private static final String DEFAULT_ELEMENT_NAME = "a";
+  private static final QName HREF_QNAME = QName.valueOf("href");
+  private static final String UUID_KEY = "uuid";
+  private static final QName TITLE_QNAME = QName.valueOf("title");
 
-	public SlideshowXMLParser() {
-        super(DEFAULT_ELEMENT_NAME);
-    }
+  public SlideshowXMLParser() {
+    super(DEFAULT_ELEMENT_NAME);
+  }
 
-    @Override
-    public SlideshowData createDataBeanInstance() {
-        return new SlideshowData();
-    }
+  @Override
+  public SlideshowData createDataBeanInstance() {
+    return new SlideshowData();
+  }
 
-    @Override
-    public void populateBean(SlideshowData dataBean, StartElement nextStartElement, XMLEventReader xmlEventReader,
-							 BodyProcessingContext bodyProcessingContext) throws UnexpectedElementStructureException {
-        Attribute hrefElement = nextStartElement.getAttributeByName(HREF_QNAME);
-        // Ensure the element contains an HREF attribute
-        if(hrefElement != null) {
-            String[] attributesSides = StringUtils.splitPreserveAllTokens(hrefElement.getValue(), "?");
-            // Ensure that the href contains at least 1 query parameter
-            if(attributesSides.length == 2) {
-                // Split all query (key/value) parameters found
-                String[] attributes = StringUtils.splitPreserveAllTokens(attributesSides[1], "&");
+  @Override
+  public void populateBean(
+      SlideshowData dataBean,
+      StartElement nextStartElement,
+      XMLEventReader xmlEventReader,
+      BodyProcessingContext bodyProcessingContext)
+      throws UnexpectedElementStructureException {
+    Attribute hrefElement = nextStartElement.getAttributeByName(HREF_QNAME);
+    // Ensure the element contains an HREF attribute
+    if (hrefElement != null) {
+      String[] attributesSides = StringUtils.splitPreserveAllTokens(hrefElement.getValue(), "?");
+      // Ensure that the href contains at least 1 query parameter
+      if (attributesSides.length == 2) {
+        // Split all query (key/value) parameters found
+        String[] attributes = StringUtils.splitPreserveAllTokens(attributesSides[1], "&");
 
-                // Search for the UUID (key/value) parameter, ignore all others
-                for(String attribute: attributes){
-                    String[] keyValue = StringUtils.splitPreserveAllTokens(attribute, "=");
-                    if(UUID_KEY.equalsIgnoreCase(keyValue[0])){
-                        // ensure there's a key AND a value for the UUID before populating the bean with the UUID data
-                        if(keyValue.length == 2){
-                            dataBean.setUuid(keyValue[1]);
-                        }
-                    }
-                }
+        // Search for the UUID (key/value) parameter, ignore all others
+        for (String attribute : attributes) {
+          String[] keyValue = StringUtils.splitPreserveAllTokens(attribute, "=");
+          if (UUID_KEY.equalsIgnoreCase(keyValue[0])) {
+            // ensure there's a key AND a value for the UUID before populating the bean with the
+            // UUID data
+            if (keyValue.length == 2) {
+              dataBean.setUuid(keyValue[1]);
             }
+          }
         }
-
-		Attribute titleElement = nextStartElement.getAttributeByName(TITLE_QNAME);
-		if(titleElement != null){
-			dataBean.setTitle(titleElement.getValue());
-		}
+      }
     }
 
-    @Override
-    public boolean doesTriggerElementContainAllDataNeeded() {
-        return false;
+    Attribute titleElement = nextStartElement.getAttributeByName(TITLE_QNAME);
+    if (titleElement != null) {
+      dataBean.setTitle(titleElement.getValue());
     }
+  }
 
-    @Override
-    public void transformFieldContentToStructuredFormat(SlideshowData dataBean,
-            BodyProcessingContext bodyProcessingContext) {
-    }
+  @Override
+  public boolean doesTriggerElementContainAllDataNeeded() {
+    return false;
+  }
+
+  @Override
+  public void transformFieldContentToStructuredFormat(
+      SlideshowData dataBean, BodyProcessingContext bodyProcessingContext) {}
 }
