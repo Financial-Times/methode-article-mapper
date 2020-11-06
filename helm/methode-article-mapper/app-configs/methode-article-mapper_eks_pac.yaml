@@ -4,7 +4,6 @@ replicaCount: 2
 service:
   name: methode-article-mapper
 
-eksCluster: true
 
 env:
   KAFKA_ENABLED: false

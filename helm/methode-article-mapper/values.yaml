@@ -6,7 +6,6 @@ service:
   hasHealthcheck: "true"
   isResilient: "false"
 
-eksCluster: false
 
 replicaCount: 2
 image:

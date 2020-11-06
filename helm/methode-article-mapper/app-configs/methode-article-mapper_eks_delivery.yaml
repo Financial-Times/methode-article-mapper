@@ -2,7 +2,6 @@
 replicaCount: 2
 service:
   name: methode-article-mapper
-eksCluster: true
 env:
   KAFKA_ENABLED: true
   DOCUMENT_STORE_API_ENABLED: true
