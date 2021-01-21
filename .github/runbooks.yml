@@ -36,3 +36,4 @@ runbooks:
     systemCodes:
         # paths are relative to root, omitting ./ (case-insensitive)
         up-mam: runbooks/up-mam-runbook.md
+        pac-methode-article-mapper: runbooks/pac-methode-article-mapper-runbook.md
