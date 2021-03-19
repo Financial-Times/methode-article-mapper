@@ -1,14 +1,18 @@
+<!--
+    Written in the format prescribed by https://github.com/Financial-Times/runbook.md.
+    Any future edits should abide by this format.
+-->
 # Methode Article Mapper for PAC
 
 Methode Article Mapper is a microservice that transforms native Methode articles into UPP format. This microservice is used in PAC to return draft Methode articles in UPP format, which is used to suggest annotations based on article text.
 
-## Primary URL
-
-<https://pac-prod-glb.upp.ft.com/__methode-article-mapper/>
-
 ## Code
 
 pac-methode-article-mapper
+
+## Primary URL
+
+https://pac-prod-glb.upp.ft.com/__methode-article-mapper/
 
 ## Service Tier
 
@@ -17,27 +21,6 @@ Bronze
 ## Lifecycle Stage
 
 Production
-
-## Delivered By
-
-content
-
-## Supported By
-
-content
-
-## Known About By
-
-- hristo.georgiev
-- robert.marinov
-- elina.kaneva
-- georgi.ivanov
-- tsvetan.dimitrov
-- kalin.arsov
-- mihail.mihaylov
-- boyko.boykov
-- donislav.belev
-- dimitar.terziev
 
 ## Host Platform
 
@@ -54,6 +37,20 @@ No
 ## Contains Sensitive Data
 
 No
+
+<!-- Placeholder - remove HTML comment markers to activate
+## Can Download Personal Data
+Choose Yes or No
+
+...or delete this placeholder if not applicable to this system
+-->
+
+<!-- Placeholder - remove HTML comment markers to activate
+## Can Contact Individuals
+Choose Yes or No
+
+...or delete this placeholder if not applicable to this system
+-->
 
 ## Failover Architecture Type
 
@@ -92,6 +89,14 @@ Manual
 
 Manual failover is needed when a new version of the service is deployed to production. Otherwise, an automated failover is going to take place when releasing. For more details about the failover process please see: <https://github.com/Financial-Times/upp-docs/tree/master/failover-guides/pac-cluster>
 
+<!-- Placeholder - remove HTML comment markers to activate
+## Heroku Pipeline Name
+Enter descriptive text satisfying the following:
+This is the name of the Heroku pipeline for this system. If you don't have a pipeline, this is the name of the app in Heroku. A pipeline is a group of Heroku apps that share the same codebase where each app in a pipeline represents the different stages in a continuous delivery workflow, i.e. staging, production.
+
+...or delete this placeholder if not applicable to this system
+-->
+
 ## Key Management Process Type
 
 Manual
@@ -103,8 +108,8 @@ To rotate credentials you need to login to a particular cluster and update varni
 
 ## Monitoring
 
-- PAC-Prod-EU health: <https://pac-prod-eu.upp.ft.com/__health/__pods-health?service-name=methode-article-mapper>
-- PAC-Prod-US health: <https://pac-prod-us.upp.ft.com/__health/__pods-health?service-name=methode-article-mapper>
+*   PAC-Prod-EU health: <https://pac-prod-eu.upp.ft.com/__health/__pods-health?service-name=methode-article-mapper>
+*   PAC-Prod-US health: <https://pac-prod-us.upp.ft.com/__health/__pods-health?service-name=methode-article-mapper>
 
 ## First Line Troubleshooting
 
